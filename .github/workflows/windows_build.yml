@@ -1,0 +1,37 @@
+name: Manual Windows Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: stable
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Generate files
+      run: ./gen.sh
+      shell: bash
+
+    - name: Install zip
+      run: choco install zip
+
+    - name: Build Windows
+      run: ./build.sh windows --flavor dev
+      shell: bash
+
+    - name: Upload Windows Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: flutter-windows-build
+        path: artifacts/*.zip
