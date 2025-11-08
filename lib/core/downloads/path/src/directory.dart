@@ -1,8 +1,10 @@
 // Dart imports:
 import 'dart:io';
 
-// Package imports:
+// Flutter imports:
 import 'package:flutter/foundation.dart';
+
+// Package imports:
 import 'package:path_provider/path_provider.dart';
 
 sealed class DownloadDirectoryResult {

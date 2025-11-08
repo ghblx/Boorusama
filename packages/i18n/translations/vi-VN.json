@@ -157,6 +157,7 @@
       "share": "Chia sẻ",
       "bookmark": "Dấu trang",
       "favorite": "Yêu thích",
+      "unfavorite": "Bỏ yêu thích",
       "upvote": "Bình chọn",
       "downvote": "Hạ điểm",
       "view_artist": "Xem họa sĩ",
@@ -699,6 +700,10 @@
     "counter": {
       "one": "Lượt thích",
       "other": "Lượt thích"
+    },
+    "update": {
+      "success": "Đã cập nhật yêu thích",
+      "failure": "Cập nhật yêu thích thất bại"
     }
   },
   "favorite_groups": {
@@ -1225,6 +1230,12 @@
     "current_video_quality_disclaimer": "Phần này chỉ áp dụng cho video hiện tại. Để áp dụng cho tất cả video, hãy vào <a href=\"booru-profiles\">$video_profile_path</a>.",
     "speed": {
       "normal": "Bình thường"
+    }
+  },
+  "shimmie2": {
+    "extension": {
+      "title": "Tiện ích",
+      "failed_to_fetch": "Không thể tải danh sách tiện ích cho trang này"
     }
   }
 }

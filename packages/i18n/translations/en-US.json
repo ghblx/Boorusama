@@ -177,6 +177,7 @@
       "share": "Share",
       "bookmark": "Bookmark",
       "favorite": "Favorite",
+      "unfavorite": "Unfavorite",
       "upvote": "Upvote",
       "downvote": "Downvote",
       "view_comments": "View comments",
@@ -699,6 +700,10 @@
     "counter": {
       "one": "Favorite",
       "other": "Favorites"
+    },
+    "update": {
+      "success": "Favorites updated",
+      "failure": "Failed to update favorites"
     }
   },
   "favorite_groups": {
@@ -1224,6 +1229,12 @@
     "current_video_quality_disclaimer": "This section only applies to the current video. For all videos, go to <a href=\"booru-profiles\">$video_profile_path</a>.",
     "speed": {
       "normal": "Normal"
+    }
+  },
+  "shimmie2": {
+    "extension": {
+      "title": "Extensions",
+      "failed_to_fetch": "Cannot fetch extension list for this instance"
     }
   }
 }
