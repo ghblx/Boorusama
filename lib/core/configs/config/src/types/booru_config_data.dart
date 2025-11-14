@@ -11,7 +11,7 @@ import '../../../../themes/configs/types.dart';
 import '../../../gesture/types.dart';
 import '../../../search/types.dart';
 import 'booru_config.dart';
-import 'rating_parser.dart';
+import 'granular_rating_filter.dart';
 
 class BooruConfigData extends Equatable {
   const BooruConfigData({
@@ -234,54 +234,15 @@ extension BooruConfigDataX on BooruConfigData {
   }
 
   BlacklistConfigs? get blacklistConfigsTyped {
-    return BlacklistConfigs.fromJsonString(blacklistConfigs);
+    return BlacklistConfigs.tryParse(blacklistConfigs);
   }
 
   Set<Rating>? get granularRatingFilterTyped {
-    return parseGranularRatingFilters(granularRatingFilterString);
-  }
-
-  BooruConfigRatingFilter? get ratingFilterTyped {
-    if (ratingFilter < 0 ||
-        ratingFilter >= BooruConfigRatingFilter.values.length) {
-      return null;
-    }
-
-    return BooruConfigRatingFilter.values[ratingFilter];
-  }
-
-  BooruConfigBannedPostVisibility? get bannedPostVisibilityTyped {
-    if (bannedPostVisibility < 0 ||
-        bannedPostVisibility >= BooruConfigBannedPostVisibility.values.length) {
-      return null;
-    }
-
-    return BooruConfigBannedPostVisibility.values[bannedPostVisibility];
-  }
-
-  BooruConfigDeletedItemBehavior get deletedItemBehaviorTyped {
-    if (deletedItemBehavior < 0 ||
-        deletedItemBehavior >= BooruConfigDeletedItemBehavior.values.length) {
-      return BooruConfigDeletedItemBehavior.show;
-    }
-
-    return BooruConfigDeletedItemBehavior.values[deletedItemBehavior];
+    return GranularRatingFilter.parse(granularRatingFilterString)?.ratings;
   }
 
   ProxySettings? get proxySettingsTyped {
     return ProxySettings.fromJsonString(proxySettings);
-  }
-
-  BooruConfigViewerNotesFetchBehavior? get viewerNotesFetchBehaviorTyped {
-    final behavior = viewerNotesFetchBehavior;
-
-    if (behavior == null ||
-        behavior < 0 ||
-        behavior >= BooruConfigViewerNotesFetchBehavior.values.length) {
-      return null;
-    }
-
-    return BooruConfigViewerNotesFetchBehavior.values[behavior];
   }
 }
 
@@ -345,7 +306,7 @@ extension BooruConfigDataCopyWith on BooruConfigData {
           : this.imageDetaisQuality,
       videoQuality: videoQuality != null ? videoQuality() : this.videoQuality,
       granularRatingFilterString: granularRatingFilter != null
-          ? granularRatingFilterToString(granularRatingFilter())
+          ? GranularRatingFilter.parse(granularRatingFilter())?.toFilterString()
           : granularRatingFilterString,
       postGestures: postGestures != null
           ? postGestures()?.toJsonString() ??

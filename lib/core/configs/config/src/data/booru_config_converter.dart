@@ -6,7 +6,7 @@ import '../../../gesture/types.dart';
 import '../../../search/types.dart';
 import '../types/booru_config.dart';
 import '../types/booru_config_data.dart';
-import '../types/rating_parser.dart';
+import '../types/granular_rating_filter.dart';
 
 extension BooruConfigDataConverter on BooruConfigData? {
   BooruConfig? toBooruConfig({required int? id}) {
@@ -36,7 +36,7 @@ extension BooruConfigDataConverter on BooruConfigData? {
       customDownloadLocation: booruConfigData.customDownloadLocation,
       imageDetaisQuality: booruConfigData.imageDetaisQuality,
       videoQuality: booruConfigData.videoQuality,
-      granularRatingFilters: parseGranularRatingFilters(
+      granularRatingFilters: GranularRatingFilter.parse(
         booruConfigData.granularRatingFilterString,
       ),
       postGestures: booruConfigData.postGestures == null
@@ -53,10 +53,12 @@ extension BooruConfigDataConverter on BooruConfigData? {
       theme: booruConfigData.theme == null
           ? null
           : ThemeConfigs.fromJsonString(booruConfigData.theme),
-      alwaysIncludeTags: booruConfigData.alwaysIncludeTags,
-      blacklistConfigs: booruConfigData.blacklistConfigs != null
-          ? BlacklistConfigs.fromJsonString(booruConfigData.blacklistConfigs)
-          : null,
+      alwaysIncludeTags: AlwaysIncludedTags.parse(
+        booruConfigData.alwaysIncludeTags,
+      ),
+      blacklistConfigs: BlacklistConfigs.tryParse(
+        booruConfigData.blacklistConfigs,
+      ),
       layout: booruConfigData.layout != null
           ? LayoutConfigs.fromJsonString(booruConfigData.layout)
           : null,
@@ -89,15 +91,13 @@ extension BooruConfigConverter on BooruConfig {
       customDownloadLocation: customDownloadLocation,
       imageDetaisQuality: imageDetaisQuality,
       videoQuality: videoQuality,
-      granularRatingFilterString: granularRatingFilterToString(
-        granularRatingFilters,
-      ),
+      granularRatingFilterString: granularRatingFilters?.toFilterString(),
       postGestures: postGestures?.toJsonString(),
       defaultPreviewImageButtonAction: defaultPreviewImageButtonAction,
       listing: listing?.toJsonString(),
       viewerConfigs: viewerConfigs?.toJsonString(),
       theme: theme?.toJsonString(),
-      alwaysIncludeTags: alwaysIncludeTags,
+      alwaysIncludeTags: alwaysIncludeTags?.toJsonString(),
       blacklistConfigs: blacklistConfigs?.toJsonString(),
       layout: layout?.toJsonString(),
       proxySettings: proxySettings?.toJsonString(),

@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:equatable/equatable.dart';
-import 'package:foundation/foundation.dart';
 
 // Project imports:
 import '../../../../boorus/booru/types.dart';
@@ -18,10 +17,12 @@ import '../../../../settings/types.dart';
 import '../../../../themes/configs/types.dart';
 import '../../../gesture/types.dart';
 import '../../../search/types.dart';
+import 'always_included_tags.dart';
 import 'booru_config_repository.dart';
-import 'rating_parser.dart';
+import 'granular_rating_filter.dart';
 import 'types.dart';
 
+export 'always_included_tags.dart';
 export 'booru_login_details.dart';
 export 'booru_login_details_impl.dart';
 export 'types.dart';
@@ -58,9 +59,6 @@ class BooruConfig extends Equatable {
   });
 
   factory BooruConfig.fromJson(Map<String, dynamic> json) {
-    final ratingFilter = json['ratingFilter'] as int?;
-    final bannedPostVisibility = json['bannedPostVisibility'] as int?;
-
     return BooruConfig(
       id: json['id'] as int,
       booruId: json['booruId'] as int,
@@ -70,18 +68,13 @@ class BooruConfig extends Equatable {
       passHash: json['passHash'] as String?,
       url: json['url'] as String,
       name: json['name'] as String,
-      deletedItemBehavior: BooruConfigDeletedItemBehavior
-          .values[json['deletedItemBehavior'] as int],
-      ratingFilter: ratingFilter != null
-          ? BooruConfigRatingFilter.values.getOrNull(ratingFilter) ??
-                BooruConfigRatingFilter.hideNSFW
-          : BooruConfigRatingFilter.hideNSFW,
-      bannedPostVisibility: bannedPostVisibility != null
-          ? BooruConfigBannedPostVisibility.values.getOrNull(
-                  bannedPostVisibility,
-                ) ??
-                BooruConfigBannedPostVisibility.show
-          : BooruConfigBannedPostVisibility.show,
+      deletedItemBehavior: BooruConfigDeletedItemBehavior.parse(
+        json['deletedItemBehavior'],
+      ),
+      ratingFilter: BooruConfigRatingFilter.parse(json['ratingFilter']),
+      bannedPostVisibility: BooruConfigBannedPostVisibility.parse(
+        json['bannedPostVisibility'],
+      ),
       customDownloadFileNameFormat:
           json['customDownloadFileNameFormat'] as String?,
       customBulkDownloadFileNameFormat:
@@ -89,8 +82,8 @@ class BooruConfig extends Equatable {
       customDownloadLocation: json['customDownloadLocation'] as String?,
       imageDetaisQuality: json['imageDetaisQuality'] as String?,
       videoQuality: json['videoQuality'] as String?,
-      granularRatingFilters: parseGranularRatingFilters(
-        json['granularRatingFilterString'] as String?,
+      granularRatingFilters: GranularRatingFilter.parse(
+        json['granularRatingFilterString'],
       ),
       postGestures: json['postGestures'] == null
           ? null
@@ -108,8 +101,10 @@ class BooruConfig extends Equatable {
       theme: json['theme'] == null
           ? null
           : ThemeConfigs.fromJson(json['theme'] as Map<String, dynamic>),
-      alwaysIncludeTags: json['alwaysIncludeTags'] as String?,
-      blacklistConfigs: _parseBlacklistConfigs(json),
+      alwaysIncludeTags: AlwaysIncludedTags.parse(json['alwaysIncludeTags']),
+      blacklistConfigs: BlacklistConfigs.tryParse(
+        json['blacklistedConfigs'] ?? json['blacklistedTags'],
+      ),
       layout: json['layout'] == null
           ? null
           : LayoutConfigs.fromJson(json['layout'] as Map<String, dynamic>),
@@ -118,10 +113,9 @@ class BooruConfig extends Equatable {
           : ProxySettings.fromJson(
               json['proxySettings'] as Map<String, dynamic>,
             ),
-      viewerNotesFetchBehavior: json['viewerNotesFetchBehavior'] == null
-          ? null
-          : BooruConfigViewerNotesFetchBehavior
-                .values[json['viewerNotesFetchBehavior'] as int],
+      viewerNotesFetchBehavior: BooruConfigViewerNotesFetchBehavior.tryParse(
+        json['viewerNotesFetchBehavior'],
+      ),
     );
   }
 
@@ -133,8 +127,8 @@ class BooruConfig extends Equatable {
     login: null,
     passHash: null,
     name: '',
-    deletedItemBehavior: BooruConfigDeletedItemBehavior.show,
-    ratingFilter: BooruConfigRatingFilter.none,
+    deletedItemBehavior: BooruConfigDeletedItemBehavior.defaultValue,
+    ratingFilter: BooruConfigRatingFilter.defaultValue,
     bannedPostVisibility: BooruConfigBannedPostVisibility.show,
     url: '',
     customDownloadFileNameFormat: null,
@@ -168,9 +162,9 @@ class BooruConfig extends Equatable {
     login: null,
     passHash: null,
     name: 'new profile',
-    deletedItemBehavior: BooruConfigDeletedItemBehavior.show,
-    ratingFilter: BooruConfigRatingFilter.none,
-    bannedPostVisibility: BooruConfigBannedPostVisibility.show,
+    deletedItemBehavior: BooruConfigDeletedItemBehavior.defaultValue,
+    ratingFilter: BooruConfigRatingFilter.defaultValue,
+    bannedPostVisibility: BooruConfigBannedPostVisibility.defaultValue,
     url: url,
     customDownloadFileNameFormat: customDownloadFileNameFormat,
     customBulkDownloadFileNameFormat: customDownloadFileNameFormat,
@@ -206,13 +200,13 @@ class BooruConfig extends Equatable {
   final String? customDownloadLocation;
   final String? imageDetaisQuality;
   final String? videoQuality;
-  final Set<Rating>? granularRatingFilters;
+  final GranularRatingFilter? granularRatingFilters;
   final PostGestureConfig? postGestures;
   final String? defaultPreviewImageButtonAction;
   final ListingConfigs? listing;
   final ViewerConfigs? viewerConfigs;
   final ThemeConfigs? theme;
-  final String? alwaysIncludeTags;
+  final AlwaysIncludedTags? alwaysIncludeTags;
   final BlacklistConfigs? blacklistConfigs;
   final LayoutConfigs? layout;
   final ProxySettings? proxySettings;
@@ -314,35 +308,20 @@ class BooruConfig extends Equatable {
       'customDownloadLocation': customDownloadLocation,
       'imageDetaisQuality': imageDetaisQuality,
       'videoQuality': videoQuality,
-      'granularRatingFilterString': granularRatingFilterToString(
-        granularRatingFilters,
-      ),
+      if (granularRatingFilters case final filter?)
+        'granularRatingFilterString': filter.toFilterString(),
       'postGestures': postGestures?.toJson(),
       'defaultPreviewImageButtonAction': defaultPreviewImageButtonAction,
       'listing': listing?.toJson(),
       'viewer': viewerConfigs?.toJson(),
       'theme': theme?.toJson(),
-      'alwaysIncludeTags': alwaysIncludeTags,
+      'alwaysIncludeTags': alwaysIncludeTags?.toJsonString(),
       'blacklistedTags': blacklistConfigs?.toJson(),
       'layout': layout?.toJson(),
       'proxySettings': proxySettings?.toJson(),
       'viewerNotesFetchBehavior': viewerNotesFetchBehavior?.index,
     };
   }
-}
-
-BlacklistConfigs? _parseBlacklistConfigs(Map<String, dynamic> json) {
-  if (json['blacklistedConfigs'] != null) {
-    return BlacklistConfigs.fromJson(
-      json['blacklistedConfigs'] as Map<String, dynamic>,
-    );
-  }
-  if (json['blacklistedTags'] != null) {
-    return BlacklistConfigs.fromJson(
-      json['blacklistedTags'] as Map<String, dynamic>,
-    );
-  }
-  return null;
 }
 
 class BooruConfigAuth extends Equatable with BooruConfigAuthMixin {
@@ -441,8 +420,8 @@ class BooruConfigSearchFilter extends Equatable
 
   final BooruConfigRatingFilter ratingFilter;
   @override
-  final Set<Rating>? granularRatingFilters;
-  final String? alwaysIncludeTags;
+  final GranularRatingFilter? granularRatingFilters;
+  final AlwaysIncludedTags? alwaysIncludeTags;
   final BooruConfigDeletedItemBehavior deletedItemBehavior;
   @override
   final BooruConfigBannedPostVisibility bannedPostVisibility;
@@ -453,45 +432,15 @@ class BooruConfigSearchFilter extends Equatable
     BooruConfigRatingFilter.none => 'unfiltered',
     BooruConfigRatingFilter.hideExplicit => 'questionable',
     BooruConfigRatingFilter.hideNSFW => 'sfw',
-    BooruConfigRatingFilter.custom => () {
-      final filters = granularRatingFiltersWithoutUnknown;
-
-      if (filters == null) return 'custom';
-
-      final str = granularRatingFilterToString(filters, sort: true);
-
-      if (str == null) return 'custom';
-
-      return 'filtered($str)';
-    }(),
+    BooruConfigRatingFilter.custom => switch (granularRatingFilters
+        ?.withoutUnknown()) {
+      final filter? => switch (filter.toFilterString(sort: true)) {
+        final str when str.isNotEmpty => 'filtered($str)',
+        _ => 'custom',
+      },
+      null => 'custom',
+    },
   };
-
-  bool canView(String rating) {
-    final parsedRating = Rating.parse(rating);
-
-    if (ratingFilter == BooruConfigRatingFilter.none) return true;
-
-    if (ratingFilter == BooruConfigRatingFilter.custom) {
-      final granularRatingFilters = granularRatingFiltersWithoutUnknown;
-
-      if (granularRatingFilters == null) return false;
-
-      return granularRatingFilters.contains(parsedRating);
-    }
-
-    if (ratingFilter == BooruConfigRatingFilter.hideExplicit &&
-        parsedRating == Rating.explicit) {
-      return false;
-    }
-
-    if (ratingFilter == BooruConfigRatingFilter.hideNSFW &&
-        (parsedRating == Rating.explicit ||
-            parsedRating == Rating.questionable)) {
-      return false;
-    }
-
-    return true;
-  }
 
   @override
   List<Object?> get props => [
@@ -570,8 +519,7 @@ class BooruConfigViewer extends Equatable {
   final BooruConfigViewerNotesFetchBehavior? viewerNotesFetchBehavior;
   final ImageViewerSettings? settings;
 
-  bool get autoFetchNotes =>
-      viewerNotesFetchBehavior == BooruConfigViewerNotesFetchBehavior.auto;
+  bool get autoFetchNotes => viewerNotesFetchBehavior?.isAuto ?? false;
 
   @override
   List<Object?> get props => [
@@ -625,17 +573,12 @@ mixin BooruConfigAuthMixin {
 }
 
 mixin BooruConfigSearchFilterMixin {
-  Set<Rating>? get granularRatingFilters;
+  GranularRatingFilter? get granularRatingFilters;
   BooruConfigBannedPostVisibility get bannedPostVisibility;
 
   Set<Rating>? get granularRatingFiltersWithoutUnknown {
-    if (granularRatingFilters == null) return null;
-
-    return granularRatingFilters!.where((e) => e != Rating.unknown).toSet();
+    return granularRatingFilters?.withoutUnknown().ratings;
   }
-
-  bool get hideBannedPosts =>
-      bannedPostVisibility == BooruConfigBannedPostVisibility.hide;
 }
 
 extension BooruConfigX on BooruConfig {
