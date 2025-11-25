@@ -19,13 +19,14 @@ import '../../../http/client/types.dart';
 import '../../../posts/post/types.dart';
 import '../../../search/selected_tags/types.dart';
 import '../../../settings/providers.dart';
+import '../data/filesystem.dart';
+import '../data/providers.dart';
 import '../types/bulk_download_error.dart';
 import '../types/download_configs.dart';
 import '../types/download_record.dart';
 import '../types/download_session.dart';
 import '../types/download_task.dart';
 import 'dry_run_state.dart';
-import 'file_system_exist_checker.dart';
 import 'providers.dart';
 
 final dryRunNotifierProvider =
@@ -82,9 +83,11 @@ class DryRunNotifier extends FamilyAsyncNotifier<DryRunState, String> {
       );
       final fallbackSettings = ref.read(settingsProvider);
       final settings = downloadConfigs?.settings ?? fallbackSettings;
+      final fallbackExistChecker = ref.read(
+        defaultDownloadExistCheckerProvider,
+      );
       final fileExistChecker =
-          downloadConfigs?.existChecker ??
-          const FileSystemDownloadExistChecker();
+          downloadConfigs?.existChecker ?? fallbackExistChecker;
       final asyncTokenDelay =
           downloadConfigs?.asyncTokenDelay ??
           const Duration(milliseconds: 1000);

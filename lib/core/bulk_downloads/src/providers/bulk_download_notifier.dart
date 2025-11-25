@@ -18,6 +18,8 @@ import '../../../downloads/downloader/providers.dart';
 import '../../../downloads/downloader/types.dart' as d;
 import '../../../posts/sources/types.dart';
 import '../../../premiums/providers.dart';
+import '../data/filesystem.dart';
+import '../data/providers.dart';
 import '../notifications/providers.dart';
 import '../types/bulk_download_error.dart';
 import '../types/bulk_download_session.dart';
@@ -33,8 +35,6 @@ import '../types/saved_download_task.dart';
 import 'bulk_progress.dart';
 import 'dry_run.dart';
 import 'dry_run_state.dart';
-import 'file_system_exist_checker.dart';
-import 'providers.dart';
 import 'saved_task_lock_notifier.dart';
 import 'session_cancellation_provider.dart';
 
@@ -377,9 +377,9 @@ class BulkDownloadNotifier extends Notifier<BulkDownloadState> {
     DownloadConfigs? downloadConfigs,
   }) async {
     final path = task.path;
+    final fallbackChecker = ref.read(defaultDirectoryExistCheckerProvider);
     final directoryChecker =
-        downloadConfigs?.directoryExistChecker ??
-        const FileSystemDirectoryExistChecker();
+        downloadConfigs?.directoryExistChecker ?? fallbackChecker;
 
     // Check if directory exists
     if (!directoryChecker.exists(path)) {

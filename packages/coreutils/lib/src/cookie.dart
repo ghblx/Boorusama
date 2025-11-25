@@ -61,6 +61,10 @@ class CookieUtils {
 
     return formatCookieHeader(mergedCookies);
   }
+
+  static Cookie fromSetCookieValue(String setCookieValue) {
+    return Cookie.fromSetCookieValue(setCookieValue);
+  }
 }
 
 /// Extensions for cookie_jar Cookie objects
@@ -82,9 +86,5 @@ extension CookieJarExtensions on List<Cookie> {
       }
     }
     return null;
-  }
-
-  bool hasCookie(String name) {
-    return any((cookie) => cookie.name == name);
   }
 }
