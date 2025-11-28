@@ -29,6 +29,7 @@ class SliverPostGrid<T extends Post> extends StatelessWidget {
     this.borderRadius,
     this.postsPerPage,
     this.httpErrorActionBuilder,
+    this.httpHandshakeErrorActionBuilder,
   });
 
   final PostGridController<T> postController;
@@ -43,6 +44,9 @@ class SliverPostGrid<T extends Post> extends StatelessWidget {
 
   final Widget Function(BuildContext context, int httpStatusCode)?
   httpErrorActionBuilder;
+
+  final Widget Function(BuildContext context, AppError error)?
+  httpHandshakeErrorActionBuilder;
 
   final AppErrorTranslator errorTranslator;
 
@@ -60,7 +64,17 @@ class SliverPostGrid<T extends Post> extends StatelessWidget {
               child: switch (error) {
                 final AppError e => ErrorBox(
                   errorMessage: errorTranslator.translateAppError(context, e),
-                  onRetry: _onErrorRetry,
+                  onRetry: switch (e.type) {
+                    AppErrorType.cannotReachServer ||
+                    AppErrorType.loadDataFromServerFailed => _onErrorRetry,
+                    AppErrorType.handshakeFailed => null,
+                  },
+                  altAction: switch (e.type) {
+                    AppErrorType.handshakeFailed
+                        when httpHandshakeErrorActionBuilder != null =>
+                      httpHandshakeErrorActionBuilder!(context, e),
+                    _ => null,
+                  },
                 ),
                 final ServerError e => Column(
                   children: [
@@ -108,7 +122,7 @@ class SliverPostGrid<T extends Post> extends StatelessWidget {
                             );
                           } catch (err) {
                             return Text(
-                              e.message.toString(),
+                              e.message,
                               textAlign: TextAlign.center,
                             );
                           }

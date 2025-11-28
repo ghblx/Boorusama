@@ -15,3 +15,21 @@ class GooglePlayServicesImpl implements GooglePlayServices {
     return availability == GooglePlayServicesAvailability.success;
   }
 }
+
+class CronetImpl implements Cronet {
+  const CronetImpl({
+    required this.gServices,
+  });
+
+  final GooglePlayServices gServices;
+
+  @override
+  Future<bool> isAvailable() async {
+    if (!isAndroid()) return false;
+
+    final gServicesAvailable = await gServices.isAvailable();
+    if (!gServicesAvailable) return false;
+
+    return true;
+  }
+}
