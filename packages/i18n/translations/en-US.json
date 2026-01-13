@@ -35,6 +35,9 @@
     "version": "Version $version",
     "app_restart_request": "You need to restart the app for this change to take effect"
   },
+  "reminder": {
+    "dont_show_again": "Don't show again"
+  },
   "sort": {
     "sort_by": "Sort by",
     "name": "Name",
@@ -473,6 +476,7 @@
       "qualities": {
         "original": "Original",
         "sample": "Sample",
+        "large": "Large",
         "preview": "Thumbnail"
       },
       "title": "Download"
@@ -1220,6 +1224,9 @@
     }
   },
   "infinite_scroll": {
+    "reminder": {
+      "highres": "Caution: The app is displaying high-resolution images using mobile data."
+    },
     "load_more": "Load more",
     "nore_more_data": "That's all for now",
     "page_label": "Page $page",
@@ -1248,6 +1255,15 @@
     "current_video_quality_disclaimer": "This section only applies to the current video. For all videos, go to <a href=\"booru-profiles\">$video_profile_path</a>.",
     "speed": {
       "normal": "Normal"
+    }
+  },
+  "cache": {
+    "image": {
+      "reminder": {
+        "description": "The app has stored <b>$size</b> worth of images. Would you like to clear it to free up some space?",
+        "cleared": "Cache cleared",
+        "failed": "Failed to clear cache"
+      }
     }
   },
   "shimmie2": {
