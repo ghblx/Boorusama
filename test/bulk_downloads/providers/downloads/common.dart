@@ -32,6 +32,7 @@ import 'package:boorusama/core/downloads/downloader/types.dart' as d;
 import 'package:boorusama/core/downloads/filename/providers.dart';
 import 'package:boorusama/core/downloads/filename/types.dart';
 import 'package:boorusama/core/downloads/urls/providers.dart';
+import 'package:boorusama/core/http/client/providers.dart';
 import 'package:boorusama/core/posts/post/providers.dart';
 import 'package:boorusama/core/posts/post/types.dart';
 import 'package:boorusama/core/premiums/providers.dart';
@@ -385,6 +386,8 @@ List<Override> getTestOverrides({
     downloadFileUrlExtractorProvider.overrideWith(
       (_, _) => const UrlInsidePostExtractor(),
     ),
+    booruEngineRegistryProvider.overrideWithValue(BooruEngineRegistry()),
+    httpHeadersProvider.overrideWith((_, _) => {}),
     cachedBypassDdosHeadersProvider.overrideWith((_, _) => {}),
     analyticsProvider.overrideWith((_) => NoAnalyticsInterface()),
     booruBuilderProvider.overrideWith(
