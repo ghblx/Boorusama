@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
-import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // Project imports:
@@ -38,7 +37,6 @@ import 'data_and_storage_page.dart';
 import 'download_page.dart';
 import 'help_us_translate_page.dart';
 import 'image_viewer_page.dart';
-import 'keybinds_page.dart';
 import 'language_page.dart';
 import 'privacy_page.dart';
 import 'search_settings_page.dart';
@@ -55,7 +53,7 @@ List<SettingEntry> _entries(BuildContext context) => [
     id: 'language',
     name: '/settings/language',
     title: context.t.settings.language.language,
-    icon: Symbols.translate,
+    icon: FontAwesomeIcons.language,
     content: const LanguagePage(),
   ),
   SettingEntry(
@@ -92,13 +90,6 @@ List<SettingEntry> _entries(BuildContext context) => [
     title: context.t.settings.accessibility.accessibility,
     icon: FontAwesomeIcons.universalAccess,
     content: const AccessibilityPage(),
-  ),
-  SettingEntry(
-    id: 'keybinds',
-    name: '/settings/keybinds',
-    title: context.t.settings.keybinds.keybinds,
-    icon: Symbols.keyboard,
-    content: const KeyboardShortcutsPage(),
   ),
   SettingEntry(
     id: 'viewer',
@@ -302,9 +293,7 @@ class _SettingsSmallPageState extends ConsumerState<SettingsSmallPage> {
                 for (final entry in options.entries) ...[
                   SettingTile(
                     title: entry.title,
-                    leading: FaIcon(
-                      entry.icon,
-                    ),
+                    leading: SettingEntryIcon(icon: entry.icon),
                     onTap: () => Navigator.of(context).push(
                       CupertinoPageRoute(
                         settings: RouteSettings(
@@ -382,9 +371,7 @@ class _SettingsLargePageState extends ConsumerState<SettingsLargePage> {
               for (final entry in entries)
                 SettingTile(
                   title: entry.title,
-                  leading: FaIcon(
-                    entry.icon,
-                  ),
+                  leading: SettingEntryIcon(icon: entry.icon),
                   selected: entries.indexOf(entry) == _selectedEntry,
                   showLeading: options.showIcon,
                   onTap: () => setState(() {
@@ -529,8 +516,7 @@ class SettingsPageOtherSection extends ConsumerWidget {
                 null => versionString,
               },
               leading: const FaIcon(
-                Symbols.info,
-                size: 24,
+                FontAwesomeIcons.circleInfo,
               ),
               onTap: () => showDialog(
                 context: context,
@@ -546,8 +532,7 @@ class SettingsPageOtherSection extends ConsumerWidget {
         SettingTile(
           title: context.t.settings.help_us_translate,
           leading: const FaIcon(
-            Symbols.language,
-            size: 24,
+            FontAwesomeIcons.language,
           ),
           onTap: () => Navigator.of(context).push(
             CupertinoPageRoute(
@@ -573,8 +558,7 @@ class SettingsPageOtherSection extends ConsumerWidget {
           title: context.t.settings.contact_developer,
           subtitle: context.t.settings.contact_developer_description,
           leading: const FaIcon(
-            Symbols.email,
-            size: 24,
+            FontAwesomeIcons.envelope,
           ),
           onTap: () => launchExternalUrl(
             Uri.parse('mailto:${appInfo.supportEmail}'),
@@ -586,8 +570,7 @@ class SettingsPageOtherSection extends ConsumerWidget {
           subtitle:
               context.t.settings.feature_request_and_bug_report_description,
           leading: const FaIcon(
-            Symbols.bug_report,
-            size: 24,
+            FontAwesomeIcons.bug,
           ),
           onTap: () => launchExternalUrl(
             Uri.parse('${appInfo.githubUrl}/issues'),

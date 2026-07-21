@@ -3,6 +3,28 @@ import 'package:flutter/foundation.dart';
 
 final _platform = defaultTargetPlatform;
 
+enum AppPlatform {
+  android,
+  ios,
+  macos,
+  windows,
+  linux,
+  web,
+  unknown,
+}
+
+extension AppPlatformX on AppPlatform {
+  String get wireName => switch (this) {
+    AppPlatform.android => 'android',
+    AppPlatform.ios => 'ios',
+    AppPlatform.macos => 'macos',
+    AppPlatform.windows => 'windows',
+    AppPlatform.linux => 'linux',
+    AppPlatform.web => 'web',
+    AppPlatform.unknown => 'unknown',
+  };
+}
+
 bool isAndroid() => isNotWeb() && _platform == TargetPlatform.android;
 bool isIOS() => isNotWeb() && _platform == TargetPlatform.iOS;
 bool isApple() => isNotWeb() && (isIOS() || isMacOS());
@@ -18,6 +40,13 @@ bool isMobilePlatform() => isAndroid() || isIOS();
 
 bool hasStatusBar() => isMobilePlatform();
 
-/// Whether the device uses a Mac keyboard layout (Cmd key).
-/// True for macOS both native and web — the physical keyboard is what matters.
-bool hasMacKeyboard() => _platform == TargetPlatform.macOS;
+AppPlatform currentAppPlatform() {
+  if (isWeb()) return AppPlatform.web;
+  if (isAndroid()) return AppPlatform.android;
+  if (isIOS()) return AppPlatform.ios;
+  if (isMacOS()) return AppPlatform.macos;
+  if (isWindows()) return AppPlatform.windows;
+  if (isLinux()) return AppPlatform.linux;
+
+  return AppPlatform.unknown;
+}

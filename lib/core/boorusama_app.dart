@@ -20,15 +20,13 @@ import '../foundation/app_update/providers.dart';
 import '../foundation/boot.dart';
 import '../foundation/boot/failsafe.dart';
 import '../foundation/boot/providers.dart';
+import '../foundation/display_mode.dart';
 import '../foundation/filesystem.dart';
 import '../foundation/iap/iap.dart';
 import '../foundation/info/app_info.dart';
 import '../foundation/info/device_info.dart';
 import '../foundation/info/package_info.dart';
-import '../foundation/keyboard/keyboard.dart';
 import '../foundation/loggers.dart';
-import 'home/keybinds.dart';
-import 'posts/details_pageview/keybinds.dart';
 import '../foundation/mobile.dart';
 import '../foundation/platform.dart';
 import '../foundation/utils/file_utils.dart';
@@ -44,6 +42,7 @@ import 'configs/config/types.dart';
 import 'configs/manage/providers.dart';
 import 'hive/hive_registrar.g.dart';
 import 'http/client/types.dart';
+import 'images/providers.dart';
 import 'settings/providers.dart';
 import 'settings/src/types/settings_repository.dart';
 import 'settings/types.dart';
@@ -77,6 +76,7 @@ class BoorusamaApp extends StatefulWidget {
 
 class _BoorusamaAppState extends State<BoorusamaApp> {
   late final Future<_InitResult> _initFuture;
+  Future<DeviceInfo>? _errorDeviceInfoFuture;
   AppLogger? _appLogger;
 
   @override
@@ -93,6 +93,9 @@ class _BoorusamaAppState extends State<BoorusamaApp> {
 
     try {
       logger.debugBoot('App Start up');
+
+      logger.debugBoot('Configure display mode');
+      await DisplayModeService().preferHighRefreshRate(logger: logger);
 
       if (isDesktopPlatform()) {
         await window.initialize();
@@ -183,7 +186,12 @@ class _BoorusamaAppState extends State<BoorusamaApp> {
 
       if (settings.clearImageCacheOnStartup) {
         logger.debugBoot('Clear image cache');
-        await clearImageCache(null);
+        final imageCacheManager = createDefaultImageCacheManager(fs);
+        try {
+          await clearImageCache(imageCacheManager);
+        } finally {
+          await imageCacheManager.dispose();
+        }
       }
 
       setupHttpOverrides();
@@ -210,8 +218,12 @@ class _BoorusamaAppState extends State<BoorusamaApp> {
         logger: logger,
         miscDataBox: miscDataBox,
       );
-    } catch (e) {
-      logger.debugBoot('An error occurred during initialization');
+    } catch (e, stackTrace) {
+      logger.error(
+        'Boot',
+        'An error occurred during initialization: $e\n'
+            '${Trace.from(stackTrace).terse}',
+      );
       rethrow;
     }
   }
@@ -233,14 +245,30 @@ class _BoorusamaAppState extends State<BoorusamaApp> {
     final appLogger = _appLogger;
     if (appLogger == null) return const _DefaultLoading();
 
-    return MaterialApp(
-      theme: ThemeData.dark(),
-      debugShowCheckedModeBanner: false,
-      home: AppFailedToInitialize(
-        error: error,
-        stackTrace: stackTrace,
-        logs: appLogger.dump(),
-      ),
+    _errorDeviceInfoFuture ??= DeviceInfoService(
+      plugin: DeviceInfoPlugin(),
+    ).getDeviceInfo().catchError((_) => DeviceInfo.empty());
+
+    return FutureBuilder<DeviceInfo>(
+      future: _errorDeviceInfoFuture,
+      builder: (context, snapshot) {
+        final deviceInfo = snapshot.data ?? DeviceInfo.empty();
+
+        return ProviderScope(
+          overrides: [
+            deviceInfoProvider.overrideWithValue(deviceInfo),
+          ],
+          child: MaterialApp(
+            theme: ThemeData.dark(),
+            debugShowCheckedModeBanner: false,
+            home: AppFailedToInitialize(
+              error: error,
+              stackTrace: stackTrace,
+              logs: appLogger.dump(),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -288,23 +316,6 @@ class _BoorusamaAppState extends State<BoorusamaApp> {
             appInfoProvider.overrideWithValue(result.appInfo),
             appLoggerProvider.overrideWithValue(result.appLogger),
             miscDataBoxProvider.overrideWithValue(result.miscDataBox),
-            shortcutRegistryProvider.overrideWithValue(
-              KeybindRegistry([
-                ...globalShortcuts,
-                ...postDetailsShortcuts,
-                ...homeShortcuts,
-              ]),
-            ),
-            shortcutBindingConfigProvider.overrideWith(
-              (ref) {
-                final registry = ref.watch(shortcutRegistryProvider);
-                final custom = ref
-                    .watch(settingsNotifierProvider)
-                    .shortcutBindings;
-                final defaults = registry.defaultBindings();
-                return custom?.mergeWithDefaults(defaults) ?? defaults;
-              },
-            ),
             isCronetAvailableProvider.overrideWithValue(
               widget.cronetAvailable,
             ),

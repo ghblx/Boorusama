@@ -16,7 +16,8 @@ final httpDdosProtectionBypassProvider = Provider<HttpProtectionHandler>(
   (ref) {
     final cookieJar = ref.watch(cookieJarProvider);
     BuildContext? contextProvider() {
-      final context = navigatorKey.currentContext;
+      final context =
+          navigatorKey.currentContext ?? navigatorKey.currentState?.context;
 
       return context;
     }
@@ -26,19 +27,19 @@ final httpDdosProtectionBypassProvider = Provider<HttpProtectionHandler>(
         userAgentProvider: WebViewUserAgentProvider(),
         detectors: [
           CloudflareDetector(),
-          McChallengeDetector(),
-          AftV2Detector(),
+          AftDetector(),
+          CaptchaAccessDeniedDetector(),
         ],
         solvers: [
           CloudflareSolver(
             contextProvider: contextProvider,
             cookieJar: cookieJar,
           ),
-          McChallengeSolver(
+          AftSolver(
             contextProvider: contextProvider,
             cookieJar: cookieJar,
           ),
-          AftV2Solver(
+          CaptchaAccessDeniedSolver(
             contextProvider: contextProvider,
             cookieJar: cookieJar,
           ),
@@ -46,6 +47,10 @@ final httpDdosProtectionBypassProvider = Provider<HttpProtectionHandler>(
       ),
       contextProvider: contextProvider,
       cookieJar: cookieJar,
+      onSolved: () {
+        ref.invalidate(bypassDdosHeadersProvider);
+        ref.invalidate(cachedBypassDdosHeadersProvider);
+      },
     );
   },
 );

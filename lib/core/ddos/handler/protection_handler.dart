@@ -10,13 +10,16 @@ class HttpProtectionHandler {
     required ContextProvider contextProvider,
     required LazyAsync<CookieJar> cookieJar,
     this.maxRetries = 3,
+    void Function()? onSolved,
   }) : _orchestrator = orchestrator,
        _cookieJar = cookieJar,
-       _contextProvider = contextProvider;
+       _contextProvider = contextProvider,
+       _onSolved = onSolved;
 
   final ProtectionOrchestrator _orchestrator;
   final LazyAsync<CookieJar> _cookieJar;
   final ContextProvider _contextProvider;
+  final void Function()? _onSolved;
 
   // Track retry attempts
   final Map<String, int> _retryAttempts = {};
@@ -42,17 +45,24 @@ class HttpProtectionHandler {
         final userAgent = await _orchestrator.getUserAgent();
 
         if (userAgent == null) {
-          _disabled = true;
           return existingHeaders;
         }
 
-        headers['cookie'] = cookies.cookieString;
+        final existingCookieKey = headers.keys.firstWhere(
+          (key) => key.toLowerCase() == 'cookie',
+          orElse: () => 'cookie',
+        );
+        final existingCookie = headers[existingCookieKey] ?? '';
+
+        headers[existingCookieKey] = CookieUtils.mergeCookieHeaders(
+          existingCookie,
+          cookies.cookieString,
+        );
         headers['user-agent'] = userAgent;
       }
 
       return headers;
     } catch (e) {
-      _disabled = true;
       return existingHeaders;
     }
   }
@@ -62,7 +72,10 @@ class HttpProtectionHandler {
     if (_disabled) return false;
 
     try {
-      return await _orchestrator.handleResponse(response);
+      final solved = await _orchestrator.handleResponse(response);
+      if (solved) _onSolved?.call();
+
+      return solved;
     } catch (e) {
       return false;
     }
@@ -90,6 +103,7 @@ class HttpProtectionHandler {
       final solved = await _orchestrator.handleError(context, error);
 
       if (solved) {
+        _onSolved?.call();
         _retryAttempts[uriString] = retryCount + 1;
         return true;
       }

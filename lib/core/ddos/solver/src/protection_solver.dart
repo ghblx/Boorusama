@@ -1,5 +1,6 @@
 // Dart imports:
 import 'dart:async';
+import 'dart:convert';
 
 // Flutter imports:
 import 'package:flutter/material.dart';
@@ -30,6 +31,10 @@ abstract class ProtectionSolver {
 }
 
 typedef ContextProvider = BuildContext? Function();
+typedef ChallengeCompletionValidator =
+    Future<bool> Function(WebViewController controller);
+
+const _ddosSolverLogSnippetLength = 2000;
 
 abstract class CookieRetriever {
   Future<List<Cookie>> getCookies(String url);
@@ -49,6 +54,7 @@ class RawSolver implements ProtectionSolver {
     required this.autoCookieValidator,
     required this.contextProvider,
     required this.cookieJar,
+    this.challengeCompletionValidator,
     CookieRetriever? cookieRetriever,
   }) : _cookieRetriever = cookieRetriever ?? WebviewCookieRetriever();
 
@@ -58,6 +64,7 @@ class RawSolver implements ProtectionSolver {
   final bool Function(Cookie) autoCookieValidator;
   final ContextProvider contextProvider;
   final LazyAsync<CookieJar> cookieJar;
+  final ChallengeCompletionValidator? challengeCompletionValidator;
 
   final CookieRetriever _cookieRetriever;
   var _solving = false;
@@ -72,11 +79,6 @@ class RawSolver implements ProtectionSolver {
   }) async {
     if (_solving) return false;
     _solving = true;
-
-    final controller = WebViewController();
-    await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-    await controller.loadRequest(uri);
-    if (userAgent != null) await controller.setUserAgent(userAgent);
 
     final completer = Completer<bool>();
     final context = contextProvider();
@@ -97,21 +99,44 @@ class RawSolver implements ProtectionSolver {
 
     try {
       final jar = await cookieJar();
-
-      // Wait for the WebView to potentially auto-solve the JS challenge
-      // before showing the dialog to the user.
-      final autoSolved = await waitForAutoSolve(
-        uri: uri,
-        jar: jar,
-        cookieRetriever: _cookieRetriever,
-        autoCookieValidator: autoCookieValidator,
-        isCancelled: () => !_solving,
+      final controller = WebViewController();
+      final initialCookies = await _getMatchingCookieValues(uri);
+      var hasFinishedPageLoad = false;
+      debugPrint(
+        '[DDOS:$protectionType] start uri=$uri '
+        'userAgent=${userAgent ?? '<default>'} '
+        'initialMatchingCookies=${initialCookies.keys.join(',')}',
       );
-      if (autoSolved) {
-        _solving = false;
-        completer.complete(true);
-        return completer.future;
+
+      try {
+        await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+        if (userAgent != null) await controller.setUserAgent(userAgent);
+        if (challengeCompletionValidator != null) {
+          await controller.setNavigationDelegate(
+            NavigationDelegate(
+              onPageFinished: (url) {
+                hasFinishedPageLoad = true;
+                debugPrint('[DDOS:$protectionType] page finished url=$url');
+                unawaited(
+                  _completeIfSolved(
+                    uri: uri,
+                    jar: jar,
+                    controller: controller,
+                    completer: completer,
+                    initialCookies: initialCookies,
+                    onSuccess: () {
+                      if (navigator.canPop()) navigator.pop(true);
+                    },
+                  ),
+                );
+              },
+            ),
+          );
+        }
+      } catch (_) {
+        // Keep showing the solver; the page may still load with defaults.
       }
+      unawaited(controller.loadRequest(uri).catchError((_) {}));
 
       if (!context.mounted) {
         _solving = false;
@@ -119,10 +144,17 @@ class RawSolver implements ProtectionSolver {
         return completer.future;
       }
 
-      _monitorCookies(uri, jar, completer, (success) {
-        if (navigator.canPop()) navigator.pop(true);
-        if (!completer.isCompleted) completer.complete(success);
-      });
+      _monitorCompletion(
+        uri: uri,
+        jar: jar,
+        controller: controller,
+        completer: completer,
+        initialCookies: initialCookies,
+        allowPageValidation: () => hasFinishedPageLoad,
+        onSuccess: () {
+          if (navigator.canPop()) navigator.pop(true);
+        },
+      );
 
       final result = await showDialog<bool>(
         context: context,
@@ -137,11 +169,15 @@ class RawSolver implements ProtectionSolver {
               controller: controller,
               onCancel: () => dialogNavigator.pop(false),
               onSolved: () async {
-                final cookies = await _cookieRetriever.getCookies(
-                  uri.toString(),
+                final solved = await _completeIfSolved(
+                  uri: uri,
+                  jar: jar,
+                  controller: controller,
+                  completer: completer,
+                  initialCookies: initialCookies,
                 );
-                if (cookies.isNotEmpty) {
-                  await jar.saveFromResponse(uri, cookies);
+
+                if (solved) {
                   dialogNavigator.pop(true);
                 }
               },
@@ -167,30 +203,122 @@ class RawSolver implements ProtectionSolver {
     });
   }
 
-  void _monitorCookies(
-    Uri uri,
-    CookieJar cookieJar,
-    Completer<bool> completer,
-    Function(bool) onSuccess,
-  ) {
+  void _monitorCompletion({
+    required Uri uri,
+    required CookieJar jar,
+    required WebViewController controller,
+    required Completer<bool> completer,
+    required Map<String, String> initialCookies,
+    bool Function()? allowPageValidation,
+    required VoidCallback onSuccess,
+  }) {
     Timer.periodic(const Duration(seconds: 1), (timer) async {
-      if (!_solving) {
+      if (!_solving || completer.isCompleted) {
         timer.cancel();
         return;
       }
 
-      try {
-        final cookies = await _cookieRetriever.getCookies(uri.toString());
-        final hasClearance = cookies.any(autoCookieValidator);
+      final solved = await _completeIfSolved(
+        uri: uri,
+        jar: jar,
+        controller: controller,
+        completer: completer,
+        initialCookies: initialCookies,
+        allowPageValidation: allowPageValidation?.call() ?? true,
+        onSuccess: onSuccess,
+      );
 
-        if (hasClearance) {
-          await cookieJar.saveFromResponse(uri, cookies);
-          timer.cancel();
-          onSuccess(true);
-        }
-      } catch (e) {
-        debugPrint('Error checking cookies: $e');
+      if (solved) timer.cancel();
+    });
+  }
+
+  Future<bool> _completeIfSolved({
+    required Uri uri,
+    required CookieJar jar,
+    required WebViewController controller,
+    required Completer<bool> completer,
+    required Map<String, String> initialCookies,
+    bool allowPageValidation = true,
+    VoidCallback? onSuccess,
+  }) async {
+    if (completer.isCompleted) return true;
+
+    try {
+      final cookies = await _cookieRetriever.getCookies(uri.toString());
+      final currentUrl = await _safeCurrentUrl(controller);
+      debugPrint(
+        '[DDOS:$protectionType] check uri=$uri '
+        'currentUrl=${currentUrl ?? '<unknown>'} '
+        'cookies=${_formatCookies(cookies)}',
+      );
+
+      if (_hasNewMatchingCookie(cookies, initialCookies)) {
+        await jar.saveFromResponse(uri, cookies);
+        debugPrint('[DDOS:$protectionType] complete via matching cookie');
+        if (!completer.isCompleted) completer.complete(true);
+        onSuccess?.call();
+        return true;
       }
+
+      final validator = challengeCompletionValidator;
+      if (validator == null) {
+        debugPrint('[DDOS:$protectionType] pending cookie-only solver');
+        return false;
+      }
+
+      if (!allowPageValidation) {
+        debugPrint(
+          '[DDOS:$protectionType] pending page validator until page finished',
+        );
+        return false;
+      }
+
+      final solvedByPage = await validator(controller);
+      debugPrint('[DDOS:$protectionType] page validator=$solvedByPage');
+
+      if (!solvedByPage) {
+        final pageSource = await _getPageSource(controller);
+        debugPrint(
+          '[DDOS:$protectionType] pending page='
+          '${_formatPageSnippet(pageSource)}',
+        );
+        return false;
+      }
+
+      if (cookies.isNotEmpty) {
+        await jar.saveFromResponse(uri, cookies);
+      }
+      debugPrint('[DDOS:$protectionType] complete via page content');
+      if (!completer.isCompleted) completer.complete(true);
+      onSuccess?.call();
+      return true;
+    } catch (e) {
+      debugPrint('Error checking challenge completion: $e');
+      return false;
+    }
+  }
+
+  Future<Map<String, String>> _getMatchingCookieValues(Uri uri) async {
+    try {
+      final cookies = await _cookieRetriever.getCookies(uri.toString());
+
+      return {
+        for (final cookie in cookies)
+          if (autoCookieValidator(cookie)) cookie.name: cookie.value,
+      };
+    } catch (_) {
+      return {};
+    }
+  }
+
+  bool _hasNewMatchingCookie(
+    List<Cookie> cookies,
+    Map<String, String> initialCookies,
+  ) {
+    return cookies.any((cookie) {
+      if (!autoCookieValidator(cookie)) return false;
+
+      return initialCookies[cookie.name] != cookie.value;
     });
   }
 
@@ -237,84 +365,8 @@ class CloudflareSolver implements ProtectionSolver {
     protectionType: 'cloudflare',
     protectionTitle: 'Solving Cloudflare Challenge',
     autoCookieValidator: (cookie) =>
-        cookie.name == 'cf_clearance' ||
-        cookie.name.contains('cf_') ||
-        cookie.name.contains('__cf'),
-  );
-
-  @override
-  String get protectionType => _solver.protectionType;
-
-  @override
-  bool get isSolving => _solver.isSolving;
-
-  @override
-  Future<bool> solve({
-    required Uri uri,
-    String? userAgent,
-  }) => _solver.solve(
-    uri: uri,
-    userAgent: userAgent,
-  );
-
-  @override
-  Future<void> cancel() => _solver.cancel();
-}
-
-class McChallengeSolver implements ProtectionSolver {
-  McChallengeSolver({
-    required this.contextProvider,
-    required this.cookieJar,
-  });
-
-  final ContextProvider contextProvider;
-  final LazyAsync<CookieJar> cookieJar;
-
-  late final _solver = RawSolver(
-    contextProvider: contextProvider,
-    cookieJar: cookieJar,
-    protectionType: 'mcchallenge',
-    protectionTitle: 'Solving McChallenge Countdown',
-    autoCookieValidator: (cookie) => cookie.name.contains('mcchallenge'),
-  );
-
-  @override
-  String get protectionType => _solver.protectionType;
-
-  @override
-  bool get isSolving => _solver.isSolving;
-
-  @override
-  Future<bool> solve({
-    required Uri uri,
-    String? userAgent,
-  }) => _solver.solve(
-    uri: uri,
-    userAgent: userAgent,
-  );
-
-  @override
-  Future<void> cancel() => _solver.cancel();
-}
-
-class AftV2Solver implements ProtectionSolver {
-  AftV2Solver({
-    required this.contextProvider,
-    required this.cookieJar,
-  });
-
-  final ContextProvider contextProvider;
-  final LazyAsync<CookieJar> cookieJar;
-
-  late final _solver = RawSolver(
-    contextProvider: contextProvider,
-    cookieJar: cookieJar,
-    protectionType: 'aft_v2',
-    protectionTitle: 'Solving verification challenge',
-    autoCookieValidator: (cookie) =>
-        cookie.name.contains('challenge') ||
-        cookie.name.contains('verification') ||
-        cookie.name.contains('aft'),
+        cookie.name.toLowerCase() == 'cf_clearance',
+    challengeCompletionValidator: _isCloudflareSolved,
   );
 
   @override
@@ -349,10 +401,189 @@ class AftSolver implements ProtectionSolver {
     contextProvider: contextProvider,
     cookieJar: cookieJar,
     protectionType: 'aft',
-    protectionTitle: 'Solving Anti-DDoS Flood Protection',
+    protectionTitle: 'Solving verification challenge',
     autoCookieValidator: (cookie) {
-      // User needs to wait for the challenge to be solved
-      return false;
+      final cookieName = cookie.name.toLowerCase();
+
+      return cookieName.contains('challenge') ||
+          cookieName.contains('verification') ||
+          cookieName.contains('aft');
+    },
+    challengeCompletionValidator: _isAftSolved,
+  );
+
+  @override
+  String get protectionType => _solver.protectionType;
+
+  @override
+  bool get isSolving => _solver.isSolving;
+
+  @override
+  Future<bool> solve({
+    required Uri uri,
+    String? userAgent,
+  }) => _solver.solve(
+    uri: uri,
+    userAgent: userAgent,
+  );
+
+  @override
+  Future<void> cancel() => _solver.cancel();
+}
+
+bool isAftSolvedPage(String value) {
+  final normalized = value.trim();
+  if (normalized.isEmpty) return false;
+
+  final lower = normalized.toLowerCase();
+  const failureMarkers = [
+    '403 forbidden',
+    'failure!',
+    'challenge has expired',
+    'reloading the page to try again',
+  ];
+  if (failureMarkers.any(lower.contains)) return false;
+
+  const challengeMarkers = [
+    'challenge_id',
+    'challenge_generated',
+    'challenge-checkbox',
+    'challenge-container',
+    'challenge-prompt',
+    'checkbox-status',
+    'x-verification-challenge',
+    'powseed',
+    'sendanswer',
+    'i am not a robot',
+    'it is now okay to proceed',
+    'wait for signal before clicking',
+  ];
+  if (challengeMarkers.any(lower.contains)) return false;
+
+  return true;
+}
+
+Future<bool> _isAftSolved(WebViewController controller) async {
+  final pageSource = await _getPageSource(controller);
+
+  return isAftSolvedPage(pageSource);
+}
+
+bool isCloudflareSolvedPage(String value) {
+  final normalized = value.trim();
+  if (normalized.isEmpty) return false;
+
+  final lower = normalized.toLowerCase();
+  const failureMarkers = [
+    '403 forbidden',
+  ];
+  if (failureMarkers.any(lower.contains)) return false;
+
+  const challengeMarkers = [
+    'cf_chl',
+    'cf-ray',
+    'cf-turnstile',
+    'cf-mitigated',
+    'challenges.cloudflare.com',
+    '/cdn-cgi/challenge-platform',
+    'challenge-platform',
+    'challenge-error-text',
+    'enable javascript and cookies',
+    'just a moment',
+    'checking if the site connection is secure',
+    'captcha-box',
+    'h-captcha',
+    'g-recaptcha',
+  ];
+  if (challengeMarkers.any(lower.contains)) return false;
+
+  return true;
+}
+
+Future<bool> _isCloudflareSolved(WebViewController controller) async {
+  final pageSource = await _getPageSource(controller);
+
+  return isCloudflareSolvedPage(pageSource);
+}
+
+Future<String> _getPageSource(WebViewController controller) async {
+  try {
+    final result = await controller.runJavaScriptReturningResult('''
+(() => {
+  const body = document.body;
+  const root = document.documentElement;
+
+  return (root && root.outerHTML) ||
+    (body && (body.innerText || body.textContent)) ||
+    '';
+})()
+''');
+
+    return _javaScriptResultAsString(result);
+  } catch (_) {
+    return '';
+  }
+}
+
+String _javaScriptResultAsString(Object? result) {
+  if (result == null) return '';
+  if (result is! String) return result.toString();
+
+  try {
+    final decoded = jsonDecode(result);
+    return decoded is String ? decoded : result;
+  } catch (_) {
+    return result;
+  }
+}
+
+Future<String?> _safeCurrentUrl(WebViewController controller) async {
+  try {
+    return controller.currentUrl();
+  } catch (_) {
+    return null;
+  }
+}
+
+String _formatCookies(List<Cookie> cookies) {
+  if (cookies.isEmpty) return '[]';
+
+  return cookies
+      .map(
+        (cookie) =>
+            '{name:${cookie.name}, domain:${cookie.domain}, '
+            'path:${cookie.path}, expires:${cookie.expires}, '
+            'secure:${cookie.secure}, httpOnly:${cookie.httpOnly}, '
+            'valueLength:${cookie.value.length}}',
+      )
+      .join(', ');
+}
+
+String _formatPageSnippet(String value) {
+  final normalized = value.replaceAll(RegExp(r'\s+'), ' ').trim();
+  if (normalized.length <= _ddosSolverLogSnippetLength) return normalized;
+
+  return '${normalized.substring(0, _ddosSolverLogSnippetLength)}...';
+}
+
+class CaptchaAccessDeniedSolver implements ProtectionSolver {
+  CaptchaAccessDeniedSolver({
+    required this.contextProvider,
+    required this.cookieJar,
+  });
+
+  final ContextProvider contextProvider;
+  final LazyAsync<CookieJar> cookieJar;
+
+  late final _solver = RawSolver(
+    contextProvider: contextProvider,
+    cookieJar: cookieJar,
+    protectionType: 'captcha_access_denied',
+    protectionTitle: 'Solving CAPTCHA',
+    autoCookieValidator: (cookie) {
+      final cookieName = cookie.name.toLowerCase();
+
+      return cookieName == 'cf_clearance' || cookieName.contains('clearance');
     },
   );
 
@@ -366,60 +597,11 @@ class AftSolver implements ProtectionSolver {
   Future<bool> solve({
     required Uri uri,
     String? userAgent,
-  }) async {
-    // Before solving, clean up expired timestamp cookies
-    try {
-      final existingCookies = await (await cookieJar()).loadForRequest(uri);
-      if (existingCookies.isNotEmpty) {
-        final validCookies = existingCookies.where((cookie) {
-          // Keep non-timestamp cookies
-          if (!_maybeATimestamp(cookie.value)) {
-            return true;
-          }
-
-          // For timestamp cookies, only keep valid ones
-          final timestamp = int.tryParse(cookie.value);
-
-          // Check if the cookie is a valid timestamp
-          if (timestamp != null && _isValidTimestamp(timestamp)) {
-            return true;
-          }
-
-          // Otherwise, it's an expired timestamp cookie
-          return false;
-        }).toList();
-
-        // If we had to remove some cookies, update the jar
-        if (validCookies.length < existingCookies.length) {
-          await (await cookieJar()).saveFromResponse(uri, validCookies);
-        }
-      }
-    } catch (e) {
-      debugPrint('Cookie cleanup failed: $e');
-    }
-
-    return _solver.solve(
-      uri: uri,
-      userAgent: userAgent,
-    );
-  }
+  }) => _solver.solve(
+    uri: uri,
+    userAgent: userAgent,
+  );
 
   @override
   Future<void> cancel() => _solver.cancel();
-
-  /// Checks if a value is likely to be a Unix timestamp
-  bool _maybeATimestamp(String value) {
-    // Unix timestamps are typically 9-10 digits
-    if (value.length < 9 || value.length > 10) {
-      return false;
-    }
-
-    return true;
-  }
-
-  /// Checks if a timestamp is still valid (not expired)
-  bool _isValidTimestamp(int timestamp) {
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    return timestamp > now;
-  }
 }

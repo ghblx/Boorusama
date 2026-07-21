@@ -1,5 +1,6 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +27,7 @@ class QuickPreviewImageDialog extends ConsumerWidget {
     final gridThumbnailUrlBuilder = ref.watch(
       gridThumbnailUrlGeneratorProvider(config),
     );
-    final placeholderImageUrl = gridThumbnailUrlBuilder.generateUrl(
+    final placeholderMedia = gridThumbnailUrlBuilder.resolve(
       post,
       settings: ref.watch(gridThumbnailSettingsProvider(config)),
     );
@@ -35,23 +36,36 @@ class QuickPreviewImageDialog extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () => Navigator.of(context).pop(),
-      child: Scaffold(
-        backgroundColor: Colors.black54,
-        body: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: size.height * 0.85,
-              maxWidth: size.width * 0.85,
-            ),
-            child: RawPostDetailsImage(
-              imageUrlBuilder: (post) =>
-                  post.isVideo ? post.videoThumbnailUrl : post.sampleImageUrl,
-              thumbnailUrlBuilder: (post) => placeholderImageUrl,
-              imageCacheManager: ref.watch(
-                defaultImageCacheManagerProvider,
+      child: CallbackShortcuts(
+        bindings: {
+          const SingleActivator(LogicalKeyboardKey.escape): () =>
+              Navigator.of(context).pop(),
+        },
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
+            backgroundColor: Colors.black54,
+            body: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: size.height * 0.85,
+                  maxWidth: size.width * 0.85,
+                ),
+                child: RawPostDetailsImage(
+                  imageUrlBuilder: (post) => post.isVideo
+                      ? post.videoThumbnailUrl
+                      : post.sampleImageUrl,
+                  mediaAspectRatioBuilder: (post) => post.isVideo
+                      ? post.effectiveVideoThumbnailAspectRatio
+                      : post.effectiveSampleAspectRatio,
+                  placeholderMediaBuilder: (_) => placeholderMedia,
+                  imageCacheManager: ref.watch(
+                    defaultImageCacheManagerProvider,
+                  ),
+                  post: post,
+                  config: config,
+                ),
               ),
-              post: post,
-              config: config,
             ),
           ),
         ),

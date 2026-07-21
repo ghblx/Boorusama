@@ -1,6 +1,4 @@
 // Flutter imports:
-
-// Flutter imports:
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -57,6 +55,7 @@ class SimpleDownloadTile extends ConsumerWidget {
       url: task.task.url,
       thumbnailUrl: metadata.thumbnailUrl,
       siteUrl: metadata.siteUrl,
+      customIconUrl: metadata.profileIconUrl,
       fileSize: task.fileSize,
       networkSpeed: switch (task) {
         TaskStatusUpdate _ => null,
@@ -264,7 +263,7 @@ class _ModalOptions extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                title: Text(context.t.post.detail.share.image),
+                title: Text(context.t.post.detail.share.file),
                 onTap: () {
                   navigator.pop();
 
