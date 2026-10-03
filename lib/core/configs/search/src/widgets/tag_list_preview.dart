@@ -1,5 +1,6 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 class TagListPreview extends StatelessWidget {
   const TagListPreview({
@@ -13,7 +14,7 @@ class TagListPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return Container(
       padding: const EdgeInsets.symmetric(

@@ -1,18 +1,15 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:booru_clients/eshuushuu.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
 import 'package:intl/intl.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../core/configs/auth/widgets.dart';
 import '../../../core/configs/create/providers.dart';
 import '../../../core/configs/create/widgets.dart';
-import '../../../core/themes/theme/types.dart';
-import '../../../core/widgets/info_container.dart';
 import 'extra_data.dart';
 
 final _eshuushuuLoginClientProvider = Provider.autoDispose
@@ -56,7 +53,7 @@ class EshuushuuAuthView extends ConsumerWidget {
       children: [
         if (isLoggedIn && isExpired) ...[
           const SizedBox(height: 16),
-          WarningContainer(
+          KurumiWarningContainer(
             margin: const EdgeInsets.symmetric(horizontal: 12),
             title: context.t.generic.warning,
             contentBuilder: (context) => Text(context.t.auth.session_expired),
@@ -86,7 +83,7 @@ class EshuushuuAuthView extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary,
+          color: Kurumi.themeOf(context).colorScheme.primary,
         ),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -102,16 +99,16 @@ class EshuushuuAuthView extends ConsumerWidget {
               ),
               Row(
                 children: [
-                  RawChip(
-                    backgroundColor: Theme.of(
+                  KurumiMaterialRawChip(
+                    backgroundColor: Kurumi.themeOf(
                       context,
                     ).colorScheme.secondaryContainer,
                     onPressed: () => _showLoginSheet(context, ref),
                     label: Text(context.t.auth.relogin),
                   ),
                   const SizedBox(width: 8),
-                  RawChip(
-                    backgroundColor: Theme.of(
+                  KurumiMaterialRawChip(
+                    backgroundColor: Kurumi.themeOf(
                       context,
                     ).colorScheme.secondaryContainer,
                     onPressed: () {
@@ -129,10 +126,10 @@ class EshuushuuAuthView extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               '${context.t.auth.login_expires} ${_formatDate(expiry, context.t.$meta.locale.languageTag)}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              style: Kurumi.themeOf(context).textTheme.bodySmall?.copyWith(
                 color: expiry.isBefore(DateTime.now())
-                    ? Theme.of(context).colorScheme.error
-                    : Theme.of(context).colorScheme.hintColor,
+                    ? Kurumi.themeOf(context).colorScheme.error
+                    : Kurumi.themeOf(context).colorScheme.hintColor,
               ),
             ),
           ],
@@ -145,7 +142,7 @@ class EshuushuuAuthView extends ConsumerWidget {
     final configId = ref.read(editBooruConfigIdProvider);
     final configData = ref.read(editBooruConfigProvider(configId));
 
-    showModalBottomSheet(
+    Kurumi.showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) => Padding(
@@ -281,7 +278,7 @@ class _EshuushuuLoginSheetState extends ConsumerState<_EshuushuuLoginSheet> {
                 Text(
                   _errorMessage!,
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
+                    color: Kurumi.themeOf(context).colorScheme.error,
                   ),
                 ),
                 const SizedBox(height: 8),

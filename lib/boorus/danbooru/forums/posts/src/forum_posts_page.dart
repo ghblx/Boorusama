@@ -1,23 +1,21 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/widgets.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../core/configs/config/providers.dart';
 import '../../../../../core/forums/forum_post.dart';
 import '../../../../../core/text_markup/providers.dart';
-import '../../../../../core/themes/theme/types.dart';
 import '../../../../../foundation/url_launcher.dart';
 import '../../../configs/providers.dart';
+import '../../../text_markup/widgets.dart';
 import '../../../users/creator/providers.dart';
 import '../../../users/details/routes.dart';
 import '../../../users/details/types.dart';
 import '../../../users/user/types.dart';
-import '../../../text_markup/widgets.dart';
 import '../../topics/types.dart';
 import 'data/providers.dart';
 import 'types/forum_post.dart';
@@ -162,8 +160,12 @@ class _DanbooruForumPostsPageState
           ),
           DanbooruDTextBody(
             onLinkTap: !loginDetails.hasStrictSFW
-                ? (url, attributes, element) =>
-                      url != null ? launchExternalUrlString(url) : null
+                ? (url, attributes, element) => url != null
+                      ? launchExternalUrlString(
+                          url,
+                          launcher: ref.read(externalUrlLauncherProvider),
+                        )
+                      : null
                 : null,
             style: {
               'body': Style(
@@ -178,7 +180,7 @@ class _DanbooruForumPostsPageState
                 ),
                 border: Border(
                   left: BorderSide(
-                    color: Theme.of(context).colorScheme.hintColor,
+                    color: Kurumi.themeOf(context).colorScheme.hintColor,
                     width: 3,
                   ),
                 ),

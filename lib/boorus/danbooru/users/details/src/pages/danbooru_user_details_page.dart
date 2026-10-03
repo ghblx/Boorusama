@@ -1,14 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
 import '../../../../../../core/users/widgets.dart';
-import '../../../../../../core/widgets/widgets.dart';
 import '../../../../../../foundation/clipboard.dart';
 import '../../../../../../foundation/info/package_info.dart';
 import '../../../../dmails/routes.dart';
@@ -39,9 +37,9 @@ class DanbooruUserDetailsPage extends ConsumerWidget {
 
     return UserDetailsPage(
       actions: [
-        BooruPopupMenuButton(
+        KurumiPopupMenuButton(
           items: [
-            BooruPopupMenuItem(
+            KurumiPopupMenuItem(
               title: Text(context.t.profile.copy_user_id),
               onTap: () {
                 AppClipboard.copy(uid.toString());
@@ -142,10 +140,10 @@ class UserDetailsActionButtons extends ConsumerWidget {
           if (ref.watch(isDevEnvironmentProvider))
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(
+                backgroundColor: Kurumi.themeOf(
                   context,
                 ).colorScheme.secondaryContainer,
-                foregroundColor: Theme.of(
+                foregroundColor: Kurumi.themeOf(
                   context,
                 ).colorScheme.onSecondaryContainer,
               ),
@@ -155,8 +153,10 @@ class UserDetailsActionButtons extends ConsumerWidget {
           const SizedBox(width: 8),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-              foregroundColor: Theme.of(
+              backgroundColor: Kurumi.themeOf(
+                context,
+              ).colorScheme.secondaryContainer,
+              foregroundColor: Kurumi.themeOf(
                 context,
               ).colorScheme.onSecondaryContainer,
             ),

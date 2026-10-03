@@ -1,13 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../themes/theme/types.dart';
-import '../../../../widgets/dotted_border.dart';
 import '../routes/route_utils.dart';
 
 class AddCustomDetailsButton extends ConsumerWidget {
@@ -22,8 +19,8 @@ class AddCustomDetailsButton extends ConsumerWidget {
         horizontal: 12,
         vertical: 8,
       ),
-      child: DottedBorderButton(
-        borderColor: Theme.of(context).colorScheme.hintColor,
+      child: KurumiDottedBorderButton(
+        borderColor: Kurumi.themeOf(context).colorScheme.hintColor,
         onTap: () {
           goToDetailsLayoutManagerForFullWidgets(ref);
         },

@@ -1,5 +1,6 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../auth/widgets.dart';
@@ -60,7 +61,7 @@ class UnknownBooruWidgetsBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final hasCredentialFields = loginField != null || apiKeyField != null;
     final hasAdvancedOptions =
         hasCredentialFields ||

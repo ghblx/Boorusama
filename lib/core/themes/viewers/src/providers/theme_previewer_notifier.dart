@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../configs/appearance/types.dart';
@@ -11,7 +10,6 @@ import '../../../../settings/providers.dart';
 import '../../../colors/types.dart';
 import '../../../configs/types.dart' as configs;
 import '../../../configs/types.dart';
-import '../../../theme/types.dart';
 import '../widgets/theme_widgets.dart';
 
 class ThemePreviewerNotifier extends AutoDisposeNotifier<ThemePreviewerState> {
@@ -51,7 +49,7 @@ class ThemePreviewerNotifier extends AutoDisposeNotifier<ThemePreviewerState> {
           dynamicDarkScheme: dark,
           systemDarkMode: systemDarkMode,
         ) ??
-        staticBlackScheme;
+        KurumiColorSchemes.amoledDark;
 
     return ThemePreviewerState(
       colors: effectiveColors,

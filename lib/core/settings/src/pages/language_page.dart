@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../core/widgets/widgets.dart';
@@ -29,7 +28,9 @@ class LanguagePage extends ConsumerWidget {
     );
 
     return ConditionalParentWidget(
-      condition: !SettingsPageScope.of(context).options.dense,
+      condition:
+          !SettingsPageScope.of(context).options.dense &&
+          !SettingsPageScope.of(context).options.shellOwnsHeader,
       conditionalBuilder: (child) => Scaffold(
         appBar: AppBar(
           title: Text(context.t.settings.language.language),
@@ -54,7 +55,7 @@ class LanguagePage extends ConsumerWidget {
                 context.setLocaleLanguage(value);
               },
               child: RadioListTile(
-                activeColor: Theme.of(context).colorScheme.primary,
+                activeColor: Kurumi.themeOf(context).colorScheme.primary,
                 value: language,
                 title: Text(language.name),
               ),

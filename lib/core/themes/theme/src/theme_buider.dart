@@ -1,17 +1,15 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../configs/config/providers.dart';
 import '../../../premiums/providers.dart';
 import '../../../settings/providers.dart';
 import '../../colors/providers.dart';
-import '../../colors/widgets.dart';
+import '../../colors/types.dart';
 import '../../configs/types.dart';
-import 'app_theme.dart';
 
 class ThemeBuilder extends ConsumerWidget {
   const ThemeBuilder({
@@ -35,56 +33,51 @@ class ThemeBuilder extends ConsumerWidget {
     final systemDarkMode =
         MediaQuery.platformBrightnessOf(context) == Brightness.dark;
 
-    return AppDynamicColorBuilder(
-      builder: (lightOrigin, darkOrigin) {
-        final (light, dark) = enableDynamicColor
-            ? (lightOrigin, darkOrigin)
-            : (null, null);
+    final dynamicColors = ref.watch(dynamicColorSchemesProvider);
+    final (light, dark) = enableDynamicColor
+        ? (dynamicColors.light, dynamicColors.dark)
+        : (null, null);
 
-        final customColorScheme = hasPremium
-            ? (ref.watchThemeConfigs?.enable ?? false)
-                  ? getSchemeFromColorSettings(
-                      ref.watchThemeConfigs?.colors,
-                      dynamicDarkScheme: dark,
-                      dynamicLightScheme: light,
-                      systemDarkMode: systemDarkMode,
-                    )
-                  : getSchemeFromColorSettings(
-                      colors,
-                      dynamicDarkScheme: dark,
-                      dynamicLightScheme: light,
-                      systemDarkMode: systemDarkMode,
-                    )
-            : null;
+    final customColorScheme = hasPremium
+        ? (ref.watchThemeConfigs?.enable ?? false)
+              ? getSchemeFromColorSettings(
+                  ref.watchThemeConfigs?.colors,
+                  dynamicDarkScheme: dark,
+                  dynamicLightScheme: light,
+                  systemDarkMode: systemDarkMode,
+                )
+              : getSchemeFromColorSettings(
+                  colors,
+                  dynamicDarkScheme: dark,
+                  dynamicLightScheme: light,
+                  systemDarkMode: systemDarkMode,
+                )
+        : null;
 
-        final scheme =
-            customColorScheme ??
-            AppTheme.generateScheme(
-              theme,
-              dynamicDarkScheme: dark,
-              dynamicLightScheme: light,
-              systemDarkMode: systemDarkMode,
-            );
-
-        return Builder(
-          builder: (context) => ProviderScope(
-            overrides: [
-              dynamicColorSupportProvider.overrideWithValue(
-                lightOrigin != null && darkOrigin != null,
-              ),
-              colorSchemeProvider.overrideWithValue(scheme),
-            ],
-            child: builder(
-              AppTheme.themeFrom(
-                customColorScheme != null ? null : theme,
-                colorScheme: scheme,
-                systemDarkMode: systemDarkMode,
-              ),
-              theme.toSystem(),
-            ),
-          ),
+    final scheme =
+        customColorScheme ??
+        Kurumi.generateColorScheme(
+          theme,
+          dynamicLightScheme: light,
+          dynamicDarkScheme: dark,
+          systemDarkMode: systemDarkMode,
         );
-      },
+
+    return ProviderScope(
+      overrides: [
+        dynamicColorSupportProvider.overrideWithValue(
+          dynamicColors.light != null && dynamicColors.dark != null,
+        ),
+        colorSchemeProvider.overrideWithValue(scheme),
+      ],
+      child: builder(
+        Kurumi.themeFrom(
+          customColorScheme != null ? null : theme,
+          colorScheme: scheme,
+          systemDarkMode: systemDarkMode,
+        ).withBoorusamaColors(),
+        theme.toSystem(),
+      ),
     );
   }
 }

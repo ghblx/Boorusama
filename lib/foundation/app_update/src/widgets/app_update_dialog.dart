@@ -1,15 +1,15 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../url_launcher.dart';
 import '../types/update_status.dart';
 
-class AppUpdateDialog extends StatelessWidget {
+class AppUpdateDialog extends ConsumerWidget {
   const AppUpdateDialog({
     required this.status,
     super.key,
@@ -18,8 +18,8 @@ class AppUpdateDialog extends StatelessWidget {
   final UpdateAvailable status;
 
   @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textTheme = Kurumi.themeOf(context).textTheme;
 
     return Dialog(
       child: Padding(
@@ -83,7 +83,9 @@ class AppUpdateDialog extends StatelessWidget {
               children: [
                 TextButton(
                   style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    foregroundColor: Kurumi.themeOf(
+                      context,
+                    ).colorScheme.onSurface,
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
@@ -93,7 +95,10 @@ class AppUpdateDialog extends StatelessWidget {
                 const SizedBox(width: 16),
                 FilledButton(
                   onPressed: () {
-                    launchExternalUrlString(status.storeUrl);
+                    launchExternalUrlString(
+                      status.storeUrl,
+                      launcher: ref.read(externalUrlLauncherProvider),
+                    );
                     Navigator.of(context).pop();
                   },
                   child: Text(context.t.app_update.update),
@@ -116,7 +121,7 @@ class _VersionChangeVisualizedText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 

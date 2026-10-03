@@ -1,53 +1,91 @@
 // Dart imports:
 import 'dart:async';
 
-// Flutter imports:
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gal/gal.dart';
+import 'package:kurumi/cupertino.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
+import '../../../foundation/loggers.dart';
 import '../../../foundation/media_scanner.dart';
 import '../../../foundation/path.dart' as path;
 import '../../../foundation/platform.dart';
-import '../../../foundation/toast.dart';
 import '../../configs/config/providers.dart';
 import '../../ddos/handler/providers.dart';
+import '../../ddos/solver/types.dart';
 import '../../download_manager/providers.dart';
+import '../downloader/types.dart' show DownloaderMetadata;
+import '../sidecar/data.dart';
+import '../sidecar/providers.dart';
 import 'types.dart';
 
-class BackgroundDownloaderScope extends ConsumerStatefulWidget {
-  const BackgroundDownloaderScope({
-    required this.onTapNotification,
+class BackgroundDownloadRuntime extends ConsumerStatefulWidget {
+  const BackgroundDownloadRuntime({
     required this.child,
     super.key,
   });
 
   final Widget child;
-  final void Function(Task task, NotificationType notificationType)
-  onTapNotification;
-
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _BackgroundDownloaderScopeState();
+  ConsumerState<BackgroundDownloadRuntime> createState() =>
+      _BackgroundDownloadRuntimeState();
 }
 
-class _BackgroundDownloaderScopeState
-    extends ConsumerState<BackgroundDownloaderScope> {
+class _BackgroundDownloadRuntimeState
+    extends ConsumerState<BackgroundDownloadRuntime> {
+  final _attempts = <String, ProtectionAttempt>{};
+
   late StreamSubscription<TaskUpdate> downloadUpdates;
 
-  void _update(TaskUpdate update) {
+  Future<void> _update(TaskUpdate update) async {
     if (update case TaskStatusUpdate()) {
+      // Includes undelivered native completion updates replayed after restart.
+      // The headless callback handles completion while the app is not running.
+      try {
+        if (DownloaderMetadata.fromJsonString(update.task.metaData).sidecarId !=
+            null) {
+          final store = await ref.read(sidecarStoreProvider.future);
+          await finishDownloadSidecar(update, store: store);
+        }
+      } catch (error) {
+        ref
+            .read(loggerProvider)
+            .error(
+              'Download',
+              'Metadata finalization failed: ${error.runtimeType}',
+              sensitiveMessage: error.toString(),
+            );
+      }
+      final attempt = _attempts.putIfAbsent(
+        update.task.taskId,
+        () => ref
+            .read(httpDdosProtectionBypassProvider)
+            .beginAttempt(
+              Uri.parse(update.task.url),
+              ProtectionSource.download,
+            ),
+      );
+      attempt.record(
+        DownloadStatusObserved(
+          taskId: update.task.taskId,
+          status: update.status.name,
+          httpStatus: TaskErrorAdapter(update).response.statusCode,
+          errorType: update.exception?.runtimeType.toString(),
+          retries: attempt.retries,
+        ),
+        sensitive: ProtectionRequestDetails(Uri.parse(update.task.url)),
+      );
+      attempt.observeHeaders(update.task.headers);
       if (update.status case TaskStatus.complete) {
         WidgetsBinding.instance.addPostFrameCallback(
           (_) async {
             final path = await update.task.filePath();
-            if (isAndroid()) {
+            final platform = ref.read(appPlatformProvider);
+            if (platform.isAndroid) {
               await MediaScanner.loadMedia(path: path);
-            } else if (isIOS()) {
+            } else if (platform.isIOS) {
               try {
                 final hasAccess = await Gal.hasAccess(toAlbum: true);
                 if (!hasAccess) {
@@ -62,71 +100,73 @@ class _BackgroundDownloaderScopeState
         );
       } else if (update.status case TaskStatus.notFound) {
         // retry 404 url
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) {
-            var willRetry = false;
-            try {
-              final config = ref.readConfigAuth;
+        var willRetry = false;
+        try {
+          final config = ref.readConfigAuth;
 
-              if (config.booruType.hasUnknownFullImageUrl) {
-                willRetry = true;
-                // retry after 1 second
-                Future.delayed(
-                  const Duration(seconds: 1),
-                  () {
-                    final ext = path.extension(update.task.url);
-                    final newExt = switch (ext.toLowerCase()) {
-                      '.jpg' => '.png',
-                      '.png' => '.webp',
-                      _ => '.jpg',
-                    };
+          if (config.booruType.hasUnknownFullImageUrl) {
+            willRetry = true;
+            await Future<void>.delayed(const Duration(seconds: 1));
+            final ext = path.extension(update.task.url);
+            final newExt = switch (ext.toLowerCase()) {
+              '.jpg' => '.png',
+              '.png' => '.webp',
+              _ => '.jpg',
+            };
 
-                    final newUrl =
-                        removeFileExtension(update.task.url) + newExt;
-                    final newFileName =
-                        removeFileExtension(update.task.filename) + newExt;
+            final newUrl = removeFileExtension(update.task.url) + newExt;
+            final newFileName =
+                removeFileExtension(update.task.filename) + newExt;
 
-                    final newTask = update.task.copyWith(
-                      url: newUrl,
-                      filename: newFileName,
-                    );
+            final newTask = update.task.copyWith(
+              url: newUrl,
+              filename: newFileName,
+            );
 
-                    FileDownloader().enqueue(newTask);
-                  },
-                );
-              }
-            } catch (e) {
-              // do nothing
-            }
+            await FileDownloader().enqueue(newTask);
+          }
+        } catch (_) {
+          willRetry = false;
+        }
 
-            if (!willRetry) {
-              _showDownloadFailedToast(update);
-            }
-          },
-        );
-      } else if (update.status case TaskStatus.failed) {
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          final handled = await ref
-              .read(httpDdosProtectionBypassProvider)
-              .handleError(TaskErrorAdapter(update));
-          if (handled) {
+        if (willRetry) return;
+      } else if (update.status == TaskStatus.failed) {
+        final handled = await ref
+            .read(httpDdosProtectionBypassProvider)
+            .handleError(TaskErrorAdapter(update), attempt: attempt);
+        if (handled) {
+          attempt.record(const RetryPreparationStarted());
+          try {
             ref.invalidate(bypassDdosHeadersProvider);
             final headers = await ref.read(
               bypassDdosHeadersProvider(update.task.url).future,
             );
-            await FileDownloader().retryTask(
+            attempt.retries++;
+            attempt.record(RetryDispatched(attempt.retries));
+            final enqueued = await FileDownloader().retryTask(
               update.task,
-              headers: headers,
+              bypassHeaders: headers,
+              onPrepared: attempt.observeHeaders,
             );
-          } else {
-            _showDownloadFailedToast(update);
+            attempt.record(RetryEnqueued(enqueued));
+            if (!enqueued) _attempts.remove(update.task.taskId);
+            return;
+          } catch (error) {
+            attempt.record(
+              ProtectionOperationFailed(
+                ProtectionOperation.enqueueRetry,
+                error.runtimeType.toString(),
+              ),
+            );
+            _attempts.remove(update.task.taskId);
+            rethrow;
           }
-        });
+        }
       }
+      if (update.status.isFinalState) _attempts.remove(update.task.taskId);
     }
 
-    ref.read(downloadTaskUpdatesProvider.notifier).addOrUpdate(update);
-    ref.read(downloadTaskStreamControllerProvider).add(update);
+    ref.read(downloadTaskEventIngressProvider).publish(update);
   }
 
   @override
@@ -137,36 +177,19 @@ class _BackgroundDownloaderScopeState
 
     FileDownloader().addTaskQueue(tq);
 
-    FileDownloader()
-        .registerCallbacks(
-          taskNotificationTapCallback: myNotificationTapCallback,
-        )
-        .configureNotificationForGroup(
-          FileDownloader.defaultGroup,
-          running: const TaskNotification(
-            '{filename}',
-            '{progress}',
-          ),
-          complete: const TaskNotification(
-            '{filename}',
-            'completed',
-          ),
-          error: const TaskNotification(
-            '{filename}',
-            'failed',
-          ),
-          progressBar: true,
-        );
-
+    ref
+        .read(loggerProvider)
+        .info('Download', 'backend configured androidCronet=true');
     FileDownloader().configure(
       globalConfig: (
         Config.holdingQueue,
         (5, null, null),
       ),
+      androidConfig: (Config.useCronet, true),
     );
 
     downloadUpdates = FileDownloader().updates.listen((update) {
-      _update(update);
+      unawaited(_update(update));
     });
   }
 
@@ -174,25 +197,23 @@ class _BackgroundDownloaderScopeState
   void dispose() {
     super.dispose();
     downloadUpdates.cancel();
+    _attempts.clear();
     FileDownloader().resetUpdates();
-  }
-
-  void myNotificationTapCallback(Task task, NotificationType notificationType) {
-    widget.onTapNotification(task, notificationType);
-  }
-
-  void _showDownloadFailedToast(TaskStatusUpdate update) {
-    if (!mounted) return;
-
-    showErrorToast(
-      context,
-      'Download failed: ${update.task.filename}',
-      duration: const Duration(seconds: 5),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(sidecarRecoveryProvider, (_, next) {
+      if (next case AsyncError(:final error)) {
+        ref
+            .read(loggerProvider)
+            .error(
+              'Download',
+              'Metadata recovery failed: ${error.runtimeType}',
+              sensitiveMessage: error.toString(),
+            );
+      }
+    });
     return widget.child;
   }
 }

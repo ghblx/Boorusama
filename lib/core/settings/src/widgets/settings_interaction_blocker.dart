@@ -1,15 +1,13 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../foundation/html.dart';
 import '../../../configs/config/providers.dart';
 import '../../../configs/create/routes.dart';
-import '../../../widgets/widgets.dart';
 import '../providers/listing_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/viewer_providers.dart';
@@ -33,7 +31,7 @@ class SettingsInteractionBlocker extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GrayedOut(
+        KurumiGrayedOut(
           grayedOut: block,
           child: child,
         ),
@@ -50,7 +48,7 @@ class SettingsInteractionBlocker extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 8),
                   child: Icon(
                     Icons.info,
-                    color: Theme.of(context).colorScheme.error,
+                    color: Kurumi.themeOf(context).colorScheme.error,
                   ),
                 ),
                 Expanded(
@@ -79,7 +77,7 @@ class ListingSettingsInteractionBlocker extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasCustomListing = ref.watch(hasCustomListingSettingsProvider);
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final config = ref.watchConfig;
 
     return SettingsInteractionBlocker(
@@ -120,7 +118,7 @@ class ViewerSettingsInteractionBlocker extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasCustomViewer = ref.watch(hasCustomViewerSettingsProvider);
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final config = ref.watchConfig;
 
     return SettingsInteractionBlocker(
@@ -168,7 +166,7 @@ class ThemeSettingsInteractionBlocker extends ConsumerWidget {
       block: hasCustomTheme,
       description: AppHtml(
         data: context.t.booru.appearance.overridden_notice,
-        style: AppHtml.hintStyle(Theme.of(context).colorScheme),
+        style: AppHtml.hintStyle(Kurumi.themeOf(context).colorScheme),
         onLinkTap: (url, _, _) {
           if (url == 'booru-profiles') {
             goToUpdateBooruConfigPage(

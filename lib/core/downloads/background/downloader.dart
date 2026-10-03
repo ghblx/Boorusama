@@ -1,5 +1,4 @@
 // Dart imports:
-import 'dart:async';
 import 'dart:io';
 
 // Package imports:
@@ -14,23 +13,23 @@ import '../../../foundation/loggers.dart';
 import '../../ddos/solver/types.dart';
 import '../downloader/types.dart';
 import '../path/types.dart';
+import '../sidecar/data.dart';
 import 'file_downloader_ex.dart';
-import 'notification.dart';
 
 class BackgroundDownloader implements DownloadService {
   const BackgroundDownloader({
     this.videoCacheManager,
-    this.downloadNotifications,
     this.androidSdkInt,
     this.logger,
     required this.fs,
+    required this.sidecarStore,
   });
 
   final VideoCacheManager? videoCacheManager;
-  final DownloadNotifications? downloadNotifications;
   final int? androidSdkInt;
   final Logger? logger;
   final AppFileSystem fs;
+  final Future<SidecarStore> sidecarStore;
 
   @override
   Future<DownloadResult> download(DownloadOptions options) async {
@@ -116,16 +115,7 @@ class BackgroundDownloader implements DownloadService {
     required DownloadOptions options,
   }) async {
     try {
-      final cacheResult = await _tryDownloadFromCache(
-        targetDir: targetDir,
-        options: options,
-      );
-
-      if (cacheResult case final result?) {
-        return result;
-      }
-
-      final task = DownloadTask(
+      var task = DownloadTask(
         url: options.url,
         filename: _sanitizeFilename(
           options.filename,
@@ -138,19 +128,62 @@ class BackgroundDownloader implements DownloadService {
         metaData: options.metadata?.toJsonString() ?? '',
         headers: options.headers,
         group: options.metadata?.group ?? FileDownloader.defaultGroup,
+        requiresWiFi: options.networkConstraint.requiresWiFi,
       );
+
+      SidecarStore? sidecars;
+      if (options.sidecar case final snapshot?) {
+        final path = await task.filePath();
+        if ((options.skipIfExists ?? false) && fs.fileExistsSync(path)) {
+          return DownloadSkipped(DownloadTaskInfo(path: path, id: task.taskId));
+        }
+        sidecars = await sidecarStore;
+        await sidecars.prepare(task.taskId, path, snapshot);
+        task = task.copyWith(
+          metaData: DownloaderMetadata.fromJson({
+            ...?options.metadata?.toJson(),
+            'sidecarId': task.taskId,
+          }).toJsonString(),
+          options: TaskOptions(onTaskFinished: onBackgroundSidecarFinished),
+        );
+      }
+
+      final cacheResult = await _tryDownloadFromCache(
+        targetDir: targetDir,
+        options: options,
+      );
+      if (cacheResult case final result?) {
+        if (sidecars != null) {
+          if (result case DownloadCompleted(:final info)) {
+            try {
+              await sidecars.complete(task.taskId, info.path);
+            } catch (error) {
+              logger?.error(
+                'BackgroundDownloader',
+                'Metadata finalization failed: ${error.runtimeType}',
+                sensitiveMessage: error.toString(),
+              );
+            }
+          } else {
+            await sidecars.discard(task.taskId);
+          }
+        }
+        return result;
+      }
 
       _log(
         'Starting download: ${options.url} to $targetDir/${options.filename}',
       );
 
-      final info = await FileDownloader().enqueueIfNeeded(
+      final result = await FileDownloader().enqueueIfNeeded(
         task,
         skipIfExists: options.skipIfExists,
         fs: fs,
       );
-
-      return DownloadSuccess(info);
+      if (sidecars != null && result is! DownloadEnqueued) {
+        await sidecars.discard(task.taskId);
+      }
+      return result;
     } on FileSystemException catch (e) {
       return DownloadFailure(
         FileSystemDownloadError(
@@ -180,7 +213,7 @@ class BackgroundDownloader implements DownloadService {
       final cachedPath = await vcm.getCachedVideoPath(options.url);
       if (cachedPath case final cp?) {
         try {
-          final info = await _copyCachedContentToTarget(
+          final result = await _copyCachedContentToTarget(
             cp,
             targetDir,
             options.filename,
@@ -189,7 +222,7 @@ class BackgroundDownloader implements DownloadService {
           _log(
             'Downloaded from video cache: ${options.url} to $targetDir/${options.filename}',
           );
-          return DownloadSuccess(info);
+          return result;
         } catch (e) {
           // Fall back to normal download if cache copy fails
         }
@@ -240,7 +273,7 @@ class BackgroundDownloader implements DownloadService {
     );
   }
 
-  Future<DownloadTaskInfo> _copyCachedContentToTarget(
+  Future<DownloadResult> _copyCachedContentToTarget(
     String cachedPath,
     String targetDir,
     String filename,
@@ -259,47 +292,23 @@ class BackgroundDownloader implements DownloadService {
 
     // Check if target file already exists
     if ((skipIfExists ?? false) && fs.fileExistsSync(targetPath)) {
-      // Show completion notification for existing file
-      if (downloadNotifications case final notifications?) {
-        unawaited(
-          notifications
-              .showDownloadCompleteNotification(
-                filename,
-                fromCache: true,
-                customMessage: '$filename was already saved from cache',
-              )
-              .catchError((e) {
-                // Ignore notification errors
-              }),
-        );
-      }
-
-      return DownloadTaskInfo(
-        path: targetPath,
-        id: 'cached_${DateTime.now().millisecondsSinceEpoch}',
+      return DownloadSkipped(
+        DownloadTaskInfo(
+          path: targetPath,
+          id: 'existing_${DateTime.now().millisecondsSinceEpoch}',
+        ),
       );
     }
 
     // Copy cached file to target location
     await fs.copyFile(cachedPath, targetPath);
 
-    // Show completion notification for successful copy
-    if (downloadNotifications case final notifications?) {
-      unawaited(
-        notifications
-            .showDownloadCompleteNotification(
-              filename,
-              fromCache: true,
-            )
-            .catchError((e) {
-              // Ignore notification errors
-            }),
-      );
-    }
-
-    return DownloadTaskInfo(
-      path: targetPath,
-      id: 'cached_${DateTime.now().millisecondsSinceEpoch}',
+    return DownloadCompleted(
+      DownloadTaskInfo(
+        path: targetPath,
+        id: 'cached_${DateTime.now().millisecondsSinceEpoch}',
+      ),
+      source: DownloadCompletionSource.cache,
     );
   }
 

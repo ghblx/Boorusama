@@ -1,20 +1,18 @@
 // Flutter imports:
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:kurumi/cupertino.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../core/widgets/widgets.dart';
 import '../../../../foundation/info/app_info.dart';
 import '../../../../foundation/info/package_info.dart';
-import '../../../../foundation/scrolling.dart';
-import '../../../../foundation/toast.dart';
 import '../../../../foundation/url_launcher.dart';
 import '../../../analytics/providers.dart';
 import '../../../boorus/engine/providers.dart';
@@ -23,14 +21,19 @@ import '../../../changelogs/routes.dart';
 import '../../../configs/config/providers.dart';
 import '../../../configs/create/routes.dart';
 import '../../../debug/routes.dart';
+import '../../../developer_options/l10n.dart';
+import '../../../developer_options/widgets.dart';
 import '../../../premiums/providers.dart';
 import '../../../premiums/routes.dart';
 import '../../../premiums/types.dart';
-import '../../../themes/theme/types.dart';
+import '../providers/settings_navigation_provider.dart';
 import '../providers/settings_provider.dart';
+import '../routes/settings_adaptive_page.dart';
+import '../types/settings_navigation_state.dart';
 import '../widgets/settings_page_scaffold.dart';
 import 'about_page.dart';
 import 'accessibility_page.dart';
+import 'app_lock_settings_page.dart';
 import 'appearance/appearance_page.dart';
 import 'backup_and_restore_page.dart';
 import 'data_and_storage_page.dart';
@@ -41,7 +44,10 @@ import 'language_page.dart';
 import 'privacy_page.dart';
 import 'search_settings_page.dart';
 
-List<SettingEntry> _entries(BuildContext context) => [
+List<SettingEntry> _entries(
+  BuildContext context, {
+  required bool showDeveloperOptions,
+}) => [
   SettingEntry(
     id: 'appearance',
     name: '/settings/appearance',
@@ -105,11 +111,48 @@ List<SettingEntry> _entries(BuildContext context) => [
     icon: FontAwesomeIcons.shieldHalved,
     content: const PrivacyPage(),
   ),
+  if (showDeveloperOptions)
+    SettingEntry(
+      id: 'developer_options',
+      name: '/settings/developer_options',
+      title: context.t.developerOptions.title,
+      icon: FontAwesomeIcons.code,
+      content: const DeveloperOptionsPage(),
+    ),
 ];
 
-const double _kThresholdWidth = 650;
+Map<String, SettingEntry> _destinations(
+  BuildContext context,
+  List<SettingEntry> entries,
+) {
+  final appLock = context.t.settings.privacy.app_lock;
+  return {
+    for (final entry in entries) entry.id: entry,
+    'app_lock': SettingEntry(
+      id: 'app_lock',
+      parentId: 'privacy',
+      name: '/settings/privacy/app_lock',
+      title: appLock.title,
+      icon: Icons.lock,
+      content: const AppLockSettingsPage(),
+    ),
+  };
+}
 
-class SettingsPage extends StatefulWidget {
+SettingsDestinationCatalog _destinationCatalog(
+  List<SettingEntry> entries,
+  Map<String, SettingEntry> destinations,
+) => SettingsDestinationCatalog(
+  categoryIds: entries.map((entry) => entry.id),
+  parentById: {
+    for (final entry in destinations.values) entry.id: ?entry.parentId,
+  },
+);
+
+const double _kSettingsWideBreakpoint = 700;
+const double _kSettingsSidebarWidth = 280;
+
+class SettingsPage extends ConsumerWidget {
   const SettingsPage({
     super.key,
     this.scrollTo,
@@ -120,61 +163,40 @@ class SettingsPage extends StatefulWidget {
   final String? initial;
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends State<SettingsPage> {
-  final _selected = ValueNotifier<String?>(null);
-
-  @override
-  Widget build(BuildContext context) {
-    final entries = _entries(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final entries = _entries(
+      context,
+      showDeveloperOptions: ref.watch(isDevEnvironmentProvider),
+    );
+    final destinations = _destinations(context, entries);
+    final catalog = _destinationCatalog(entries, destinations);
 
     return Theme(
-      data: Theme.of(context).copyWith(
-        iconTheme: Theme.of(context).iconTheme.copyWith(
+      data: Kurumi.themeOf(context).copyWith(
+        iconTheme: Kurumi.themeOf(context).iconTheme.copyWith(
           size: 18,
         ),
       ),
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(context.t.settings.settings),
-        ),
         body: SettingsPageDynamicScope(
-          options: SettingsPageDynamicOptions(
-            scrollTo: widget.scrollTo,
-          ),
+          options: SettingsPageDynamicOptions(scrollTo: scrollTo),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              //TODO: Don't separate the settings page into two pages, merge them into one to prevent code duplication and unnecessary rebuilds when resizing the window
-              return constraints.maxWidth > _kThresholdWidth
-                  ? SettingsPageScope(
-                      options: SettingsPageOptions(
-                        showIcon: false,
-                        dense: true,
-                        entries: entries,
-                      ),
-                      child: ValueListenableBuilder(
-                        valueListenable: _selected,
-                        builder: (_, selected, _) => SettingsLargePage(
-                          initial: selected ?? widget.initial,
-                          onTabChanged: (tab) => _selected.value = tab,
-                        ),
-                      ),
-                    )
-                  : SettingsPageScope(
-                      options: SettingsPageOptions(
-                        showIcon: true,
-                        dense: false,
-                        entries: entries,
-                      ),
-                      child: ValueListenableBuilder(
-                        valueListenable: _selected,
-                        builder: (_, selected, _) => SettingsSmallPage(
-                          initial: selected ?? widget.initial,
-                        ),
-                      ),
-                    );
+              final wide = constraints.maxWidth >= _kSettingsWideBreakpoint;
+              return ProviderScope(
+                overrides: [
+                  settingsDestinationCatalogProvider.overrideWithValue(
+                    catalog,
+                  ),
+                ],
+                child: _SettingsAdaptiveShell(
+                  wide: wide,
+                  initial: initial,
+                  entries: entries,
+                  destinations: destinations,
+                  scrollTo: scrollTo,
+                ),
+              );
             },
           ),
         ),
@@ -183,232 +205,474 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 }
 
-class SettingsSmallPage extends ConsumerStatefulWidget {
-  const SettingsSmallPage({
-    super.key,
-    this.initial,
+class _SettingsAdaptiveShell extends ConsumerStatefulWidget {
+  const _SettingsAdaptiveShell({
+    required this.wide,
+    required this.initial,
+    required this.entries,
+    required this.destinations,
+    required this.scrollTo,
   });
 
+  final bool wide;
   final String? initial;
+  final List<SettingEntry> entries;
+  final Map<String, SettingEntry> destinations;
+  final String? scrollTo;
 
   @override
-  ConsumerState<SettingsSmallPage> createState() => _SettingsSmallPageState();
+  ConsumerState<_SettingsAdaptiveShell> createState() =>
+      _SettingsAdaptiveShellState();
 }
 
-class _SettingsSmallPageState extends ConsumerState<SettingsSmallPage> {
-  final scrollController = ScrollController();
+class _SettingsAdaptiveShellState
+    extends ConsumerState<_SettingsAdaptiveShell> {
+  final _hostIdentity = Object();
+  final _contentNavigatorKey = GlobalKey<NavigatorState>();
+  final _compactIndexScrollController = ScrollController();
+  final _sidebarScrollController = ScrollController();
+  late final SettingsNavigationSeed _seed;
+  var _compactScrollHandled = false;
+  var _sidebarScrollHandled = false;
+  var _closing = false;
 
   @override
   void initState() {
     super.initState();
-    final initial = widget.initial;
+    final catalog = ref.read(settingsDestinationCatalogProvider);
+    _seed = SettingsNavigationSeed(
+      hostIdentity: _hostIdentity,
+      initialPath: resolveSettingsInitialPath(
+        catalog: catalog,
+        presentation: widget.wide
+            ? SettingsPresentation.wide
+            : SettingsPresentation.compact,
+        initialDestination: widget.initial,
+      ).where(widget.destinations.containsKey),
+    );
+  }
 
-    if (initial != null) {
+  @override
+  Widget build(BuildContext context) {
+    final wide = widget.wide;
+    final entries = widget.entries;
+    final destinations = widget.destinations;
+    final navigation = ref.watch(settingsNavigationProvider(_seed));
+    final notifier = ref.read(settingsNavigationProvider(_seed).notifier);
+    final options = SettingsPageOptions(
+      showIcon: true,
+      dense: wide,
+      entries: entries,
+      shellOwnsHeader: true,
+    );
+    final applicationNavigator = Navigator.of(context);
+
+    void closeHost() {
+      if (_closing) return;
+      setState(() => _closing = true);
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // open the initial page
-        final entry = _findInitialPage(initial);
+        if (mounted) applicationNavigator.maybePop();
+      });
+    }
 
-        if (entry != null) {
-          Navigator.of(context).push(
-            CupertinoPageRoute(
-              settings: RouteSettings(
-                name: entry.name,
-              ),
-              builder: (_) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    void openContent(BuildContext _, SettingEntry entry) {
+      notifier.openNested(entry.id);
+    }
+
+    _handleRequestedScroll(wide: wide);
+
+    return SettingsPageNavigationScope(
+      openContent: openContent,
+      applicationNavigator: applicationNavigator,
+      child: SettingsPageScope(
+        options: options,
+        child: _SettingsPresentationScope(
+          wide: wide,
+          child: CallbackShortcuts(
+            bindings: {
+              const SingleActivator(LogicalKeyboardKey.escape): closeHost,
+            },
+            child: PopScope<void>(
+              canPop: _closing || !navigation.canGoBack,
+              onPopInvokedWithResult: (didPop, result) {
+                if (!didPop && navigation.canGoBack) notifier.back();
+              },
+              child: Row(
                 children: [
-                  Expanded(
-                    child: SettingsPageScope(
-                      options: SettingsPageScope.of(context).options,
-                      child: entry.content,
-                    ),
+                  SizedBox(
+                    width: wide ? _kSettingsSidebarWidth : 0,
+                    child: wide
+                        ? _SettingsSidebar(
+                            entries: entries,
+                            selectedId: navigation.selectedCategoryId,
+                            scrollController: _sidebarScrollController,
+                            onSelected: (entry) {
+                              final alreadySelected =
+                                  navigation.selectedCategoryId == entry.id &&
+                                  navigation.path.length == 1;
+                              notifier.selectCategory(entry.id);
+                              if (!alreadySelected) {
+                                ref
+                                    .read(analyticsProvider)
+                                    .whenData(
+                                      (a) => a?.logScreenView(entry.name),
+                                    );
+                              }
+                            },
+                          )
+                        : const SizedBox.shrink(),
                   ),
-                  const WidthThresholdPopper(
-                    targetWidth: _kThresholdWidth,
+                  if (wide) const VerticalDivider(width: 1),
+                  Expanded(
+                    child: Navigator(
+                      key: _contentNavigatorKey,
+                      pages: _destinationPages(
+                        context: context,
+                        wide: wide,
+                        navigation: navigation,
+                        destinations: destinations,
+                        entries: entries,
+                        options: options,
+                        notifier: notifier,
+                        applicationNavigator: applicationNavigator,
+                        closeHost: closeHost,
+                      ),
+                      onDidRemovePage: (page) {
+                        final currentId = ref
+                            .read(settingsNavigationProvider(_seed))
+                            .currentDestinationId;
+                        if (page.key == ValueKey('settings-$currentId')) {
+                          notifier.back();
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
-          );
-        }
-      });
-    }
+          ),
+        ),
+      ),
+    );
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  List<Page<void>> _destinationPages({
+    required BuildContext context,
+    required bool wide,
+    required SettingsNavigationState navigation,
+    required Map<String, SettingEntry> destinations,
+    required List<SettingEntry> entries,
+    required SettingsPageOptions options,
+    required SettingsNavigationNotifier notifier,
+    required NavigatorState applicationNavigator,
+    required VoidCallback closeHost,
+  }) {
+    final reduceAnimations =
+        MediaQuery.disableAnimationsOf(context) ||
+        ref.watch(
+          settingsProvider.select((settings) => settings.reduceAnimations),
+        );
+    final pages = <Page<void>>[
+      _settingsPage(
+        id: 'index',
+        wide: wide,
+        reduceAnimations: reduceAnimations,
+        child: _SettingsDestinationFrame(
+          title: context.t.settings.settings,
+          onBack: closeHost,
+          onClose: closeHost,
+          child: _SettingsIndexContent(
+            entries: entries,
+            scrollController: _compactIndexScrollController,
+            onSelected: (entry) {
+              notifier.selectCategory(entry.id);
+              ref
+                  .read(analyticsProvider)
+                  .whenData((a) => a?.logScreenView(entry.name));
+            },
+          ),
+        ),
+      ),
+    ];
 
-    final scrollTo = SettingsPageDynamicScope.of(context).options.scrollTo;
-
-    if (scrollTo != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (scrollTo == 'support') {
-          scrollController.animateToWithAccessibility(
-            scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeInOut,
-            reduceAnimations: ref.read(settingsProvider).reduceAnimations,
-          );
-        }
-      });
+    for (var index = 0; index < navigation.path.length; index++) {
+      final id = navigation.path[index];
+      final entry = destinations[id];
+      if (entry == null) continue;
+      pages.add(
+        _settingsPage(
+          id: id,
+          wide: wide,
+          reduceAnimations: reduceAnimations,
+          child: SettingsPageScope(
+            options: options,
+            child: SettingsPageNavigationScope(
+              openContent: (_, nested) => notifier.openNested(nested.id),
+              applicationNavigator: applicationNavigator,
+              child: _SettingsDestinationFrame(
+                title: entry.title,
+                onBack: notifier.back,
+                showBackInWide: index > 0,
+                onClose: closeHost,
+                child: entry.content,
+              ),
+            ),
+          ),
+        ),
+      );
     }
+    return pages;
   }
 
-  SettingEntry? _findInitialPage(String initial) {
-    final options = SettingsPageScope.of(context).options;
-    for (final entry in options.entries) {
-      // fuzzy search
-      if (entry.id.toLowerCase().contains(initial.toLowerCase())) {
-        return entry;
-      }
+  Page<void> _settingsPage({
+    required String id,
+    required bool wide,
+    required bool reduceAnimations,
+    required Widget child,
+  }) => SettingsAdaptivePage<void>(
+    key: ValueKey('settings-$id'),
+    name: id == 'index' ? '/settings/index' : '/settings/$id',
+    animate: !wide && !reduceAnimations,
+    child: child,
+  );
+
+  void _handleRequestedScroll({required bool wide}) {
+    if (widget.scrollTo != 'support') return;
+    final controller = wide
+        ? _sidebarScrollController
+        : _compactIndexScrollController;
+    if (wide ? _sidebarScrollHandled : _compactScrollHandled) return;
+    if (wide) {
+      _sidebarScrollHandled = true;
+    } else {
+      _compactScrollHandled = true;
     }
 
-    return null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !controller.hasClients) return;
+      controller.animateToWithAccessibility(
+        controller.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        reduceAnimations: ref.read(settingsProvider).reduceAnimations,
+      );
+    });
   }
 
   @override
   void dispose() {
+    _compactIndexScrollController.dispose();
+    _sidebarScrollController.dispose();
     super.dispose();
-    scrollController.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    ref.watch(settingsProvider.select((value) => value.language));
-    final options = SettingsPageScope.of(context).options;
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _SettingsSection(
-                  label: context.t.settings.app_settings,
-                ),
-                for (final entry in options.entries) ...[
-                  SettingTile(
-                    title: entry.title,
-                    leading: SettingEntryIcon(icon: entry.icon),
-                    onTap: () => Navigator.of(context).push(
-                      CupertinoPageRoute(
-                        settings: RouteSettings(
-                          name: entry.name,
-                        ),
-                        builder: (_) => SettingsPageScope(
-                          options: options,
-                          child: entry.content,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-                const SettingsPageOtherSection(),
-              ],
-            ),
-          ),
-        ),
-        const _Divider(),
-        const _Footer(),
-      ],
-    );
   }
 }
 
-class SettingsLargePage extends ConsumerStatefulWidget {
-  const SettingsLargePage({
-    super.key,
-    this.initial,
-    this.onTabChanged,
+class _SettingsSidebar extends StatelessWidget {
+  const _SettingsSidebar({
+    required this.entries,
+    required this.selectedId,
+    required this.scrollController,
+    required this.onSelected,
   });
 
-  final String? initial;
-  final void Function(String tab)? onTabChanged;
+  final List<SettingEntry> entries;
+  final String? selectedId;
+  final ScrollController scrollController;
+  final ValueChanged<SettingEntry> onSelected;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _SettingsLargePageState();
+  Widget build(BuildContext context) => Column(
+    children: [
+      _SettingsPaneHeader(title: context.t.settings.settings),
+      const Divider(height: 1),
+      Expanded(
+        child: _SettingsNavigationList(
+          key: const ValueKey('settings-sidebar-list'),
+          storageKey: const PageStorageKey('settings-sidebar-scroll'),
+          entries: entries,
+          selectedId: selectedId,
+          scrollController: scrollController,
+          onSelected: onSelected,
+        ),
+      ),
+    ],
+  );
 }
 
-class _SettingsLargePageState extends ConsumerState<SettingsLargePage> {
-  late var _selectedEntry = _findInitialIndex(widget.initial);
+class _SettingsNavigationList extends StatelessWidget {
+  const _SettingsNavigationList({
+    required this.entries,
+    required this.scrollController,
+    required this.onSelected,
+    required this.storageKey,
+    this.selectedId,
+    super.key,
+  });
 
-  int _findInitialIndex(String? initial) {
-    if (initial == null) {
-      return 0;
-    }
+  final List<SettingEntry> entries;
+  final String? selectedId;
+  final ScrollController scrollController;
+  final ValueChanged<SettingEntry> onSelected;
+  final PageStorageKey<String> storageKey;
 
-    final options = SettingsPageScope.of(context).options;
-    for (final entry in options.entries) {
-      // fuzzy search
-      if (entry.title.toLowerCase().contains(initial.toLowerCase())) {
-        return options.entries.indexOf(entry);
-      }
-    }
+  @override
+  Widget build(BuildContext context) => ListView(
+    key: storageKey,
+    controller: scrollController,
+    padding: EdgeInsets.zero,
+    children: [
+      _SettingsSection(label: context.t.settings.app_settings),
+      for (final entry in entries)
+        SettingTile(
+          title: entry.title,
+          leading: SettingEntryIcon(icon: entry.icon),
+          selected: selectedId == entry.id,
+          onTap: () => onSelected(entry),
+        ),
+      const SettingsPageOtherSection(),
+      const _Divider(),
+      const _Footer(),
+    ],
+  );
+}
 
-    return 0;
-  }
+class _SettingsDestinationFrame extends StatelessWidget {
+  const _SettingsDestinationFrame({
+    required this.title,
+    required this.onBack,
+    required this.onClose,
+    required this.child,
+    this.showBackInWide = false,
+  });
+
+  final String title;
+  final VoidCallback onBack;
+  final VoidCallback onClose;
+  final Widget child;
+  final bool showBackInWide;
 
   @override
   Widget build(BuildContext context) {
-    final entries = SettingsPageScope.of(context).options.entries;
-
-    // ref.watch(settingsProvider.select((value) => value.language));
-    final options = SettingsPageScope.of(context).options;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 240,
-          child: ListView(
-            children: [
-              for (final entry in entries)
-                SettingTile(
-                  title: entry.title,
-                  leading: SettingEntryIcon(icon: entry.icon),
-                  selected: entries.indexOf(entry) == _selectedEntry,
-                  showLeading: options.showIcon,
-                  onTap: () => setState(() {
-                    _selectedEntry = entries.indexOf(entry);
-                    ref
-                        .read(analyticsProvider)
-                        .whenData(
-                          (a) => a?.logScreenView(entry.name),
-                        );
-
-                    widget.onTabChanged?.call(entry.title);
-                  }),
-                ),
-              const SettingsPageOtherSection(),
-              const _Divider(),
-              const _Footer(),
-            ],
+    final wide = _SettingsPresentationScope.of(context).wide;
+    return Material(
+      color: Kurumi.themeOf(context).scaffoldBackgroundColor,
+      child: Column(
+        children: [
+          _SettingsPaneHeader(
+            title: title,
+            leading: wide && !showBackInWide
+                ? null
+                : BackButton(onPressed: onBack),
+            trailing: wide
+                ? IconButton(
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).closeButtonTooltip,
+                    onPressed: onClose,
+                    icon: const Icon(Icons.close),
+                  )
+                : null,
           ),
-        ),
-        const VerticalDivider(
-          width: 1,
-        ),
-        Flexible(
-          child: MediaQuery.removePadding(
-            context: context,
-            removeLeft: true,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 600,
-              ),
-              child: entries[_selectedEntry].content,
+          if (wide) const Divider(height: 1),
+          Expanded(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: child,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
+}
+
+class _SettingsIndexContent extends StatelessWidget {
+  const _SettingsIndexContent({
+    required this.entries,
+    required this.scrollController,
+    required this.onSelected,
+  });
+
+  final List<SettingEntry> entries;
+  final ScrollController scrollController;
+  final ValueChanged<SettingEntry> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_SettingsPresentationScope.of(context).wide) {
+      return const _SettingsEmptyDetail();
+    }
+    return _SettingsNavigationList(
+      key: const ValueKey('settings-compact-index-list'),
+      storageKey: const PageStorageKey('settings-compact-index-scroll'),
+      entries: entries,
+      scrollController: scrollController,
+      onSelected: onSelected,
+    );
+  }
+}
+
+class _SettingsPresentationScope extends InheritedWidget {
+  const _SettingsPresentationScope({
+    required this.wide,
+    required super.child,
+  });
+
+  final bool wide;
+
+  static _SettingsPresentationScope of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_SettingsPresentationScope>()!;
+
+  @override
+  bool updateShouldNotify(_SettingsPresentationScope oldWidget) =>
+      wide != oldWidget.wide;
+}
+
+class _SettingsPaneHeader extends StatelessWidget {
+  const _SettingsPaneHeader({
+    required this.title,
+    this.leading,
+    this.trailing,
+  });
+
+  final String title;
+  final Widget? leading;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    bottom: false,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 56),
+      child: Row(
+        children: [
+          SizedBox(width: 56, child: leading),
+          Expanded(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: Kurumi.themeOf(context).textTheme.titleLarge,
+            ),
+          ),
+          SizedBox(width: 56, child: trailing),
+        ],
+      ),
+    ),
+  );
+}
+
+class _SettingsEmptyDetail extends StatelessWidget {
+  const _SettingsEmptyDetail();
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Text(
+      'Select a settings category',
+      style: Kurumi.themeOf(context).textTheme.bodyLarge?.copyWith(
+        color: Kurumi.themeOf(context).colorScheme.hintColor,
+      ),
+    ),
+  );
 }
 
 class SettingsPageOtherSection extends ConsumerWidget {
@@ -453,9 +717,9 @@ class SettingsPageOtherSection extends ConsumerWidget {
                   onTap: () => url != null
                       ? launchExternalUrl(
                           Uri.parse(url),
-                          mode: LaunchMode.externalApplication,
+                          launcher: ref.read(externalUrlLauncherProvider),
                         )
-                      : showErrorToast(
+                      : Kurumi.showErrorToast(
                           context,
                           'Failed to open subscription management',
                         ),
@@ -466,7 +730,7 @@ class SettingsPageOtherSection extends ConsumerWidget {
                     FontAwesomeIcons.solidStar,
                   ),
                   onTap: () {
-                    showErrorToast(
+                    Kurumi.showErrorToast(
                       context,
                       'Failed to open subscription management',
                     );
@@ -519,7 +783,10 @@ class SettingsPageOtherSection extends ConsumerWidget {
                 FontAwesomeIcons.circleInfo,
               ),
               onTap: () => showDialog(
-                context: context,
+                context: SettingsPageNavigationScope.applicationNavigatorOf(
+                  context,
+                ).context,
+                useRootNavigator: false,
                 builder: (context) => const AboutPage(),
               ),
             );
@@ -534,11 +801,14 @@ class SettingsPageOtherSection extends ConsumerWidget {
           leading: const FaIcon(
             FontAwesomeIcons.language,
           ),
-          onTap: () => Navigator.of(context).push(
-            CupertinoPageRoute(
-              builder: (_) => const HelpUseTranslatePage(),
-            ),
-          ),
+          onTap: () =>
+              SettingsPageNavigationScope.applicationNavigatorOf(
+                context,
+              ).push(
+                CupertinoPageRoute(
+                  builder: (_) => const HelpUseTranslatePage(),
+                ),
+              ),
         ),
         SettingTile(
           title: context.t.settings.source_code,
@@ -547,7 +817,7 @@ class SettingsPageOtherSection extends ConsumerWidget {
           ),
           onTap: () => launchExternalUrl(
             Uri.parse(appInfo.githubUrl),
-            mode: LaunchMode.externalApplication,
+            launcher: ref.read(externalUrlLauncherProvider),
           ),
         ),
         const Divider(),
@@ -562,7 +832,7 @@ class SettingsPageOtherSection extends ConsumerWidget {
           ),
           onTap: () => launchExternalUrl(
             Uri.parse('mailto:${appInfo.supportEmail}'),
-            mode: LaunchMode.externalApplication,
+            launcher: ref.read(externalUrlLauncherProvider),
           ),
         ),
         SettingTile(
@@ -574,7 +844,7 @@ class SettingsPageOtherSection extends ConsumerWidget {
           ),
           onTap: () => launchExternalUrl(
             Uri.parse('${appInfo.githubUrl}/issues'),
-            mode: LaunchMode.externalApplication,
+            launcher: ref.read(externalUrlLauncherProvider),
           ),
         ),
         const SizedBox(height: 16),
@@ -607,75 +877,14 @@ class SettingTile extends StatelessWidget {
     final showIcon = showLeading ?? options.showIcon;
     final dense = options.dense;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 2,
-      ),
-      child: Material(
-        color: (selected ?? false)
-            ? Theme.of(context).colorScheme.primaryContainer
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          hoverColor: Theme.of(context).hoverColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-          onTap: onTap,
-          child: Container(
-            margin: EdgeInsets.symmetric(
-              vertical: dense
-                  ? 4
-                  : subtitle != null
-                  ? 6
-                  : 10,
-            ),
-            padding: EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: showIcon ? 4 : 6,
-            ),
-            child: Row(
-              children: [
-                if (showIcon)
-                  Container(
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                    ),
-                    margin: const EdgeInsets.only(
-                      left: 4,
-                    ),
-                    child: leading,
-                  ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: (selected ?? false)
-                              ? Theme.of(context).colorScheme.onPrimaryContainer
-                              : null,
-                        ),
-                      ),
-                      if (subtitle != null) ...[
-                        Text(
-                          subtitle!,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Theme.of(context).colorScheme.hintColor,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return KurumiSettingsEntryTile(
+      title: title,
+      leading: leading,
+      onTap: onTap,
+      showLeading: showIcon,
+      subtitle: subtitle,
+      selected: selected ?? false,
+      dense: dense,
     );
   }
 }
@@ -709,14 +918,14 @@ class _Footer extends ConsumerWidget {
           IconButton(
             onPressed: () => launchExternalUrl(
               Uri.parse(ref.read(appInfoProvider).githubUrl),
-              mode: LaunchMode.externalApplication,
+              launcher: ref.read(externalUrlLauncherProvider),
             ),
             icon: const FaIcon(FontAwesomeIcons.squareGithub),
           ),
           IconButton(
             onPressed: () => launchExternalUrl(
               Uri.parse(ref.read(appInfoProvider).discordUrl),
-              mode: LaunchMode.externalApplication,
+              launcher: ref.read(externalUrlLauncherProvider),
             ),
             icon: const FaIcon(FontAwesomeIcons.discord),
           ),
@@ -742,8 +951,8 @@ class _SettingsSection extends StatelessWidget {
       ),
       child: Text(
         label.toUpperCase(),
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).colorScheme.hintColor,
+        style: Kurumi.themeOf(context).textTheme.titleSmall?.copyWith(
+          color: Kurumi.themeOf(context).colorScheme.hintColor,
         ),
       ),
     );

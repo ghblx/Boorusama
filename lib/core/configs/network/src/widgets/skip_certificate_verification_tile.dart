@@ -1,14 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../http/configs/types.dart';
-import '../../../../widgets/widgets.dart';
-import '../../../config/types.dart';
 import '../../../create/providers.dart';
 
 class SkipCertificateVerificationTile extends ConsumerWidget {
@@ -18,19 +15,15 @@ class SkipCertificateVerificationTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final networkSettings = ref.watch(
-      editBooruConfigProvider(
-        ref.watch(editBooruConfigIdProvider),
-      ).select((value) => value.networkSettingsTyped),
-    );
+    final networkSettings = ref.watch(editBooruConfigNetworkProvider);
 
     final skipCertVerification =
-        networkSettings?.httpSettings?.skipCertificateVerification ?? false;
+        networkSettings.httpSettings?.skipCertificateVerification ?? false;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SwitchListTile(
+        KurumiSwitchListTile(
           contentPadding: const EdgeInsets.only(left: 4),
           visualDensity: VisualDensity.compact,
           title: Text(context.t.booru.network.http.skip_cert_verification),
@@ -40,21 +33,19 @@ class SkipCertificateVerificationTile extends ConsumerWidget {
           value: skipCertVerification,
           onChanged: (value) {
             final newHttpSettings =
-                (networkSettings?.httpSettings ?? const HttpSettings())
-                    .copyWith(
-                      skipCertificateVerification: () => value,
-                    );
-
-            final newNetworkSettings =
-                (networkSettings ?? const NetworkSettings()).copyWith(
-                  httpSettings: () => newHttpSettings,
+                (networkSettings.httpSettings ?? const HttpSettings()).copyWith(
+                  skipCertificateVerification: () => value,
                 );
+
+            final newNetworkSettings = networkSettings.copyWith(
+              httpSettings: () => newHttpSettings,
+            );
 
             ref.editNotifier.updateNetworkSettings(newNetworkSettings);
           },
         ),
         if (skipCertVerification)
-          WarningContainer(
+          KurumiWarningContainer(
             margin: const EdgeInsets.only(top: 8),
             title: context
                 .t

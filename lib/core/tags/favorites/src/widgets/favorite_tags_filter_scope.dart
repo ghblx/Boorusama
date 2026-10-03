@@ -1,12 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
+import '../../../../search/selected_tags/types.dart';
 import '../providers/favorite_tags_notifier.dart';
 import '../types/favorite_tag.dart';
+import '../types/favorite_tag_filter_type.dart';
 import '../types/favorite_tags_sort_type.dart';
 
 class FavoriteTagsFilterScope extends ConsumerStatefulWidget {
@@ -15,11 +15,13 @@ class FavoriteTagsFilterScope extends ConsumerStatefulWidget {
     super.key,
     this.initialValue,
     this.filterQuery,
+    this.filterType,
     this.sortType,
   });
 
   final String? initialValue;
   final String? filterQuery;
+  final FavoriteTagFilterType? filterType;
   final FavoriteTagsSortType? sortType;
 
   final Widget Function(
@@ -39,6 +41,7 @@ class _FavoriteTagsFilterScopeState
     extends ConsumerState<FavoriteTagsFilterScope> {
   late var selectedLabel = widget.initialValue ?? '';
   late var filterQuery = widget.filterQuery ?? '';
+  late var filterType = widget.filterType ?? FavoriteTagFilterType.all;
   late var sortType = widget.sortType ?? FavoriteTagsSortType.recentlyAdded;
 
   @override
@@ -50,6 +53,10 @@ class _FavoriteTagsFilterScopeState
 
     if (oldWidget.filterQuery != widget.filterQuery) {
       filterQuery = widget.filterQuery ?? '';
+    }
+
+    if (oldWidget.filterType != widget.filterType) {
+      filterType = widget.filterType ?? FavoriteTagFilterType.all;
     }
 
     if (oldWidget.sortType != widget.sortType) {
@@ -67,10 +74,23 @@ class _FavoriteTagsFilterScopeState
       return e.labels?.contains(selectedLabel) ?? false;
     }).toList();
 
-    final filteredTagsWithQuery = filteredTags.where((e) {
+    final filteredTagsWithType = filteredTags.where((e) {
+      return switch (filterType) {
+        FavoriteTagFilterType.all => true,
+        FavoriteTagFilterType.tags => e.queryType != QueryType.simple,
+        FavoriteTagFilterType.rawQueries => e.queryType == QueryType.simple,
+      };
+    }).toList();
+
+    final normalizedQuery = filterQuery.toLowerCase();
+    final filteredTagsWithQuery = filteredTagsWithType.where((e) {
       if (filterQuery.isEmpty) return true;
 
-      return e.name.contains(filterQuery);
+      return e.name.toLowerCase().contains(normalizedQuery) ||
+          (e.labels?.any(
+                (label) => label.toLowerCase().contains(normalizedQuery),
+              ) ??
+              false);
     }).toList();
 
     final sortedTags = filteredTagsWithQuery.toList()

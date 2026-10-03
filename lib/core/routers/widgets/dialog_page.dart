@@ -1,5 +1,5 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:kurumi/material.dart';
 
 class DialogPage<T> extends Page<T> {
   const DialogPage({
@@ -10,6 +10,7 @@ class DialogPage<T> extends Page<T> {
     this.barrierLabel,
     this.useSafeArea = true,
     this.themes,
+    this.animationStyle,
     super.key,
     super.name,
     super.arguments,
@@ -21,6 +22,7 @@ class DialogPage<T> extends Page<T> {
   final String? barrierLabel;
   final bool useSafeArea;
   final CapturedThemes? themes;
+  final AnimationStyle? animationStyle;
   final WidgetBuilder builder;
 
   @override
@@ -34,5 +36,6 @@ class DialogPage<T> extends Page<T> {
     barrierLabel: barrierLabel,
     useSafeArea: useSafeArea,
     themes: themes,
+    animationStyle: animationStyle,
   );
 }

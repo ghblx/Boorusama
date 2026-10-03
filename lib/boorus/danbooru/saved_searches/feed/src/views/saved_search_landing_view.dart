@@ -1,13 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
-import '../../../../../../core/widgets/generic_no_data_box.dart';
 import '../../../../../../foundation/url_launcher.dart';
 import '../../../../configs/providers.dart';
 import '../../../saved_search/routes.dart';
@@ -36,13 +34,14 @@ class SavedSearchLandingView extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  GenericNoDataBox(
+                  KurumiGenericNoDataBox(
                     text: context.t.saved_search.empty_saved_search,
                   ),
                   if (!loginDetails.hasStrictSFW)
                     TextButton(
                       onPressed: () => launchExternalUrl(
                         Uri.parse(savedSearchHelpUrl),
+                        launcher: ref.read(externalUrlLauncherProvider),
                       ),
                       child: Text(context.t.saved_search.saved_search_help),
                     ),
@@ -68,16 +67,13 @@ class SavedSearchLandingView extends ConsumerWidget {
             _ExampleContainer(
               title: 'Follow specific characters from an artist',
               query: 'artistA (characterA or characterB or characterC)',
-              explain:
-                  'Follow posts that feature characterA or characterB or characterC from artistA.',
+              explain: 'Follow posts that feature characterA or characterB or characterC from artistA.',
               onTry: (query) => _onAddSearch(ref, context, query: query),
             ),
             _ExampleContainer(
               title: 'Follow a specific thing',
-              query:
-                  'artistA ((characterA 1girl -ocean) or (characterB swimsuit))',
-              explain:
-                  'Follow posts that feature characterA with 1girl tag but without the ocean tag or characterB with swimsuit tag from artistA.',
+              query: 'artistA ((characterA 1girl -ocean) or (characterB swimsuit))',
+              explain: 'Follow posts that feature characterA with 1girl tag but without the ocean tag or characterB with swimsuit tag from artistA.',
               onTry: (query) => _onAddSearch(ref, context, query: query),
             ),
             _ExampleContainer(
@@ -133,12 +129,12 @@ class _ExampleContainer extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
                   title,
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Kurumi.themeOf(context).textTheme.titleLarge,
                 ),
               ),
               Card(
                 margin: const EdgeInsets.all(8),
-                color: Theme.of(context).colorScheme.surface,
+                color: Kurumi.themeOf(context).colorScheme.surface,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,

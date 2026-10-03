@@ -1,13 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:percent_indicator/percent_indicator.dart';
 import 'package:share_plus/share_plus.dart';
 
 // Project imports:
@@ -24,7 +22,6 @@ import '../../../downloads/filename/types.dart';
 import '../../../downloads/urls/providers.dart';
 import '../../../http/client/providers.dart';
 import '../../../settings/providers.dart';
-import '../../../widgets/booru_dialog.dart';
 import '../../post/types.dart';
 
 final _downloadTaskDetailsProvider = Provider.autoDispose
@@ -102,7 +99,7 @@ class DownloadAndShareDialog extends ConsumerWidget {
               return Center(
                 child: Text(
                   'Failed to download post',
-                  style: Theme.of(context).textTheme.bodyLarge,
+                  style: Kurumi.themeOf(context).textTheme.bodyLarge,
                 ),
               );
             }
@@ -116,7 +113,7 @@ class DownloadAndShareDialog extends ConsumerWidget {
             return Center(
               child: Text(
                 'Error downloading: $error',
-                style: Theme.of(context).textTheme.bodyLarge,
+                style: Kurumi.themeOf(context).textTheme.bodyLarge,
               ),
             );
           },
@@ -157,7 +154,7 @@ class DownloadAndShareDialogInternal extends ConsumerWidget {
       }
     });
 
-    return BooruDialog(
+    return KurumiDialog(
       padding: const EdgeInsets.symmetric(
         horizontal: 8,
         vertical: 4,
@@ -195,12 +192,8 @@ class DownloadAndShareDialogInternal extends ConsumerWidget {
                       )
                     : const SizedBox(width: 48),
                 subtitle: task is TaskProgressUpdate && task.progress >= 0
-                    ? LinearPercentIndicator(
-                        lineHeight: 2,
-                        percent: task.progress,
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        animation: true,
-                        animateFromLastPercent: true,
+                    ? KurumiLinearProgressIndicator(
+                        value: task.progress,
                         trailing: Text('${(task.progress * 100).floor()}%'),
                       )
                     : const SizedBox.shrink(),
@@ -259,8 +252,8 @@ class _CancelDownloadConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BooruDialog(
-      color: Theme.of(context).colorScheme.surfaceContainer,
+    return KurumiDialog(
+      color: Kurumi.themeOf(context).colorScheme.surfaceContainer,
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: 12,
@@ -287,7 +280,7 @@ class _CancelDownloadConfirmationDialog extends StatelessWidget {
             const SizedBox(height: 20),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error,
+                backgroundColor: Kurumi.themeOf(context).colorScheme.error,
                 shadowColor: Colors.transparent,
                 elevation: 0,
               ),
@@ -301,7 +294,7 @@ class _CancelDownloadConfirmationDialog extends StatelessWidget {
                 child: Text(
                   'Cancel Download'.hc,
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.onError,
+                    color: Kurumi.themeOf(context).colorScheme.onError,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -316,7 +309,7 @@ class _CancelDownloadConfirmationDialog extends StatelessWidget {
                   'Keep Downloading'.hc,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: Kurumi.themeOf(context).colorScheme.onSurface,
                   ),
                 ),
               ),

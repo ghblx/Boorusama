@@ -1,10 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../configs/config/providers.dart';
@@ -13,6 +11,7 @@ import '../../../ddos/handler/providers.dart';
 import '../../../downloads/background/types.dart';
 import '../../../http/client/providers.dart';
 import '../../types.dart';
+import '../data/file_downloader_task_client.dart';
 import '../providers/download_task_updates_notifier.dart';
 import '../providers/internal_providers.dart';
 
@@ -43,18 +42,23 @@ class RetryAllFailedButton extends ConsumerWidget {
                   final dt = castOrNull<DownloadTask>(task.task);
 
                   if (dt == null) continue;
-                  //FIXME: need to centralize the headers injection
-                  ref.invalidate(cachedBypassDdosHeadersProvider);
+                  ref.invalidate(bypassDdosHeadersProvider(dt.url));
                   WidgetsBinding.instance.addPostFrameCallback(
-                    (_) {
+                    (_) async {
                       final headers = ref.read(
                         httpHeadersProvider(config.auth),
                       );
 
-                      FileDownloader().retryTask(
-                        dt,
-                        headers: headers,
+                      final bypassHeaders = await ref.read(
+                        bypassDdosHeadersProvider(dt.url).future,
                       );
+                      await ref
+                          .read(downloadTaskClientProvider)
+                          .retry(
+                            dt,
+                            headers: headers,
+                            bypassHeaders: bypassHeaders,
+                          );
                     },
                   );
                 }

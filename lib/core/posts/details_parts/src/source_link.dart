@@ -1,16 +1,16 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../foundation/clipboard.dart';
 import '../../../../foundation/display/media_query_utils.dart';
 import '../../../../foundation/url_launcher.dart';
 
-class SourceLink extends StatelessWidget {
+class SourceLink extends ConsumerWidget {
   const SourceLink({
     required this.title,
     required this.actionBuilder,
@@ -25,7 +25,7 @@ class SourceLink extends StatelessWidget {
   final String name;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return RemoveLeftPaddingOnLargeScreen(
       child: ListTile(
         visualDensity: VisualDensity.compact,
@@ -44,23 +44,28 @@ class SourceLink extends StatelessWidget {
                 },
                 onTap: () {
                   if (url == null) return;
-                  launchExternalUrl(Uri.parse(url!));
+                  launchExternalUrl(
+                    Uri.parse(url!),
+                    launcher: ref.read(externalUrlLauncherProvider),
+                  );
                 },
                 child: Text(
                   url.toString(),
                   maxLines: 1,
                   softWrap: false,
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: Kurumi.themeOf(context).textTheme.bodySmall,
                 ),
               )
             : null,
         leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+          backgroundColor: Kurumi.themeOf(
+            context,
+          ).colorScheme.tertiaryContainer,
           child: Center(
             child: Text(
               name.getFirstCharacter().toUpperCase(),
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onTertiaryContainer,
+                color: Kurumi.themeOf(context).colorScheme.onTertiaryContainer,
               ),
             ),
           ),

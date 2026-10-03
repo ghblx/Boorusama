@@ -1,14 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
 import '../../../../../../core/posts/statistics/widgets.dart';
 import '../../../../../../core/tags/tag/providers.dart';
-import '../../../../../../foundation/display.dart';
 import '../../../../../../foundation/utils/statistics.dart';
 import '../post_stats.dart';
 
@@ -51,7 +49,7 @@ class PostStatsCharacterSection extends ConsumerWidget {
   }
 
   void _onMore(WidgetRef ref, BuildContext context, Color? characterColor) {
-    showAppModalBarBottomSheet(
+    Kurumi.showAppModalBarBottomSheet(
       context: context,
       settings: const RouteSettings(name: 'posts_character_stats'),
       builder: (context) => StatisticsFromMapPage(

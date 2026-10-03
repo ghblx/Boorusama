@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../foundation/info/device_info.dart';
@@ -62,7 +61,9 @@ class BulkDownloadEditSavedTaskPage extends ConsumerWidget {
               Expanded(
                 child: FilledButton(
                   style: FilledButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    foregroundColor: Kurumi.themeOf(
+                      context,
+                    ).colorScheme.onPrimary,
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.all(Radius.circular(16)),
                     ),

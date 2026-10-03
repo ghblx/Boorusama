@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Project imports:
 import '../../../../foundation/info/device_info.dart';
+import '../../../downloads/sidecar/types.dart';
 import '../../../search/histories/types.dart';
 import '../../../search/selected_tags/types.dart';
 import '../types/download_options.dart';
@@ -16,13 +17,13 @@ class CreateDownloadOptionsNotifier
   DownloadOptions build(DownloadOptions arg) {
     return DownloadOptions(
       path: arg.path,
-      notifications: arg.notifications,
       skipIfExists: arg.skipIfExists,
       quality: arg.quality,
       perPage: arg.perPage,
       concurrency: arg.concurrency,
       tags: arg.tags,
       blacklistedTags: arg.blacklistedTags,
+      sidecarFormat: arg.sidecarFormat,
     );
   }
 
@@ -31,6 +32,9 @@ class CreateDownloadOptionsNotifier
       tags: state.tags.clone()..addTagFromSearchHistory(history),
     );
   }
+
+  void setSidecarFormat(SidecarFormat? format) =>
+      state = state.copyWith(sidecarFormat: () => format);
 
   void addTag(TagSearchItem tag) {
     state = state.copyWith(
@@ -53,12 +57,6 @@ class CreateDownloadOptionsNotifier
   void setPath(String path) {
     state = state.copyWith(
       path: path,
-    );
-  }
-
-  void setNotifications(bool value) {
-    state = state.copyWith(
-      notifications: value,
     );
   }
 

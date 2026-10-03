@@ -1,13 +1,12 @@
 // Dart imports:
 import 'dart:async';
 
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../widgets/widgets.dart';
@@ -61,9 +60,9 @@ class _BulkDownloadCompletedPageState
         appBar: AppBar(
           title: Text(context.t.bulk_downloads.completed.title),
           actions: [
-            BooruPopupMenuButton(
+            KurumiPopupMenuButton(
               items: [
-                BooruPopupMenuItem(
+                KurumiPopupMenuItem(
                   title: Text(context.t.bulk_downloads.completed.clear_all),
                   onTap: () {
                     notifier.deleteAllCompletedSessions();
@@ -74,7 +73,7 @@ class _BulkDownloadCompletedPageState
             ),
           ],
         ),
-        body: BooruRefreshIndicator(
+        body: KurumiRefreshIndicator(
           onRefresh: _refreshList,
           child: PagingListener(
             controller: _pagingController,

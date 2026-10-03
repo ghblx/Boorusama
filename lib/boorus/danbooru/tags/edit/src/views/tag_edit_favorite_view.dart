@@ -1,8 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/cache/providers.dart';
@@ -72,23 +71,29 @@ class _TagEditFavoriteViewState extends ConsumerState<TagEditFavoriteView> {
                       children: tags.map((tag) {
                         final selected = widget.isSelected(tag.name);
 
-                        return FilterChip(
+                        return KurumiMaterialFilterChip(
                           selected: selected,
                           showCheckmark: false,
                           visualDensity: VisualDensity.compact,
-                          selectedColor: Theme.of(context).colorScheme.primary,
-                          backgroundColor: Theme.of(
+                          selectedColor: Kurumi.themeOf(
+                            context,
+                          ).colorScheme.primary,
+                          backgroundColor: Kurumi.themeOf(
                             context,
                           ).colorScheme.surface,
                           onSelected: (value) => value
                               ? widget.onAdded(tag.name)
                               : widget.onRemoved(tag.name),
                           label: Text(
-                            tag.name.replaceAll('_', ' '),
+                            tag.name,
                             style: TextStyle(
                               color: selected
-                                  ? Theme.of(context).colorScheme.onPrimary
-                                  : Theme.of(context).colorScheme.onSurface,
+                                  ? Kurumi.themeOf(
+                                      context,
+                                    ).colorScheme.onPrimary
+                                  : Kurumi.themeOf(
+                                      context,
+                                    ).colorScheme.onSurface,
                             ),
                           ),
                         );

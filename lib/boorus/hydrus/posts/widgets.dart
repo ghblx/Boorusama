@@ -1,9 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../core/configs/config/providers.dart';
@@ -77,8 +75,7 @@ final kHydrusPostDetailsUIBuilder = PostDetailsUIBuilder(
   },
   full: {
     DetailsPart.toolbar: (context) => const HydrusPostActionToolbar(),
-    DetailsPart.tags: (context) =>
-        const DefaultInheritedBasicTagsTile<HydrusPost>(),
+    DetailsPart.tags: (context) => const DefaultInheritedTagsTile<HydrusPost>(),
     DetailsPart.fileDetails: (context) =>
         const DefaultInheritedFileDetailsSection<HydrusPost>(
           initialExpanded: true,

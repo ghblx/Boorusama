@@ -1,13 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../foundation/display.dart';
-import '../../../themes/theme/types.dart';
-import '../../../widgets/booru_tooltip.dart';
 import 'post_details_page_view_controller.dart';
 
 class PageNavButton extends StatelessWidget {
@@ -28,7 +24,7 @@ class PageNavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
 
     return ValueListenableBuilder(
       valueListenable: controller.overlay,
@@ -42,7 +38,7 @@ class PageNavButton extends StatelessWidget {
           builder: (context, page, _) => visibleWhen(page)
               ? Align(
                   alignment: alignment,
-                  child: BooruTooltip(
+                  child: KurumiTooltip(
                     message: alignment == Alignment.centerLeft
                         ? context.t.infinite_scroll.previous_page
                         : context.t.infinite_scroll.next_page,

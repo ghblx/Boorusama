@@ -1,10 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -91,15 +90,16 @@ class MoebooruHashedPasswordField extends ConsumerWidget {
                 FaIcon(
                   FontAwesomeIcons.hashtag,
                   size: 16,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Kurumi.themeOf(context).colorScheme.primary,
                 ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     hashedPassword,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: Kurumi.themeOf(context).textTheme.titleSmall
+                        ?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
                   ),
                 ),
                 IconButton(

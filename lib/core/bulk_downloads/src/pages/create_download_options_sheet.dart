@@ -1,27 +1,24 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
 import '../../../../foundation/info/device_info.dart';
-import '../../../../foundation/toast.dart';
 import '../../../../foundation/utils/collection_utils.dart';
 import '../../../blacklists/providers.dart';
 import '../../../configs/config/providers.dart';
 import '../../../configs/search/types.dart';
 import '../../../downloads/configs/widgets/download_folder_selector_section.dart';
 import '../../../downloads/downloader/types.dart' as d;
+import '../../../downloads/sidecar/widgets.dart';
+import '../../../navigation/app_navigation.dart';
 import '../../../router.dart';
 import '../../../search/search/routes.dart';
 import '../../../search/selected_tags/types.dart' hide queryAsList;
 import '../../../settings/providers.dart';
-import '../../../settings/widgets.dart';
-import '../../../themes/theme/types.dart';
-import '../../../widgets/widgets.dart';
 import '../providers/bulk_download_notifier.dart';
 import '../providers/create_download_options_notifier.dart';
 import '../routes/route_utils.dart';
@@ -42,12 +39,15 @@ class CreateDownloadOptionsSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final navigatorContext = navigatorKey.currentContext;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
+    final navigatorContext = ref
+        .read(appNavigationProvider)
+        .navigatorKey
+        .currentContext;
 
     void showSnackBar(BuildContext context, String message) {
       if (showStartNotification) {
-        showSimpleSnackBar(
+        Kurumi.showSimpleSnackBar(
           context: context,
           content: Text(message),
           action: SnackBarAction(
@@ -81,80 +81,49 @@ class CreateDownloadOptionsSheet extends ConsumerWidget {
 
     return CreateDownloadOptionsRawSheet(
       initial: initial,
-      actions: Row(
-        spacing: 16,
-        children: [
-          Expanded(
-            flex: 3,
-            child: ElevatedButton(
-              style: FilledButton.styleFrom(
-                disabledBackgroundColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: colorScheme.outline,
-                  ),
-                ),
-              ),
-              onPressed: validOptions
-                  ? () {
-                      notifier.queueDownloadLater(
-                        options,
-                        onOptionsError: (e) {
-                          showErrorToast(context, e.message);
-                        },
-                      );
+      actions: KurumiBottomSheetActionButtons(
+        secondaryChild: Text(
+          context.t.bulk_downloads.actions.add_to_queue,
+        ),
+        primaryChild: Text(context.t.download.download),
+        onSecondaryPressed: validOptions
+            ? () {
+                notifier.queueDownloadLater(
+                  options,
+                  onOptionsError: (e) {
+                    Kurumi.showErrorToast(context, e.message);
+                  },
+                );
 
-                      if (navigatorContext != null &&
-                          navigatorContext.mounted) {
-                        showSnackBar(navigatorContext, 'Created');
+                if (navigatorContext != null && navigatorContext.mounted) {
+                  showSnackBar(navigatorContext, 'Created');
+                }
+
+                navigator.pop();
+              }
+            : null,
+        onPrimaryPressed: validOptions
+            ? () {
+                notifier.downloadFromOptions(
+                  options,
+                  downloadConfigs: DownloadConfigs(
+                    onDownloadStart: () {
+                      if (navigatorContext != null) {
+                        showSnackBar(
+                          navigatorContext,
+                          startedMessage,
+                        );
                       }
+                    },
+                  ),
+                  onOptionsError: (e) {
+                    Kurumi.showErrorToast(context, e.message);
+                  },
+                );
 
-                      navigator.pop();
-                    }
-                  : null,
-              child: Text(
-                context.t.bulk_downloads.actions.add_to_queue,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 5,
-            child: FilledButton(
-              style: FilledButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(16)),
-                ),
-              ),
-              onPressed: validOptions
-                  ? () {
-                      notifier.downloadFromOptions(
-                        options,
-                        downloadConfigs: DownloadConfigs(
-                          onDownloadStart: () {
-                            if (navigatorContext != null) {
-                              showSnackBar(
-                                navigatorContext,
-                                startedMessage,
-                              );
-                            }
-                          },
-                        ),
-                        onOptionsError: (e) {
-                          showErrorToast(context, e.message);
-                        },
-                      );
-
-                      navigator.pop();
-                    }
-                  : null,
-              child: Text(
-                context.t.download.download,
-              ),
-            ),
-          ),
-        ],
+                navigator.pop();
+              }
+            : null,
       ),
     );
   }
@@ -187,7 +156,7 @@ class _CreateDownloadOptionsRawSheetState
     final notifier = ref.watch(createDownloadOptionsProvider(params).notifier);
     final options = ref.watch(createDownloadOptionsProvider(params));
 
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
@@ -238,7 +207,7 @@ class _CreateDownloadOptionsRawSheetState
         if (widget.advancedToggle)
           Column(
             children: [
-              BooruSwitchListTile(
+              KurumiSwitchListTile(
                 title: Text(
                   context.t.bulk_downloads.options.show_advanced_options,
                 ),
@@ -257,23 +226,12 @@ class _CreateDownloadOptionsRawSheetState
             options: options,
             notifier: notifier,
           ),
-          SettingsCard(
+          KurumiSettingsCard(
             title: context.t.bulk_downloads.options.other_options,
+            surface: KurumiSettingsCardSurface.high,
             child: Column(
               children: [
-                BooruSwitchListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                  ),
-                  title: Text(
-                    context.t.bulk_downloads.options.enable_notification,
-                  ),
-                  value: options.notifications,
-                  onChanged: (value) {
-                    notifier.setNotifications(value);
-                  },
-                ),
-                BooruSwitchListTile(
+                KurumiSwitchListTile(
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 4,
                   ),
@@ -285,7 +243,7 @@ class _CreateDownloadOptionsRawSheetState
                     notifier.setSkipIfExists(value);
                   },
                 ),
-                SettingsTile(
+                KurumiSettingsTile(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   title: Text(context.t.settings.download.quality),
                   selectedOption:
@@ -304,6 +262,11 @@ class _CreateDownloadOptionsRawSheetState
                       _ => value,
                     },
                   ),
+                ),
+                SidecarFormatTile(
+                  allowDefault: true,
+                  value: options.sidecarFormat,
+                  onChanged: notifier.setSidecarFormat,
                 ),
               ],
             ),
@@ -333,8 +296,8 @@ class _ExcludedTagsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
+    final textTheme = Kurumi.themeOf(context).textTheme;
 
     final extraTags = queryAsList(options.blacklistedTags);
     final config = ref.watchConfigAuth;
@@ -342,8 +305,9 @@ class _ExcludedTagsSection extends ConsumerWidget {
     return ref
         .watch(blacklistTagEntriesProvider(ref.watchConfigFilter))
         .when(
-          data: (tags) => SettingsCard(
+          data: (tags) => KurumiSettingsCard(
             title: context.t.bulk_downloads.options.excluded_tags,
+            surface: KurumiSettingsCardSurface.high,
             trailing: Tooltip(
               message: _buildTitle(context, tags),
               triggerMode: TooltipTriggerMode.tap,
@@ -391,7 +355,7 @@ class _ExcludedTagsSection extends ConsumerWidget {
                         runSpacing: 5,
                         children: [
                           ...extraTags.map(
-                            (e) => Chip(
+                            (e) => KurumiMaterialChip(
                               backgroundColor: colorScheme.surfaceContainer,
                               label: Text(e.replaceAll('_', ' ')),
                               deleteIcon: Icon(
@@ -463,87 +427,5 @@ class _ExcludedTagsSection extends ConsumerWidget {
     }
 
     return sb.toString().trim();
-  }
-}
-
-class SettingsCard extends StatelessWidget {
-  const SettingsCard({
-    required this.child,
-    super.key,
-    this.onTap,
-    this.margin,
-    this.padding,
-    this.title,
-    this.trailing,
-  });
-
-  final Widget child;
-  final void Function()? onTap;
-  final EdgeInsetsGeometry? margin;
-  final EdgeInsetsGeometry? padding;
-  final String? title;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-    final title = this.title;
-
-    return Container(
-      margin:
-          margin ??
-          const EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-          ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (title != null)
-            Padding(
-              padding: const EdgeInsets.only(
-                bottom: 8,
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    title.toUpperCase(),
-                    style: textTheme.titleSmall?.copyWith(
-                      color: colorScheme.hintColor,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  if (trailing != null) ...[
-                    trailing!,
-                  ],
-                ],
-              ),
-            ),
-          Material(
-            color: colorScheme.surfaceContainerHigh,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: InkWell(
-              customBorder: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              onTap: onTap,
-              child: Container(
-                padding:
-                    padding ??
-                    const EdgeInsets.symmetric(
-                      horizontal: 8,
-                    ),
-                child: child,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

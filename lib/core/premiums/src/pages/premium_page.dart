@@ -1,15 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../foundation/iap/iap.dart';
-import '../../../../foundation/toast.dart';
 import '../../../router.dart';
-import '../../../widgets/widgets.dart';
 import '../internal_widgets/benefit_card.dart';
 import '../types/premium.dart';
 import '../types/strings.dart';
@@ -36,7 +33,10 @@ class PremiumPage extends ConsumerWidget {
           cur.when(
             data: (success) {
               // When purchase is successful, this page is replaced with the manage page so we need a global context to show the dialog
-              final context = navigatorKey.currentContext;
+              final context = ref
+                  .read(appNavigationProvider)
+                  .navigatorKey
+                  .currentContext;
 
               if (context == null) return;
 
@@ -124,7 +124,7 @@ class PremiumPage extends ConsumerWidget {
   }
 
   void _showFailedPurchase(BuildContext context) {
-    return showSimpleSnackBar(
+    return Kurumi.showSimpleSnackBar(
       context: context,
       content: Text(
         'There was a problem purchasing your subscription. Please try again later.'
@@ -177,7 +177,7 @@ class _GetPremiumButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return PrimaryButton(
+    return KurumiButton(
       onPressed: ref
           .watch(packagePurchaseProvider)
           .when(
@@ -199,7 +199,7 @@ class _GetPremiumButton extends ConsumerWidget {
               width: 16,
               height: 16,
               child: CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.onPrimary,
+                color: Kurumi.themeOf(context).colorScheme.onPrimary,
               ),
             ),
           ),
@@ -207,11 +207,11 @@ class _GetPremiumButton extends ConsumerWidget {
   }
 
   Future<dynamic> _showPlans(BuildContext context, WidgetRef ref) {
-    return showBooruModalBottomSheet(
+    return Kurumi.showAppModalBottomSheet(
       enableDrag: false,
       context: context,
       routeSettings: const RouteSettings(name: 'select_subscription_plan'),
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Kurumi.themeOf(context).colorScheme.surface,
       builder: (_) => const PremiumPurchaseModal(),
     );
   }
@@ -228,7 +228,7 @@ class _RestorePremiumButton extends ConsumerWidget {
       ),
       child: TextButton(
         style: TextButton.styleFrom(
-          foregroundColor: Theme.of(context).colorScheme.onSurface,
+          foregroundColor: Kurumi.themeOf(context).colorScheme.onSurface,
         ),
         onPressed: ref
             .watch(packagePurchaseProvider)
@@ -253,11 +253,14 @@ class _RestorePremiumButton extends ConsumerWidget {
           (res) {
             if (context.mounted) {
               if (res) {
-                final navigatorContext = navigatorKey.currentContext;
+                final navigatorContext = ref
+                    .read(appNavigationProvider)
+                    .navigatorKey
+                    .currentContext;
                 navigator.pop();
 
                 if (navigatorContext != null) {
-                  showSimpleSnackBar(
+                  Kurumi.showSimpleSnackBar(
                     context: navigatorContext,
                     content: Text(
                       context.t.premium.subscription_restored,
@@ -281,7 +284,7 @@ class _RestorePremiumButton extends ConsumerWidget {
   }
 
   void _showFailedRestore(BuildContext context) {
-    showSimpleSnackBar(
+    Kurumi.showSimpleSnackBar(
       context: context,
       content: Text(
         context.t.premium.restore_failed,

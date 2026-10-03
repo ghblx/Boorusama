@@ -1,11 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:rich_text_controller/rich_text_controller.dart';
 
 // Project imports:
-import '../../../../widgets/booru_text_field.dart';
 
 class FormatEditingField extends StatelessWidget {
   const FormatEditingField({
@@ -21,7 +19,7 @@ class FormatEditingField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       constraints: const BoxConstraints(maxHeight: 150),
-      child: BooruTextField(
+      child: KurumiTextField(
         controller: controller,
         maxLines: null,
         onChanged: onChanged,

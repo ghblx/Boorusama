@@ -1,8 +1,6 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../settings/providers.dart';
@@ -22,11 +20,8 @@ class MultiSelectionActionBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reduceAnimation = ref.watch(
-      settingsProvider.select(
-        (value) => value.reduceAnimations,
-      ),
+      settingsProvider.select((value) => value.reduceAnimations),
     );
-
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: AdaptiveButtonRow.menu(

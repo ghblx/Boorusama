@@ -1,8 +1,6 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../core/widgets/widgets.dart';
@@ -52,7 +50,7 @@ class _TagDetailsPageState<T extends Post>
             const SizedBox(height: 12),
             widget.otherNames,
             ...widget.extras ?? [],
-            if (isDesktopPlatform())
+            if (ref.watch(appPlatformProvider).isDesktop)
               const SizedBox(height: 36)
             else
               const SizedBox.shrink(),

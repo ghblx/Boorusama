@@ -1,8 +1,6 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -47,6 +45,7 @@ void goToQuickSearchPage(
   required WidgetRef ref,
   required void Function(String tag, bool isRaw) onSelected,
   bool ensureValidTag = false,
+  bool showInputSelector = true,
   BooruConfigAuth? initialConfig,
   Widget Function(String text)? floatingActionButton,
   void Function(BuildContext context, String text, bool isRaw)? onSubmitted,
@@ -62,6 +61,7 @@ void goToQuickSearchPage(
     builder: (_, isMobile) => isMobile
         ? SimpleTagSearchView(
             initialConfig: initialConfig,
+            showInputSelector: showInputSelector,
             onSubmitted: onSubmitted,
             ensureValidTag: ensureValidTag,
             floatingActionButton: floatingActionButton != null
@@ -72,6 +72,7 @@ void goToQuickSearchPage(
           )
         : SimpleTagSearchView(
             initialConfig: initialConfig,
+            showInputSelector: showInputSelector,
             onSubmitted: onSubmitted,
             backButton: IconButton(
               splashRadius: 16,

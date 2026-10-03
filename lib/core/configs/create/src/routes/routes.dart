@@ -1,16 +1,13 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../../foundation/display.dart';
 import '../../../../boorus/engine/providers.dart';
 import '../../../../router.dart';
-import '../../../../widgets/booru_dialog.dart';
 import '../../../config/types.dart';
 import '../../../manage/providers.dart';
 import '../pages/add_booru_page.dart';
@@ -26,7 +23,7 @@ GoRoute addBooruConfigRoutes(Ref ref) => GoRoute(
           state.uri.queryParameters['setAsCurrent']?.toBool() ?? false;
 
       final landscape = context.orientation.isLandscape;
-      final colorScheme = Theme.of(context).colorScheme;
+      final colorScheme = Kurumi.themeOf(context).colorScheme;
 
       final page = AddBooruPage(
         backgroundColor: landscape
@@ -37,7 +34,7 @@ GoRoute addBooruConfigRoutes(Ref ref) => GoRoute(
       );
 
       return landscape
-          ? BooruDialog(
+          ? KurumiDialog(
               color: colorScheme.surfaceContainerLow,
               child: page,
             )
@@ -59,7 +56,7 @@ GoRoute updateBooruConfigRoutes(Ref ref) => GoRoute(
           .firstWhereOrNull((element) => element.id == id);
 
       final landscape = context.orientation.isLandscape;
-      final colorScheme = Theme.of(context).colorScheme;
+      final colorScheme = Kurumi.themeOf(context).colorScheme;
 
       if (config == null) {
         return const LargeScreenAwareInvalidPage(
@@ -88,7 +85,7 @@ GoRoute updateBooruConfigRoutes(Ref ref) => GoRoute(
           );
 
       return landscape
-          ? BooruDialog(
+          ? KurumiDialog(
               color: colorScheme.surfaceContainerLow,
               child: page,
             )

@@ -1,6 +1,8 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+// Package imports:
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../foundation/keyboard.dart';
@@ -61,7 +63,10 @@ class VolumeKeyPageNavigator with KeyboardListenerMixin {
       _previousPage();
     }
 
-    return false;
+    // Consume down, repeat, and up even at the first/last post so Android
+    // doesn't also apply its default volume action.
+    return event.logicalKey == LogicalKeyboardKey.audioVolumeUp ||
+        event.logicalKey == LogicalKeyboardKey.audioVolumeDown;
   }
 
   void dispose() {

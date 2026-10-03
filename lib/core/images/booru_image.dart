@@ -1,16 +1,18 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:cache_manager/cache_manager.dart';
 import 'package:dio/dio.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../foundation/info/device_info.dart';
 import '../configs/config/types.dart';
+import '../configs/network/providers.dart';
+import '../developer_options/blocked_media_placeholder.dart';
+import '../developer_options/providers.dart';
 import '../http/client/providers.dart';
 import '../settings/providers.dart';
 import 'image_quality.dart';
@@ -61,7 +63,25 @@ class BooruImage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final automaticMediaLoadingEnabled = ref.watch(
+      automaticMediaLoadingEnabledProvider,
+    );
+
+    if (!automaticMediaLoadingEnabled) {
+      return BlockedMediaPlaceholder(
+        aspectRatio: forceCover || fit == BoxFit.contain ? null : aspectRatio,
+        borderRadius: borderRadius ?? _defaultRadius,
+      );
+    }
+
     final dio = ref.watch(dioForWidgetProvider(config));
+    final network = ref.watch(networkSettingsProvider(config));
+    final headers = ref.watch(httpHeadersProvider(config));
+    final imageRequest = network.resolveMedia(imageUrl, headers: headers);
+    final placeholderRequest = network.resolveMedia(
+      placeholderUrl ?? '',
+      headers: headers,
+    );
     final imageQualitySettings = ref.watch(
       imageListingSettingsProvider.select((value) => value.imageQuality),
     );
@@ -76,9 +96,15 @@ class BooruImage extends ConsumerWidget {
     );
 
     return BooruRawImage(
-      dio: dio,
-      imageUrl: imageUrl,
-      placeholderUrl: placeholderUrl,
+      dio: imageRequest.overridden
+          ? ref.watch(mediaOverrideDioProvider(config))
+          : dio,
+      imageUrl: imageRequest.url,
+      placeholderUrl: placeholderUrl == null ? null : placeholderRequest.url,
+      placeholderDio: placeholderRequest.overridden
+          ? ref.watch(mediaOverrideDioProvider(config))
+          : dio,
+      placeholderHeaders: placeholderRequest.headers,
       placeholderAspectRatio: placeholderAspectRatio,
       placeholderFit: placeholderFit,
       borderRadius: borderRadius,
@@ -91,7 +117,7 @@ class BooruImage extends ConsumerWidget {
       isLargeImage: imageQualitySettings != ImageQuality.low,
       forceLoadPlaceholder: forceLoadPlaceholder,
       hideMismatchedPlaceholder: hideMismatchedPlaceholder,
-      headers: ref.watch(httpHeadersProvider(config)),
+      headers: imageRequest.headers,
       placeholderWidget: placeholderWidget,
       controller: controller,
       androidVersion: deviceInfo.androidDeviceInfo?.version.sdkInt,
@@ -106,6 +132,8 @@ class BooruRawImage extends StatelessWidget {
     required this.imageUrl,
     super.key,
     this.placeholderUrl,
+    this.placeholderDio,
+    this.placeholderHeaders,
     this.placeholderAspectRatio,
     this.placeholderFit,
     this.borderRadius,
@@ -127,6 +155,8 @@ class BooruRawImage extends StatelessWidget {
   });
 
   final Dio dio;
+  final Dio? placeholderDio;
+  final Map<String, String>? placeholderHeaders;
   final String imageUrl;
   final String? placeholderUrl;
   final double? placeholderAspectRatio;
@@ -150,7 +180,7 @@ class BooruRawImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imagePlaceHolder = ImagePlaceHolder(
+    final imagePlaceHolder = KurumiImagePlaceholder(
       borderRadius: borderRadius ?? _defaultRadius,
     );
 
@@ -188,7 +218,7 @@ class BooruRawImage extends StatelessWidget {
                   gaplessPlayback: gaplessPlayback,
                   fetchStrategy: _fetchStrategy,
                   controller: controller,
-                  platform: Theme.of(context).platform,
+                  platform: Kurumi.themeOf(context).platform,
                   androidVersion: androidVersion,
                   cacheManager: imageCacheManager,
                   placeholderWidget:
@@ -216,8 +246,8 @@ class BooruRawImage extends StatelessWidget {
                                 ? _wrapPlaceholderAspectRatio(
                                     ExtendedImage.network(
                                       url,
-                                      dio: dio,
-                                      headers: headers,
+                                      dio: placeholderDio ?? dio,
+                                      headers: placeholderHeaders ?? headers,
                                       borderRadius: borderRadius,
                                       width: placeholderAspectRatio == null
                                           ? width
@@ -228,7 +258,9 @@ class BooruRawImage extends StatelessWidget {
                                       fit: placeholderFit ?? fit,
                                       fetchStrategy: _fetchStrategy,
                                       placeholderWidget: imagePlaceHolder,
-                                      platform: Theme.of(context).platform,
+                                      platform: Kurumi.themeOf(
+                                        context,
+                                      ).platform,
                                       androidVersion: androidVersion,
                                       cacheManager: imageCacheManager,
                                     ),
@@ -314,34 +346,6 @@ bool _hasAspectRatioMismatch(
       _placeholderAspectRatioMismatchThreshold;
 }
 
-class ImagePlaceHolder extends StatelessWidget {
-  const ImagePlaceHolder({
-    super.key,
-    this.borderRadius,
-    this.width,
-    this.height,
-  });
-
-  final BorderRadiusGeometry? borderRadius;
-  final double? width;
-  final double? height;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
-        borderRadius: borderRadius ?? _defaultRadius,
-      ),
-      child: const SizedBox.shrink(),
-    );
-  }
-}
-
 class ErrorPlaceholder extends StatelessWidget {
   const ErrorPlaceholder({
     super.key,
@@ -351,26 +355,13 @@ class ErrorPlaceholder extends StatelessWidget {
   final BorderRadiusGeometry? borderRadius;
 
   @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: borderRadius ?? _defaultRadius,
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) => Container(
-          margin: EdgeInsets.symmetric(
-            horizontal: constraints.maxWidth * 0.25,
-            vertical: constraints.maxHeight * 0.25,
-          ),
-          child: Image.asset(
-            'assets/images/error.png',
-            color: Theme.of(context).colorScheme.surface,
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => KurumiImageErrorPlaceholder(
+    borderRadius: borderRadius,
+    child: Image.asset(
+      'assets/images/error.png',
+      color: Kurumi.themeOf(context).colorScheme.surface,
+    ),
+  );
 }
 
 class NullableAspectRatio extends StatelessWidget {

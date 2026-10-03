@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:expandable/expandable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
@@ -41,7 +40,7 @@ class _ArtistCardState extends ConsumerState<ArtistSearchInfoCard> {
     final artist = widget.artist;
 
     return Card(
-      color: Theme.of(context).colorScheme.surface,
+      color: Kurumi.themeOf(context).colorScheme.surface,
       child: InkWell(
         onTap: () {
           widget.focusScopeNode.unfocus();
@@ -59,7 +58,7 @@ class _ArtistCardState extends ConsumerState<ArtistSearchInfoCard> {
               iconPlacement: ExpandablePanelIconPlacement.right,
               headerAlignment: ExpandablePanelHeaderAlignment.center,
               tapBodyToCollapse: false,
-              iconColor: Theme.of(context).iconTheme.color,
+              iconColor: Kurumi.themeOf(context).iconTheme.color,
             ),
             header: Row(
               children: [
@@ -67,19 +66,20 @@ class _ArtistCardState extends ConsumerState<ArtistSearchInfoCard> {
                 Flexible(
                   child: Text(
                     artist.name.replaceAll('_', ' '),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: ref.watch(
-                        tagColorProvider(
-                          (ref.watchConfigAuth, 'artist'),
+                    style: Kurumi.themeOf(context).textTheme.titleLarge
+                        ?.copyWith(
+                          color: ref.watch(
+                            tagColorProvider(
+                              (ref.watchConfigAuth, 'artist'),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                Chip(
+                KurumiMaterialChip(
                   padding: const EdgeInsets.all(2),
-                  backgroundColor: Theme.of(
+                  backgroundColor: Kurumi.themeOf(
                     context,
                   ).colorScheme.secondaryContainer,
                   visualDensity: const ShrinkVisualDensity(),
@@ -142,8 +142,10 @@ class _TagOtherNames extends StatelessWidget {
         itemBuilder: (context, index) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Chip(
-              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+            child: KurumiMaterialChip(
+              backgroundColor: Kurumi.themeOf(
+                context,
+              ).colorScheme.secondaryContainer,
               padding: const EdgeInsets.all(4),
               labelPadding: const EdgeInsets.all(2),
               visualDensity: VisualDensity.compact,

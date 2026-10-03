@@ -1,11 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../widgets/widgets.dart';
 
 class CommentListView<T> extends StatelessWidget {
   const CommentListView({
@@ -63,20 +61,20 @@ class CommentListView<T> extends StatelessWidget {
             comment,
             canReply ? () => onReply?.call(comment) : null,
             hasMenu
-                ? (context) => BooruPopupMenuButton(
+                ? (context) => KurumiPopupMenuButton(
                     items: [
                       if (canEdit && onEdit != null)
-                        BooruPopupMenuItem(
+                        KurumiPopupMenuItem(
                           title: Text(context.t.comment.list.edit),
                           onTap: () => onEdit?.call(comment),
                         ),
                       if (canReply)
-                        BooruPopupMenuItem(
+                        KurumiPopupMenuItem(
                           title: Text(context.t.comment.list.reply),
                           onTap: () => onReply?.call(comment),
                         ),
                       if (canDelete && onDelete != null)
-                        BooruPopupMenuItem(
+                        KurumiPopupMenuItem(
                           title: Text(context.t.comment.list.delete),
                           onTap: () => onDelete?.call(comment),
                         ),

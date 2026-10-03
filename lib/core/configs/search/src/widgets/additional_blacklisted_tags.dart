@@ -1,14 +1,12 @@
-// Flutter imports:
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/cupertino.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../widgets/widgets.dart';
 import '../../../config/types.dart';
 import '../../../create/create.dart';
 import '../../../create/providers.dart';
@@ -49,9 +47,9 @@ class AdditionalBlacklistedTags extends ConsumerWidget {
       ),
     );
 
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
-    return GrayedOut(
+    return KurumiGrayedOut(
       grayedOut: !enabled,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -66,7 +64,7 @@ class AdditionalBlacklistedTags extends ConsumerWidget {
             child: TagListPreview(
               header: Text(
                 context.t.booru.search.blacklist,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                style: Kurumi.themeOf(context).textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),

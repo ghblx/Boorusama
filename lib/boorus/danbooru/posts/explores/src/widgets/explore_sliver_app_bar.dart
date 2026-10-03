@@ -1,5 +1,6 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 class ExploreSliverAppBar extends StatelessWidget {
   const ExploreSliverAppBar({
@@ -16,7 +17,7 @@ class ExploreSliverAppBar extends StatelessWidget {
     return SliverAppBar(
       title: Text(
         title,
-        style: Theme.of(
+        style: Kurumi.themeOf(
           context,
         ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
       ),
@@ -27,7 +28,7 @@ class ExploreSliverAppBar extends StatelessWidget {
               onPressed: onBack,
             )
           : null,
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Kurumi.themeOf(context).colorScheme.surface,
     );
   }
 }

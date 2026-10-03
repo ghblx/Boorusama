@@ -1,13 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/tags/tag/types.dart';
-import '../../../../../../core/themes/colors/types.dart';
-import '../../../../../../core/themes/theme/types.dart';
 import '../../../../../../core/widgets/booru_chip.dart';
 import '../../../../../../foundation/platform.dart';
 import '../../../../tags/tag/widgets.dart';
@@ -42,7 +39,9 @@ class TrendingTags extends ConsumerWidget {
                   label: Text(
                     e.displayName,
                     style: TextStyle(
-                      color: Theme.of(context).brightness.isDark ? color : null,
+                      color: Kurumi.themeOf(context).brightness.isDark
+                          ? color
+                          : null,
                     ),
                   ),
                 ),
@@ -68,8 +67,10 @@ class TrendingTagsPlaceholder extends StatelessWidget {
       runSpacing: isMobilePlatform() ? -2 : 8,
       children: tags.map((e) {
         return BooruChip(
-          chipColors: ChipColors(
-            backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
+          chipColors: KurumiChipColors(
+            backgroundColor: Kurumi.themeOf(
+              context,
+            ).colorScheme.surfaceContainerLow,
             borderColor: Colors.transparent,
             foregroundColor: Colors.transparent,
           ),

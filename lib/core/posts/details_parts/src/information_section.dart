@@ -1,10 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../foundation/url_launcher.dart';
@@ -15,7 +14,6 @@ import '../../../router.dart';
 import '../../../tags/categories/types.dart';
 import '../../../tags/tag/widgets.dart';
 import '../../../themes/colors/providers.dart';
-import '../../../themes/theme/types.dart';
 import '../../../widgets/widgets.dart';
 import '../../details/types.dart';
 import '../../post/types.dart';
@@ -74,6 +72,7 @@ class InformationSection extends ConsumerWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth > 600;
+        final launcher = ref.read(externalUrlLauncherProvider);
 
         return Padding(
           padding:
@@ -85,14 +84,18 @@ class InformationSection extends ConsumerWidget {
                 right: 12,
               ),
           child: compact
-              ? _buildCompactLayout(context, ref)
-              : _buildVerticalLayout(context, ref),
+              ? _buildCompactLayout(context, ref, launcher)
+              : _buildVerticalLayout(context, ref, launcher),
         );
       },
     );
   }
 
-  Widget _buildVerticalLayout(BuildContext context, WidgetRef ref) {
+  Widget _buildVerticalLayout(
+    BuildContext context,
+    WidgetRef ref,
+    ExternalUrlLauncher launcher,
+  ) {
     final createdAt = this.createdAt;
 
     return Row(
@@ -126,7 +129,7 @@ class InformationSection extends ConsumerWidget {
         ),
         if (source != null && showSource)
           if (source case final WebSource source) ...[
-            _buildSource(source),
+            _buildSource(source, launcher: launcher),
           ],
       ],
     );
@@ -138,7 +141,7 @@ class InformationSection extends ConsumerWidget {
         copyrightTags,
       ).replaceAll('_', ' ').titleCase,
       overflow: TextOverflow.fade,
-      style: Theme.of(context).textTheme.bodyLarge,
+      style: Kurumi.themeOf(context).textTheme.bodyLarge,
       maxLines: 1,
       softWrap: false,
     );
@@ -150,7 +153,7 @@ class InformationSection extends ConsumerWidget {
         characterTags,
       ).replaceAll('_', ' ').titleCase,
       overflow: TextOverflow.fade,
-      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+      style: Kurumi.themeOf(context).textTheme.titleLarge?.copyWith(
         fontSize: 20,
         fontWeight: FontWeight.w800,
       ),
@@ -169,15 +172,21 @@ class InformationSection extends ConsumerWidget {
           createdAt.fuzzify(
             locale: Localizations.localeOf(context),
           ),
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).listTileTheme.subtitleTextStyle?.color,
+          style: Kurumi.themeOf(context).textTheme.bodySmall?.copyWith(
+            color: Kurumi.themeOf(
+              context,
+            ).listTileTheme.subtitleTextStyle?.color,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildCompactLayout(BuildContext context, WidgetRef ref) {
+  Widget _buildCompactLayout(
+    BuildContext context,
+    WidgetRef ref,
+    ExternalUrlLauncher launcher,
+  ) {
     final createdAt = this.createdAt;
 
     return Row(
@@ -211,7 +220,7 @@ class InformationSection extends ConsumerWidget {
         if (source != null && showSource)
           if (source case final WebSource source) ...[
             const _DotSeparator(),
-            _buildSource(source, compact: true),
+            _buildSource(source, compact: true, launcher: launcher),
           ],
       ],
     );
@@ -220,9 +229,10 @@ class InformationSection extends ConsumerWidget {
   Widget _buildSource(
     WebSource source, {
     bool compact = false,
+    required ExternalUrlLauncher launcher,
   }) {
     return GestureDetector(
-      onTap: () => launchExternalUrl(source.uri),
+      onTap: () => launcher.launch(source.uri),
       child: ConfigAwareWebsiteLogo(
         url: source.url,
         size: compact ? 20 : kFaviconSize,
@@ -277,7 +287,7 @@ class _DotSeparator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final colorScheme = theme.colorScheme;
 
     return Padding(
@@ -315,7 +325,7 @@ class ArtistNameInfoChip extends ConsumerWidget {
     return Flexible(
       child: GeneralTagContextMenu(
         tag: artist,
-        child: CompactChip(
+        child: KurumiCompactChip(
           textColor: colors?.foregroundColor,
           label: artist.replaceAll('_', ' '),
           onTap: () => onTap?.call(artist),

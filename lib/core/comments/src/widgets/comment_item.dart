@@ -1,5 +1,6 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../configs/config/types.dart';
@@ -11,11 +12,13 @@ class CommentItem extends StatelessWidget {
   const CommentItem({
     required this.comment,
     required this.config,
+    this.footerBuilder,
     super.key,
   });
 
   final Comment comment;
   final BooruConfigAuth config;
+  final Widget Function(BuildContext context)? footerBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +26,9 @@ class CommentItem extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CommentHeader(
-          authorName: comment.creatorName == null
-              ? comment.creatorId?.toString() ?? 'Anon'
-              : comment.creatorName!,
-          authorTitleColor: Theme.of(context).colorScheme.primary,
+          authorName:
+              comment.creatorName ?? comment.creatorId?.toString() ?? 'Anon',
+          authorTitleColor: Kurumi.themeOf(context).colorScheme.primary,
           createdAt: comment.createdAt,
         ),
         const SizedBox(height: 4),
@@ -34,6 +36,7 @@ class CommentItem extends StatelessWidget {
           data: comment.body,
           booruUrl: config.url,
         ),
+        if (footerBuilder case final buildFooter?) buildFooter(context),
       ],
     );
   }

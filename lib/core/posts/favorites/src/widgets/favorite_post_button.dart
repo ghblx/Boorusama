@@ -1,18 +1,14 @@
 // Dart imports:
 import 'dart:async';
 
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
-import '../../../../../foundation/animations/constants.dart';
-import '../../../../../foundation/toast.dart';
 import '../../../../themes/theme/types.dart';
-import '../../../../widgets/booru_tooltip.dart';
 
 class FavoritePostButton extends StatelessWidget {
   const FavoritePostButton({
@@ -30,19 +26,19 @@ class FavoritePostButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BooruTooltip(
+    return KurumiTooltip(
       message: context.t.post.action.favorite,
       child: IconButton(
         splashRadius: 16,
         onPressed: isFaved != null
             ? () {
                 if (!isAuthorized) {
-                  showSimpleSnackBar(
+                  Kurumi.showSimpleSnackBar(
                     context: context,
                     content: Text(
                       context.t.post.detail.login_required_notice,
                     ),
-                    duration: AppDurations.shortToast,
+                    duration: KurumiDurations.shortToast,
                   );
 
                   return;

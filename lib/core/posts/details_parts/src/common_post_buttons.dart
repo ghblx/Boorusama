@@ -1,9 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../foundation/url_launcher.dart';
@@ -74,8 +72,10 @@ class CommonPostButtonsBuilder extends ConsumerWidget {
           SimpleButtonData(
             icon: Icons.open_in_browser,
             title: context.t.post.action.view_in_browser,
-            onPressed: () =>
-                launchExternalUrlString(postLinkGenerator.getLink(post)),
+            onPressed: () => launchExternalUrlString(
+              postLinkGenerator.getLink(post),
+              launcher: ref.read(externalUrlLauncherProvider),
+            ),
           ),
       if (config != null)
         if (post.tags.isNotEmpty)

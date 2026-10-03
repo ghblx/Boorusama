@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:anchor_ui/anchor_ui.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../foundation/platform.dart';
@@ -48,7 +47,7 @@ class _PostNoteState extends State<PostNote> {
   Widget build(BuildContext context) {
     final (coordinate, content) = (widget.note.coordinate, widget.note.content);
     final isMobile = isMobilePlatform();
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return Container(
       margin: coordinate.getMargin(),

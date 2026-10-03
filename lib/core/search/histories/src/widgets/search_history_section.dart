@@ -1,9 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -13,7 +13,7 @@ import '../../../../../foundation/platform.dart';
 import '../../../selected_tags/types.dart';
 import '../types/search_history.dart';
 
-class SearchHistorySection extends StatelessWidget {
+class SearchHistorySection extends ConsumerWidget {
   const SearchHistorySection({
     required this.onHistoryTap,
     required this.histories,
@@ -32,7 +32,7 @@ class SearchHistorySection extends StatelessWidget {
   final bool? reverseScheme;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return histories.isNotEmpty
         ? RemoveLeftPaddingOnLargeScreen(
             child: Column(
@@ -44,9 +44,10 @@ class SearchHistorySection extends StatelessWidget {
                     children: [
                       Text(
                         context.t.search.history.history.toUpperCase(),
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: Kurumi.themeOf(context).textTheme.titleSmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
                       if (onFullHistoryRequested != null)
                         IconButton(
@@ -59,25 +60,31 @@ class SearchHistorySection extends StatelessWidget {
                 ...histories
                     .take(maxHistory)
                     .map(
-                      (item) => ListTile(
-                        visualDensity: VisualDensity.compact,
-                        title: SearchHistoryQueryWidget(
-                          history: item,
-                          reverseScheme: reverseScheme,
-                        ),
-                        contentPadding: const EdgeInsets.only(left: 8),
-                        onTap: () => onHistoryTap(item),
-                        minTileHeight: isDesktopPlatform() ? 0 : null,
-                        subtitle: showTime
-                            ? DateTooltip(
-                                date: item.createdAt,
-                                child: Text(
-                                  item.createdAt.fuzzify(
-                                    locale: Localizations.localeOf(context),
+                      (item) => Material(
+                        color: Colors.transparent,
+                        child: ListTile(
+                          visualDensity: VisualDensity.compact,
+                          title: SearchHistoryQueryWidget(
+                            history: item,
+                            reverseScheme: reverseScheme,
+                          ),
+                          contentPadding: const EdgeInsets.only(left: 8),
+                          onTap: () => onHistoryTap(item),
+                          minTileHeight:
+                              ref.watch(appPlatformProvider).isDesktop
+                              ? 0
+                              : null,
+                          subtitle: showTime
+                              ? DateTooltip(
+                                  date: item.createdAt,
+                                  child: Text(
+                                    item.createdAt.fuzzify(
+                                      locale: Localizations.localeOf(context),
+                                    ),
                                   ),
-                                ),
-                              )
-                            : null,
+                                )
+                              : null,
+                        ),
                       ),
                     ),
               ],
@@ -107,7 +114,7 @@ class SearchHistoryQueryWidget extends StatelessWidget {
             .queryAsList()
             .map(
               (e) => IgnorePointer(
-                child: CompactChip(
+                child: KurumiCompactChip(
                   label: e,
                   borderRadius: BorderRadius.circular(8),
                   padding: const EdgeInsets.symmetric(
@@ -115,8 +122,10 @@ class SearchHistoryQueryWidget extends StatelessWidget {
                     horizontal: 8,
                   ),
                   backgroundColor: (reverseScheme ?? false)
-                      ? Theme.of(context).colorScheme.surface
-                      : Theme.of(context).colorScheme.surfaceContainerHighest,
+                      ? Kurumi.themeOf(context).colorScheme.surface
+                      : Kurumi.themeOf(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
                 ),
               ),
             )

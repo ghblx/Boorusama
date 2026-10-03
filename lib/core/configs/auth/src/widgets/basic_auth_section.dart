@@ -1,12 +1,13 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../foundation/url_launcher.dart';
-import '../../../../themes/theme/types.dart';
 import '../../widgets.dart';
 
-class BasicAuthSection extends StatelessWidget {
+class BasicAuthSection extends ConsumerWidget {
   const BasicAuthSection({
     required this.loginController,
     required this.apiKeyController,
@@ -33,8 +34,8 @@ class BasicAuthSection extends StatelessWidget {
   final Widget? verifyButton;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Kurumi.themeOf(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
@@ -80,7 +81,10 @@ class BasicAuthSection extends StatelessWidget {
         DefaultBooruInstructionHtmlText(
           instructionsText,
           onApiLinkTap: apiKeyUrl != null
-              ? () => launchExternalUrlString(apiKeyUrl!)
+              ? () => launchExternalUrlString(
+                  apiKeyUrl!,
+                  launcher: ref.read(externalUrlLauncherProvider),
+                )
               : null,
         ),
         if (pasteButton case final button?) ...[

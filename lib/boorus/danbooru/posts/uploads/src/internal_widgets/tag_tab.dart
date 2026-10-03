@@ -1,10 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/widgets.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
@@ -32,8 +31,8 @@ class TagEditUploadTag extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Theme(
-      data: Theme.of(context).copyWith(
-        listTileTheme: Theme.of(context).listTileTheme.copyWith(
+      data: Kurumi.themeOf(context).copyWith(
+        listTileTheme: Kurumi.themeOf(context).listTileTheme.copyWith(
           visualDensity: const ShrinkVisualDensity(),
         ),
         dividerColor: Colors.transparent,

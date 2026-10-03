@@ -1,19 +1,16 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../foundation/html.dart';
 import '../../../foundation/info/device_info.dart';
 import '../../../foundation/picker.dart';
+import '../../../foundation/platform.dart';
 import '../../downloads/path/types.dart';
 import '../../settings/providers.dart';
-import '../../settings/widgets.dart';
-import '../../themes/theme/types.dart';
-import '../../widgets/widgets.dart';
 import '../zip/providers.dart';
 import 'providers.dart';
 import 'types.dart';
@@ -23,7 +20,7 @@ class AutoBackupSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final colorScheme = theme.colorScheme;
     final settings = ref.watch(settingsProvider.select((s) => s.autoBackup));
     final settingsNotifier = ref.watch(settingsNotifierProvider.notifier);
@@ -49,7 +46,7 @@ class AutoBackupSection extends ConsumerWidget {
         ),
         child: Column(
           children: [
-            BooruSwitchListTile(
+            KurumiSwitchListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               title: Text(context.t.settings.auto_backup.enable_auto_backup),
               value: settings.enabled && hasValidPath,
@@ -83,6 +80,7 @@ class AutoBackupSection extends ConsumerWidget {
               trailing: TextButton(
                 onPressed: () => pickDirectoryPathToastOnError(
                   context: context,
+                  picker: ref.read(appFilePickerProvider),
                   onPick: (path) => _updateSettings(
                     settingsNotifier,
                     settings.copyWith(userSelectedPath: () => path),
@@ -112,7 +110,7 @@ class AutoBackupSection extends ConsumerWidget {
               storagePath: storagePath,
             ),
             if (settings.enabled && hasValidPath) ...[
-              SettingsTile(
+              KurumiSettingsTile(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 title: Text(context.t.settings.auto_backup.backup_frequency),
                 selectedOption: settings.frequency,
@@ -130,7 +128,7 @@ class AutoBackupSection extends ConsumerWidget {
                   },
                 ),
               ),
-              SettingsTile(
+              KurumiSettingsTile(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 title: Text(context.t.settings.auto_backup.maximum_backups),
                 selectedOption: settings.maxBackups,
@@ -166,7 +164,7 @@ class _SelectLocationRequestBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final colorScheme = theme.colorScheme;
 
     return Container(
@@ -213,12 +211,13 @@ class _StatusTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final colorScheme = theme.colorScheme;
     final isLoading = ref.watch(
       backupProvider.select((s) => s.isActive),
     );
     final settings = ref.watch(settingsProvider.select((s) => s.autoBackup));
+    final platform = ref.watch(appPlatformProvider);
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -228,11 +227,11 @@ class _StatusTile extends ConsumerWidget {
         ),
       ),
       subtitle: Text(
-        settings.shouldBackup
+        settings.shouldBackup(platform)
             ? context.t.settings.auto_backup.backup_needed
             : context.t.settings.auto_backup.up_to_date,
         style: theme.textTheme.bodySmall?.copyWith(
-          color: settings.shouldBackup
+          color: settings.shouldBackup(platform)
               ? colorScheme.error
               : colorScheme.primary,
           fontWeight: FontWeight.w500,
@@ -324,7 +323,7 @@ class _DownloadPathWarning extends ConsumerWidget {
     final releaseName =
         deviceInfo.androidDeviceInfo?.version.release ?? 'Unknown';
 
-    return WarningContainer(
+    return KurumiWarningContainer(
       margin: padding,
       contentBuilder: (context) => AppHtml(
         data: context.t.download.folder_select_warning

@@ -1,15 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
 import '../../../../../../core/configs/config/types.dart';
-import '../../../../../../core/widgets/widgets.dart';
-import '../../../../../../foundation/toast.dart';
 import '../providers/favorite_groups_notifier.dart';
 import '../types/danbooru_favorite_group.dart';
 import '../wigdets/privacy_toggle.dart';
@@ -72,7 +69,7 @@ class _EditFavoriteGroupDialogState
           isPrivate: isPrivate,
           postIds: postIds,
           onFailure: (message) {
-            if (mounted) showErrorToast(context, message);
+            if (mounted) Kurumi.showErrorToast(context, message);
           },
         );
 
@@ -96,7 +93,7 @@ class _EditFavoriteGroupDialogState
     final invalidParts = parts.where((e) => int.tryParse(e) == null).toList();
 
     if (invalidParts.isNotEmpty) {
-      showErrorToast(
+      Kurumi.showErrorToast(
         context,
         context.t.favorite_groups.invalid_post_ids.replaceAll(
           '{0}',
@@ -174,19 +171,19 @@ class _EditFavoriteGroupDialogState
           Center(
             child: Text(
               widget.title,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Kurumi.themeOf(context).textTheme.titleLarge,
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Text(
               context.t.favorite_groups.group_name.toUpperCase(),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: Kurumi.themeOf(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
             ),
           ),
-          BooruTextField(
+          KurumiTextField(
             autofocus: true,
             controller: nameController,
             textInputAction: TextInputAction.done,
@@ -201,7 +198,7 @@ class _EditFavoriteGroupDialogState
           if (widget.enableManualDataInput)
             Text(
               context.t.favorite_groups.all_posts.toUpperCase(),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: Kurumi.themeOf(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -212,7 +209,7 @@ class _EditFavoriteGroupDialogState
           if (widget.enableManualDataInput)
             Container(
               constraints: const BoxConstraints(maxHeight: 150),
-              child: BooruTextField(
+              child: KurumiTextField(
                 controller: textController,
                 maxLines: 4,
                 textInputAction: TextInputAction.done,
@@ -241,7 +238,7 @@ class _EditFavoriteGroupDialogState
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(
+                    foregroundColor: Kurumi.themeOf(
                       context,
                     ).colorScheme.onSurface,
                   ),
@@ -269,10 +266,11 @@ class _EditFavoriteGroupDialogState
                                     ),
                                     name: value.text,
                                     isPrivate: isPrivate,
-                                    onFailure: (message) => showErrorToast(
-                                      context,
-                                      message,
-                                    ),
+                                    onFailure: (message) =>
+                                        Kurumi.showErrorToast(
+                                          context,
+                                          message,
+                                        ),
                                   );
                             } else {
                               _confirmAndEdit(

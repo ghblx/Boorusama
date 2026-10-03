@@ -1,13 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:anchor_ui/anchor_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../../../core/widgets/context_menu_tile.dart';
-import '../../../../../../core/widgets/widgets.dart';
 import '../types/danbooru_upload_post.dart';
 
 class DanbooruUploadPostContextMenu extends ConsumerWidget {
@@ -28,7 +25,7 @@ class DanbooruUploadPostContextMenu extends ConsumerWidget {
       menuBuilder: (context) {
         return Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainer,
+            color: Kurumi.themeOf(context).colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(8),
             boxShadow: kElevationToShadow[4],
           ),
@@ -42,7 +39,7 @@ class DanbooruUploadPostContextMenu extends ConsumerWidget {
             ),
             shrinkWrap: true,
             children: [
-              ContextMenuTile(
+              KurumiContextMenuTile(
                 title: 'Hide upload',
                 onTap: () {
                   context.hideMenu();
@@ -53,7 +50,7 @@ class DanbooruUploadPostContextMenu extends ConsumerWidget {
           ),
         );
       },
-      childBuilder: (context) => AdaptiveContextMenuGestureTrigger(
+      childBuilder: (context) => KurumiAdaptiveContextMenuGestureTrigger(
         child: child,
       ),
     );

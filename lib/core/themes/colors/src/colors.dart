@@ -1,31 +1,5 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
-const kLightWhiteColor = Color.fromARGB(255, 220, 220, 220);
-const kDimWhiteColor = Color.fromARGB(255, 130, 130, 130);
-
-// AMOLED Dark theme
-const kPrimaryAmoledDarkColor = Color.fromARGB(255, 86, 99, 233);
-const kOnPrimaryAmoledDarkColor = kLightWhiteColor;
-const kErrorAmoledDarkColor = Color(0xFFB00020);
-const kOnErrorAmoledDarkColor = kLightWhiteColor;
-const kHintAmoledDarkColor = kDimWhiteColor;
-
-// Dark theme
-const kPrimaryDarkColor = Color.fromARGB(255, 86, 99, 233);
-const kOnPrimaryDarkColor = kLightWhiteColor;
-const kErrorDarkColor = Color(0xFFB00020);
-const kOnErrorDarkColor = kLightWhiteColor;
-const kIconDarkColor = kLightWhiteColor;
-
-// Light theme
-const kPrimaryLightColor = Color.fromARGB(255, 114, 137, 218);
-const kOnPrimaryLightColor = Colors.white;
-const kOnBackgroundLightColor = Colors.black;
-const kOnSurfaceLightColor = Colors.black;
-const kErrorLightColor = Color.fromARGB(255, 211, 47, 47);
-const kOnErrorLightColor = Colors.white;
-const kHintLightColor = Color.fromARGB(255, 79, 86, 96);
+// Package imports:
+import 'package:kurumi/material.dart';
 
 class BoorusamaColors extends ThemeExtension<BoorusamaColors> {
   const BoorusamaColors({
@@ -56,6 +30,29 @@ class BoorusamaColors extends ThemeExtension<BoorusamaColors> {
       upvoteColor: Color.lerp(upvoteColor, other.upvoteColor, t) ?? upvoteColor,
       downvoteColor:
           Color.lerp(downvoteColor, other.downvoteColor, t) ?? downvoteColor,
+    );
+  }
+}
+
+extension BoorusamaThemeDataX on ThemeData {
+  /// Adds app-only vote colors while preserving Kurumi's theme extensions.
+  ThemeData withBoorusamaColors({
+    Color upvoteColor = Colors.redAccent,
+    Color downvoteColor = Colors.blueAccent,
+  }) {
+    final existingExtensions = [
+      for (final extension in extensions.values)
+        if (extension is! BoorusamaColors) extension,
+    ];
+
+    return copyWith(
+      extensions: [
+        ...existingExtensions,
+        BoorusamaColors(
+          upvoteColor: upvoteColor,
+          downvoteColor: downvoteColor,
+        ),
+      ],
     );
   }
 }

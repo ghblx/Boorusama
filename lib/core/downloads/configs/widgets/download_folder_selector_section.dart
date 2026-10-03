@@ -1,19 +1,17 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
 import '../../../../foundation/html.dart';
 import '../../../../foundation/info/device_info.dart';
 import '../../../../foundation/picker.dart';
-import '../../../themes/theme/types.dart';
-import '../../../widgets/widgets.dart';
 import '../../path/types.dart';
 
-class DownloadFolderSelectorSection extends StatefulWidget {
+class DownloadFolderSelectorSection extends ConsumerStatefulWidget {
   const DownloadFolderSelectorSection({
     required this.storagePath,
     required this.deviceInfo,
@@ -33,12 +31,12 @@ class DownloadFolderSelectorSection extends StatefulWidget {
   final Color? backgroundColor;
 
   @override
-  State<DownloadFolderSelectorSection> createState() =>
+  ConsumerState<DownloadFolderSelectorSection> createState() =>
       _DownloadFolderSelectorSectionState();
 }
 
 class _DownloadFolderSelectorSectionState
-    extends State<DownloadFolderSelectorSection> {
+    extends ConsumerState<DownloadFolderSelectorSection> {
   late String? storagePath = widget.storagePath;
 
   @override
@@ -64,7 +62,7 @@ class _DownloadFolderSelectorSectionState
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -100,7 +98,7 @@ class _DownloadFolderSelectorSectionState
                             widget.hint ??
                                 context.t.settings.download.select_a_folder,
                             overflow: TextOverflow.fade,
-                            style: Theme.of(context).textTheme.titleMedium
+                            style: Kurumi.themeOf(context).textTheme.titleMedium
                                 ?.copyWith(
                                   color: colorScheme.hintColor,
                                 ),
@@ -142,6 +140,7 @@ class _DownloadFolderSelectorSectionState
 
   Future<void> _pickFolder() => pickDirectoryPathToastOnError(
     context: context,
+    picker: ref.read(appFilePickerProvider),
     onPick: (path) => widget.onPathChanged(path),
   );
 }
@@ -160,7 +159,7 @@ class DownloadPathWarning extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WarningContainer(
+    return KurumiWarningContainer(
       margin: padding,
       contentBuilder: (context) => AppHtml(
         data: context.t.download.folder_select_warning

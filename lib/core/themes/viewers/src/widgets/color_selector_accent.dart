@@ -1,12 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../widgets/widgets.dart';
 import '../../../colors/types.dart';
 import '../providers/color_selector_accent_notifier.dart';
 import '../providers/theme_previewer_notifier.dart';
@@ -63,7 +61,7 @@ class AccentColorSelector extends StatelessWidget {
 
         return Padding(
           padding: padding,
-          child: BooruSwitchListTile(
+          child: KurumiSwitchListTile(
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 4,
             ),
@@ -88,7 +86,7 @@ class AccentColorSelector extends StatelessWidget {
 
         return Padding(
           padding: padding,
-          child: BooruSwitchListTile(
+          child: KurumiSwitchListTile(
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 4,
             ),

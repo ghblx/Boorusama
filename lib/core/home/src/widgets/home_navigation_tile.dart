@@ -1,10 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../constants.dart';
 import '../controllers/home_page_controller.dart';
-import 'navigation_tile.dart';
 
 class HomeNavigationTile extends StatelessWidget {
   const HomeNavigationTile({
@@ -40,7 +40,7 @@ class HomeNavigationTile extends StatelessWidget {
       builder: (context, index, child) {
         final selected = value == index;
 
-        return NavigationTile(
+        return KurumiNavigationTile(
           value: value,
           index: index,
           showIcon:
@@ -50,13 +50,17 @@ class HomeNavigationTile extends StatelessWidget {
           selectedIcon: Icon(
             selected ? selectedIcon : icon,
             fill: 1,
-            color: selected ? Theme.of(context).colorScheme.onSecondary : null,
+            color: selected
+                ? Kurumi.themeOf(context).colorScheme.onSecondary
+                : null,
           ),
           icon: Icon(
             icon,
             color:
                 forceIconColor ??
-                (selected ? Theme.of(context).colorScheme.onSecondary : null),
+                (selected
+                    ? Kurumi.themeOf(context).colorScheme.onSecondary
+                    : null),
             fill: forceFillIcon ? 1 : 0,
           ),
           title: Text(
@@ -66,7 +70,7 @@ class HomeNavigationTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: selected
-                  ? Theme.of(context).colorScheme.onSecondary
+                  ? Kurumi.themeOf(context).colorScheme.onSecondary
                   : null,
             ),
           ),

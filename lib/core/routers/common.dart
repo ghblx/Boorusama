@@ -1,12 +1,9 @@
-// Flutter imports:
-import 'package:flutter/cupertino.dart';
-
 // Package imports:
 import 'package:go_router/go_router.dart';
+import 'package:kurumi/cupertino.dart';
+import 'package:kurumi/kurumi.dart';
 
 // Project imports:
-import '../../foundation/display.dart';
-import '../widgets/widgets.dart';
 import 'routers.dart';
 
 GoRouterPageBuilder genericMobilePageBuilder({
@@ -39,7 +36,7 @@ GoRouterPageBuilder largeScreenCompatPageBuilderWithExtra<T>({
   final builtPage = pageBuilder(context, state, extra);
 
   final page = context.isLargeScreen && !fullScreen
-      ? BooruDialog(
+      ? KurumiDialog(
           child: builtPage,
         )
       : builtPage;
@@ -81,7 +78,7 @@ class FastFadePageRoute<T> extends PageRouteBuilder<T> {
          transitionDuration: const Duration(milliseconds: 100),
          reverseTransitionDuration: const Duration(milliseconds: 100),
          pageBuilder: (context, animation, secondaryAnimation) => child,
-         transitionsBuilder: fadeTransitionBuilder(),
+         transitionsBuilder: Kurumi.fadeTransitionBuilder(),
        );
 
   final Widget child;
@@ -93,7 +90,7 @@ class FastFadePage<T> extends CustomTransitionPage<T> {
     super.name,
     super.key,
   }) : super(
-         transitionsBuilder: fadeTransitionBuilder(),
+         transitionsBuilder: Kurumi.fadeTransitionBuilder(),
          transitionDuration: const Duration(milliseconds: 100),
          reverseTransitionDuration: const Duration(milliseconds: 100),
        );

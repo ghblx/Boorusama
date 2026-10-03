@@ -1,12 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:foundation/foundation.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-
-// Project imports:
-import '../../../../themes/theme/types.dart';
 
 class VideoPlayDurationIcon extends StatelessWidget {
   const VideoPlayDurationIcon({
@@ -20,52 +16,50 @@ class VideoPlayDurationIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final background = context.extendedColorScheme.surfaceContainerOverlayDim;
-    final foreground = context.extendedColorScheme.onSurfaceContainerOverlayDim;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      height: 24,
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: const BorderRadius.all(Radius.circular(4)),
+    final durationLabel = formatDurationForMedia(
+      Duration(
+        seconds: duration < 1 ? 1 : duration.round(),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            formatDurationForMedia(
-              Duration(
-                seconds: duration < 1 ? 1 : duration.round(),
+    );
+    final colors = Kurumi.semanticColorsOf(context);
+    final background = colors.overlayDim;
+    final foreground = colors.onOverlayDim;
+
+    return Semantics(
+      label: durationLabel,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        height: 24,
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              durationLabel,
+              style: TextStyle(
+                color: foreground,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.25,
               ),
             ),
-            style: TextStyle(
-              color: foreground,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              letterSpacing: -0.25,
-            ),
-          ),
-          hasSound.toOption().fold(
-            () => const SizedBox.shrink(),
-            (sound) => Padding(
-              padding: const EdgeInsets.only(left: 1),
-              child: sound
-                  ? Icon(
-                      Symbols.volume_up_rounded,
-                      color: foreground,
-                      size: 18,
-                      fill: 1,
-                    )
-                  : Icon(
-                      Symbols.volume_off_rounded,
-                      color: foreground,
-                      size: 18,
-                      fill: 1,
-                    ),
-            ),
-          ),
-        ],
+            if (hasSound case final sound?)
+              Padding(
+                padding: const EdgeInsets.only(left: 1),
+                child: Icon(
+                  sound
+                      ? Symbols.volume_up_rounded
+                      : Symbols.volume_off_rounded,
+                  color: foreground,
+                  size: 18,
+                  fill: 1,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

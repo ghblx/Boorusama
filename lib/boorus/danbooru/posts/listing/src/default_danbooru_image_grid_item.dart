@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:selection_mode/selection_mode.dart';
 
@@ -18,7 +17,6 @@ import '../../../../../core/posts/listing/widgets.dart';
 import '../../../../../core/posts/post/widgets.dart';
 import '../../../../../core/posts/sources/types.dart';
 import '../../../../../core/settings/providers.dart';
-import '../../../../../core/widgets/widgets.dart';
 import '../../../../../foundation/clipboard.dart';
 import '../../../../../foundation/url_launcher.dart';
 import '../../post/types.dart';
@@ -26,7 +24,7 @@ import 'danbooru_post_preview.dart';
 
 const _kBannedTextThreshold = 200.0;
 
-class DefaultDanbooruImageGridItem extends StatelessWidget {
+class DefaultDanbooruImageGridItem extends ConsumerWidget {
   const DefaultDanbooruImageGridItem({
     required this.index,
     required this.autoScrollController,
@@ -47,7 +45,7 @@ class DefaultDanbooruImageGridItem extends StatelessWidget {
   final Widget? quickActionButton;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final selectionModeController = SelectionMode.of(context);
 
     return ListenableBuilder(
@@ -62,7 +60,7 @@ class DefaultDanbooruImageGridItem extends StatelessWidget {
 
           return HeroMode(
             enabled: useHero,
-            child: BooruHero(
+            child: KurumiHero(
               tag: '${post.id}_hero',
               child: ExplicitContentBlockOverlay(
                 rating: post.rating,
@@ -91,7 +89,7 @@ class DefaultDanbooruImageGridItem extends StatelessWidget {
                           quickActionButton:
                               quickActionButton ??
                               (!post.isBanned && !multiSelect
-                                  ? DefaultImagePreviewQuickActionButton(
+                                  ? DefaultImagePreviewQuickActions(
                                       post: post,
                                     )
                                   : const SizedBox.shrink()),
@@ -121,6 +119,7 @@ class DefaultDanbooruImageGridItem extends StatelessWidget {
                                       post,
                                       artistTags,
                                       context,
+                                      ref.read(externalUrlLauncherProvider),
                                     )
                                   : null),
                         );
@@ -155,6 +154,7 @@ class DefaultDanbooruImageGridItem extends StatelessWidget {
     DanbooruPost post,
     List<String> artistTags,
     BuildContext context,
+    ExternalUrlLauncher launcher,
   ) {
     return BlockOverlayItem(
       overlay: SingleChildScrollView(
@@ -204,17 +204,17 @@ class DefaultDanbooruImageGridItem extends StatelessWidget {
                   runSpacing: 4,
                   children: [
                     for (final tag in artistTags)
-                      RawCompactChip(
+                      KurumiRawCompactChip(
                         label: Text(
                           tag.replaceAll('_', ' '),
                           maxLines: 1,
                           style: TextStyle(
-                            color: Theme.of(
+                            color: Kurumi.themeOf(
                               context,
                             ).colorScheme.onErrorContainer,
                           ),
                         ),
-                        backgroundColor: Theme.of(
+                        backgroundColor: Kurumi.themeOf(
                           context,
                         ).colorScheme.errorContainer,
                         shape: RoundedRectangleBorder(
@@ -235,7 +235,10 @@ class DefaultDanbooruImageGridItem extends StatelessWidget {
         ),
       ),
       onTap: switch (post.source) {
-        final WebSource source => () => launchExternalUrlString(source.url),
+        final WebSource source => () => launchExternalUrlString(
+          source.url,
+          launcher: launcher,
+        ),
         _ => null,
       },
     );

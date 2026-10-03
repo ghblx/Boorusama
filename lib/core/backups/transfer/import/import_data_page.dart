@@ -1,16 +1,13 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:coreutils/coreutils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../foundation/info/package_info.dart';
-import '../../../../foundation/toast.dart';
 import '../../../../foundation/version.dart';
-import '../../../themes/theme/types.dart';
 import '../../preparation/version_mismatch_alert_dialog.dart';
 import '../../servers/discovery_client.dart';
 import '../../types.dart';
@@ -31,7 +28,7 @@ class _ImportDataPageState extends ConsumerState<ImportDataPage> {
     onServiceLost: _handleServiceLost,
     onError: (message) {
       if (!mounted) return;
-      showErrorToast(context, message);
+      Kurumi.showErrorToast(context, message);
     },
   );
 
@@ -71,7 +68,7 @@ class _ImportDataPageState extends ConsumerState<ImportDataPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final currentVersion = ref.watch(appVersionProvider);
 
     return Scaffold(
@@ -93,7 +90,7 @@ class _ImportDataPageState extends ConsumerState<ImportDataPage> {
                       .backup_and_restore
                       .receive_data
                       .nearby_devices,
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Kurumi.themeOf(context).textTheme.titleLarge,
                 ),
                 IconButton(
                   icon: const Icon(Icons.add),
@@ -156,7 +153,7 @@ class _ImportDataPageState extends ConsumerState<ImportDataPage> {
                           final version = appVersion;
 
                           if (version == null) {
-                            showErrorToast(
+                            Kurumi.showErrorToast(
                               context,
                               "Couldn't determine this device's version, aborting."
                                   .hc,
@@ -165,7 +162,7 @@ class _ImportDataPageState extends ConsumerState<ImportDataPage> {
                           }
 
                           if (currentVersion == null) {
-                            showErrorToast(
+                            Kurumi.showErrorToast(
                               context,
                               "Couldn't determine the current version, aborting."
                                   .hc,
@@ -214,9 +211,10 @@ class _ImportDataPageState extends ConsumerState<ImportDataPage> {
                   ),
                   child: Text.rich(
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: colorScheme.hintColor,
-                    ),
+                    style: Kurumi.themeOf(context).textTheme.titleSmall
+                        ?.copyWith(
+                          color: colorScheme.hintColor,
+                        ),
                     context.t.settings.backup_and_restore.receive_data
                         .no_devices_found(
                           tapHere: (_) => const WidgetSpan(

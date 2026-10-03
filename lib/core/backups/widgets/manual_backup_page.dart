@@ -1,15 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:selection_mode/selection_mode.dart';
 
 // Project imports:
-import '../../../foundation/toast.dart';
 import '../../widgets/default_selection_bar.dart';
-import '../../widgets/widgets.dart';
 import '../sources/providers.dart';
 import '../types/backup_data_source.dart';
 import '../zip/providers.dart';
@@ -98,7 +95,7 @@ class _ManualBackupPageState extends ConsumerState<ManualBackupPage> {
                     return const SizedBox.shrink();
                   }
 
-                  return PrimaryButton(
+                  return KurumiButton(
                     onPressed: isLoading
                         ? null
                         : () => _performBulkBackup(context, sources),
@@ -139,7 +136,7 @@ class _ManualBackupPageState extends ConsumerState<ManualBackupPage> {
         .toList();
 
     if (selectedSourceIds.isEmpty) {
-      showErrorToast(
+      Kurumi.showErrorToast(
         context,
         context.t.settings.backup_and_restore.no_sources_selected,
       );
@@ -197,7 +194,7 @@ class _SelectableBackupTile extends ConsumerWidget {
               decoration: BoxDecoration(
                 border: Border.all(
                   color: isSelected
-                      ? Theme.of(context).colorScheme.primary
+                      ? Kurumi.themeOf(context).colorScheme.primary
                       : Colors.transparent,
                   width: 2,
                 ),

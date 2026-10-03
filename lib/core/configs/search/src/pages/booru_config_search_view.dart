@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -49,7 +48,7 @@ class BooruConfigSearchView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final alwaysIncludeTags = ref.watch(
       editBooruConfigProvider(
         ref.watch(editBooruConfigIdProvider),
@@ -169,7 +168,7 @@ class BooruConfigSearchView extends ConsumerWidget {
     bool exclude = false,
   }) {
     final context = ref.context;
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return Wrap(
       runAlignment: WrapAlignment.center,
@@ -177,7 +176,7 @@ class BooruConfigSearchView extends ConsumerWidget {
       runSpacing: 5,
       children: [
         ...tags.map(
-          (e) => Chip(
+          (e) => KurumiMaterialChip(
             backgroundColor: colorScheme.secondaryContainer,
             label: Text(e.replaceAll('_', ' ')),
             deleteIcon: Icon(

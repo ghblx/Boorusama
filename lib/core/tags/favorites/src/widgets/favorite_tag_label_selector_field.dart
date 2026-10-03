@@ -1,5 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../core/widgets/widgets.dart';
@@ -27,21 +29,30 @@ class FavoriteTagLabelSelectorField extends StatelessWidget {
           constraints: const BoxConstraints(
             maxWidth: 160,
           ),
-          child: OptionSingleSearchableField(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            sheetTitle: 'Select',
-            optionValueBuilder: (option) =>
-                option == kSpecialLabelKeyForAll ? '<All>' : option,
-            value: selected == '' ? '<All>' : selected,
-            items: [
-              kSpecialLabelKeyForAll,
-              ...labels,
-            ],
-            onSelect: (value) {
-              if (value == null) return;
-              final v = value == kSpecialLabelKeyForAll ? '' : value;
-              onSelect(v);
-            },
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: OptionSingleSearchableField(
+              backgroundColor: Kurumi.themeOf(
+                context,
+              ).colorScheme.surfaceContainerHigh,
+              sheetTitle: context.t.favorite_tags.labels.title,
+              optionValueBuilder: (option) => option == kSpecialLabelKeyForAll
+                  ? context.t.favorite_tags.labels.all
+                  : option,
+              value: selected == ''
+                  ? context.t.favorite_tags.labels.all
+                  : selected,
+              items: [
+                kSpecialLabelKeyForAll,
+                ...labels,
+              ],
+              onSelect: (value) {
+                if (value == null) return;
+                final v = value == kSpecialLabelKeyForAll ? '' : value;
+                onSelect(v);
+              },
+            ),
           ),
         ),
       ],

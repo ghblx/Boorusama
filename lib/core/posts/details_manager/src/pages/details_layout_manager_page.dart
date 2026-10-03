@@ -1,16 +1,16 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:reorderables/reorderables.dart';
 
 // Project imports:
 import '../../../../premiums/providers.dart';
 import '../../../../premiums/widgets.dart';
-import '../../../../themes/theme/types.dart';
 import '../../../details_parts/types.dart';
 import '../providers/details_layout_provider.dart';
 import '../routes/routes.dart';
@@ -116,7 +116,7 @@ class _List extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final notifier = ref.watch(detailsLayoutProvider(params).notifier);
     final state = ref.watch(detailsLayoutProvider(params));
     final allParts = state.allPartsInOrder;

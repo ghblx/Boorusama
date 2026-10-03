@@ -1,16 +1,12 @@
-// Flutter imports:
-
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
 import '../../../../../../core/posts/rating/types.dart';
-import '../../../../../../core/widgets/widgets.dart';
 import '../../../../configs/providers.dart';
 import '../../../../tags/edit/widgets.dart';
 import '../providers/upload_provider.dart';
@@ -36,11 +32,11 @@ class TagEditUploadRatingSelector extends ConsumerWidget {
             children: [
               Text(
                 'Rating',
-                style: Theme.of(context).textTheme.titleMedium,
+                style: Kurumi.themeOf(context).textTheme.titleMedium,
               ),
               if (!loginDetails.hasStrictSFW) const TagHowToRateButton(),
               const Spacer(),
-              OptionDropDownButton(
+              KurumiOptionDropDownButton(
                 alignment: AlignmentDirectional.centerStart,
                 value: rating,
                 onChanged: (value) => notifier.updateRating(value),

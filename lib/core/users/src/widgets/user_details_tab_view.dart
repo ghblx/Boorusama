@@ -1,11 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../foundation/display.dart';
 
 class UserDetailsTabView extends StatelessWidget {
   const UserDetailsTabView({
@@ -79,7 +77,7 @@ class UserDetailsViewScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: Kurumi.themeOf(context).colorScheme.surface,
         borderRadius: const BorderRadius.all(Radius.circular(8)),
       ),
       child: CustomScrollView(

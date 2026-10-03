@@ -1,10 +1,10 @@
 // Flutter imports:
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 
 // Package imports:
 import 'package:cache_manager/cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../foundation/display.dart';
@@ -74,7 +74,7 @@ class _PostDetailsItemState<T extends Post>
     void onItemTap() {
       final controller = widget.detailsController;
 
-      if (isDesktopPlatform()) {
+      if (ref.read(appPlatformProvider).isDesktop) {
         if (controller.currentPost.value.isVideo) {
           if (controller.isVideoPlaying.value) {
             controller.pauseCurrentVideo(showAnimation: true);
@@ -139,8 +139,9 @@ class _PostDetailsItemState<T extends Post>
               gestures?.doubleTap,
               post,
             ),
-            (doubleTap: false, handler: _) when post.isVideo =>
-              (details) => onVideoDoubleTap(details?.localPosition),
+            (doubleTap: false, handler: _) when post.isVideo => (
+              details,
+            ) => onVideoDoubleTap(details?.localPosition),
             _ => null,
           },
           onLongPress: gestures.canLongPress && booruRepo != null

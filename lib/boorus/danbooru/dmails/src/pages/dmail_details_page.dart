@@ -1,10 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
 import 'package:intl/intl.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -47,7 +46,7 @@ class DanbooruDmailDetailsPage extends ConsumerWidget {
             );
             final fromUser = ref.watch(danbooruCreatorProvider(dmail.fromId));
             final toUser = ref.watch(danbooruCreatorProvider(dmail.toId));
-            final theme = Theme.of(context);
+            final theme = Kurumi.themeOf(context);
 
             return Scaffold(
               appBar: AppBar(
@@ -122,6 +121,7 @@ class DanbooruDmailDetailsPage extends ConsumerWidget {
                           onPressed: () {
                             launchExternalUrlString(
                               '${config.url}dmails/${dmail.id}',
+                              launcher: ref.read(externalUrlLauncherProvider),
                             );
                           },
                           child: Text(

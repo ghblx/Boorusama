@@ -1,15 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
-import '../../../boorus/booru/types.dart';
-import '../../../configs/config/providers.dart';
-import '../../../themes/theme/types.dart';
 import '../../../widgets/widgets.dart';
 import '../providers/bulk_download_notifier.dart';
 import '../providers/saved_download_task_provider.dart';
@@ -22,21 +18,7 @@ class BulkDownloadPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final config = ref.watchConfigAuth;
-
-    return config.booruType == BooruType.zerochan
-        ? Scaffold(
-            appBar: AppBar(
-              title: Text(context.t.sideMenu.bulk_download),
-            ),
-            body: Center(
-              child: Text(
-                'Temporarily disabled due to an issue with getting the download link'
-                    .hc,
-              ),
-            ),
-          )
-        : const BulkDownloadPageInternal();
+    return const BulkDownloadPageInternal();
   }
 }
 
@@ -134,7 +116,7 @@ class BulkDownloadPageInternal extends StatelessWidget {
     WidgetRef ref, {
     bool dense = false,
   }) {
-    return PrimaryButton(
+    return KurumiButton(
       dense: dense,
       onPressed: () {
         goToNewBulkDownloadTaskPage(
@@ -159,8 +141,8 @@ class BulkDownloadActionSessions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessions = ref.watch(bulkDownloadSessionsProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
+    final textTheme = Kurumi.themeOf(context).textTheme;
 
     return sessions.isNotEmpty
         ? ListView.builder(

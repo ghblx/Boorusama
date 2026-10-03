@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 class PaginationLimitView extends ConsumerWidget {
   const PaginationLimitView({
@@ -24,7 +23,7 @@ class PaginationLimitView extends ConsumerWidget {
           'This post cannot be reached with previous search context due to pagination limits.'
               .hc,
           style: TextStyle(
-            color: Theme.of(context).colorScheme.error,
+            color: Kurumi.themeOf(context).colorScheme.error,
           ),
         ),
         const SizedBox(height: 16),

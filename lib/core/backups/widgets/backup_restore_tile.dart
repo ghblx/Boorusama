@@ -1,16 +1,13 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../foundation/info/device_info.dart';
 import '../../../foundation/picker.dart';
-import '../../../foundation/toast.dart';
-import '../../themes/theme/types.dart';
-import '../../widgets/widgets.dart';
+import '../../../foundation/platform.dart';
 import '../preparation/preparation_pipeline.dart';
 import '../types/backup_data_source.dart';
 import '../types/types.dart';
@@ -75,14 +72,14 @@ class DefaultBackupTile extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(
+              ? Kurumi.themeOf(
                   context,
                 ).colorScheme.primaryContainer.withValues(alpha: 0.3)
-              : Theme.of(context).colorScheme.surfaceContainer,
+              : Kurumi.themeOf(context).colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(8),
           border: isSelected
               ? Border.all(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Kurumi.themeOf(context).colorScheme.primary,
                   width: 2,
                 )
               : null,
@@ -91,10 +88,10 @@ class DefaultBackupTile extends ConsumerWidget {
           children: [
             CircleAvatar(
               radius: 22,
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: Kurumi.themeOf(context).colorScheme.surface,
               child: Icon(
                 icon,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: Kurumi.themeOf(context).colorScheme.onSurface,
                 fill: 1,
               ),
             ),
@@ -118,7 +115,9 @@ class DefaultBackupTile extends ConsumerWidget {
                           subtitleStyle ??
                           TextStyle(
                             fontWeight: FontWeight.w400,
-                            color: Theme.of(context).colorScheme.hintColor,
+                            color: Kurumi.themeOf(
+                              context,
+                            ).colorScheme.hintColor,
                           ),
                     ),
                   ...?extra,
@@ -126,10 +125,10 @@ class DefaultBackupTile extends ConsumerWidget {
               ),
             ),
             if (!isSelectionMode)
-              BooruPopupMenuButton(
+              KurumiPopupMenuButton(
                 items: [
                   for (final action in actions.entries)
-                    BooruPopupMenuItem(
+                    KurumiPopupMenuItem(
                       title: action.value,
                       onTap: () => _handleAction(context, ref, action.key),
                     ),
@@ -144,7 +143,7 @@ class DefaultBackupTile extends ConsumerWidget {
   void _handleAction(BuildContext context, WidgetRef ref, String actionType) {
     switch (actionType) {
       case 'export':
-        _handleFileExport(context);
+        _handleFileExport(context, ref);
       case 'import':
         _handleFileImport(context, ref);
       case 'exportClipboard':
@@ -156,17 +155,18 @@ class DefaultBackupTile extends ConsumerWidget {
     }
   }
 
-  void _handleFileExport(BuildContext context) {
+  void _handleFileExport(BuildContext context, WidgetRef ref) {
     final fileCapability = source.capabilities.file;
     if (fileCapability == null) return;
 
     pickDirectoryPathToastOnError(
       context: context,
+      picker: ref.read(appFilePickerProvider),
       onPick: (path) async {
         try {
           await fileCapability.export(path);
           if (context.mounted) {
-            showSuccessToast(
+            Kurumi.showSuccessToast(
               context,
               context.t.settings.backup_and_restore.export_success.replaceAll(
                 '{source}',
@@ -176,7 +176,7 @@ class DefaultBackupTile extends ConsumerWidget {
           }
         } catch (error) {
           if (context.mounted) {
-            showErrorToast(
+            Kurumi.showErrorToast(
               context,
               context.t.settings.backup_and_restore.export_failed
                   .replaceAll('{source}', source.displayName.toLowerCase())
@@ -194,6 +194,8 @@ class DefaultBackupTile extends ConsumerWidget {
 
     BackupFilePicker.pickFile(
       context: context,
+      picker: ref.read(appFilePickerProvider),
+      platform: ref.read(appPlatformProvider),
       androidDeviceInfo: ref.read(deviceInfoProvider).androidDeviceInfo,
       allowedExtensions: fileExtensions,
       forceAnyFileType: forceAnyFileType,
@@ -202,7 +204,7 @@ class DefaultBackupTile extends ConsumerWidget {
           final preparation = await fileCapability.prepareImport(path, context);
           await preparation.executeImport();
           if (context.mounted) {
-            showSuccessToast(
+            Kurumi.showSuccessToast(
               context,
               context.t.settings.backup_and_restore.import_success.replaceAll(
                 '{source}',
@@ -214,7 +216,7 @@ class DefaultBackupTile extends ConsumerWidget {
           // User cancelled, no error message needed
         } catch (error) {
           if (context.mounted) {
-            showErrorToast(
+            Kurumi.showErrorToast(
               context,
               context.t.settings.backup_and_restore.import_failed
                   .replaceAll('{source}', source.displayName.toLowerCase())
@@ -233,7 +235,7 @@ class DefaultBackupTile extends ConsumerWidget {
     try {
       await clipboardCapability.export();
       if (context.mounted) {
-        showSuccessToast(
+        Kurumi.showSuccessToast(
           context,
           context.t.settings.backup_and_restore.export_success.replaceAll(
             '{source}',
@@ -243,7 +245,7 @@ class DefaultBackupTile extends ConsumerWidget {
       }
     } catch (error) {
       if (context.mounted) {
-        showErrorToast(
+        Kurumi.showErrorToast(
           context,
           context.t.settings.backup_and_restore.export_failed
               .replaceAll('{source}', source.displayName.toLowerCase())
@@ -261,7 +263,7 @@ class DefaultBackupTile extends ConsumerWidget {
       final preparation = await clipboardCapability.prepareImport(context);
       await preparation.executeImport();
       if (context.mounted) {
-        showSuccessToast(
+        Kurumi.showSuccessToast(
           context,
           context.t.settings.backup_and_restore.import_success.replaceAll(
             '{source}',
@@ -273,7 +275,7 @@ class DefaultBackupTile extends ConsumerWidget {
       // User cancelled, no error message needed
     } catch (error) {
       if (context.mounted) {
-        showErrorToast(
+        Kurumi.showErrorToast(
           context,
           context.t.settings.backup_and_restore.import_failed
               .replaceAll('{source}', source.displayName.toLowerCase())

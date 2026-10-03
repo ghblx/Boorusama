@@ -1,13 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/themes/colors/providers.dart';
-import '../../../../../../core/themes/theme/types.dart';
 import '../../../../../../core/users/widgets.dart';
 import '../../../user/providers.dart';
 import '../types/user_details.dart';
@@ -25,7 +23,7 @@ class DanbooruUserInfoBox extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userColor = DanbooruUserColor.of(context);
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final colors = ref
         .watch(booruChipColorsProvider)
         .fromColor(
@@ -40,7 +38,7 @@ class DanbooruUserInfoBox extends ConsumerWidget {
             ? userColor.fromLevel(user.level)
             : colors?.foregroundColor,
       ),
-      userLevel: Chip(
+      userLevel: KurumiMaterialChip(
         label: Text(
           user.level?.name.sentenceCase ?? 'Unknown',
           style: TextStyle(

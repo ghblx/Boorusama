@@ -1,12 +1,16 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:equatable/equatable.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../widgets/widgets.dart';
+
+typedef SettingsPageContentOpener = void Function(
+  BuildContext context,
+  SettingEntry entry,
+);
 
 class SettingsPageScaffold extends StatelessWidget {
   const SettingsPageScaffold({
@@ -22,9 +26,10 @@ class SettingsPageScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final options = SettingsPageScope.maybeOf(context)?.options;
-    final hasAppBar = !(options?.dense ?? false);
+    final hasAppBar =
+        !(options?.dense ?? false) && !(options?.shellOwnsHeader ?? false);
 
     return ConditionalParentWidget(
       condition: hasAppBar,
@@ -69,6 +74,7 @@ class SettingEntry {
     required this.content,
     required this.icon,
     required this.name,
+    this.parentId,
   });
 
   final String id;
@@ -76,6 +82,43 @@ class SettingEntry {
   final Widget content;
   final Object icon;
   final String name;
+  final String? parentId;
+}
+
+class SettingsPageNavigationScope extends InheritedWidget {
+  const SettingsPageNavigationScope({
+    required this.openContent,
+    required super.child,
+    this.applicationNavigator,
+    super.key,
+  });
+
+  final SettingsPageContentOpener openContent;
+  final NavigatorState? applicationNavigator;
+
+  static SettingsPageNavigationScope of(BuildContext context) {
+    final item = context
+        .dependOnInheritedWidgetOfExactType<SettingsPageNavigationScope>();
+
+    if (item == null) {
+      throw FlutterError(
+        'SettingsPageNavigationScope.of was called with a context that '
+        'does not contain a SettingsPageNavigationScope.',
+      );
+    }
+
+    return item;
+  }
+
+  static NavigatorState applicationNavigatorOf(BuildContext context) =>
+      of(context).applicationNavigator ??
+      Navigator.of(context, rootNavigator: true);
+
+  @override
+  bool updateShouldNotify(SettingsPageNavigationScope oldWidget) {
+    return openContent != oldWidget.openContent ||
+        applicationNavigator != oldWidget.applicationNavigator;
+  }
 }
 
 class SettingEntryIcon extends StatelessWidget {
@@ -102,11 +145,13 @@ class SettingsPageOptions {
     required this.showIcon,
     required this.dense,
     required this.entries,
+    this.shellOwnsHeader = false,
   });
 
   final bool showIcon;
   final bool dense;
   final List<SettingEntry> entries;
+  final bool shellOwnsHeader;
 }
 
 class SettingsPageDynamicOptions extends Equatable {

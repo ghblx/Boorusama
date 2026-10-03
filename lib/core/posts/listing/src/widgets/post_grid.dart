@@ -1,13 +1,12 @@
 // Dart imports:
 import 'dart:math';
 
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/widgets.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:selection_mode/selection_mode.dart';
 
@@ -19,7 +18,6 @@ import '../../../../configs/create/routes.dart';
 import '../../../../configs/search/types.dart';
 import '../../../../errors/providers.dart';
 import '../../../../settings/providers.dart';
-import '../../../../widgets/widgets.dart';
 import '../../../post/types.dart';
 import '../../widgets.dart';
 import '../_internal/raw_post_grid.dart';
@@ -31,13 +29,12 @@ import '../types/page_mode.dart';
 import 'infinite_scroll_listener.dart';
 import 'post_grid_controller.dart';
 
-typedef IndexedSelectableWidgetBuilder<T extends Post> =
-    Widget Function(
-      BuildContext context,
-      int index,
-      AutoScrollController autoScrollController,
-      bool useHero,
-    );
+typedef IndexedSelectableWidgetBuilder<T extends Post> = Widget Function(
+  BuildContext context,
+  int index,
+  AutoScrollController autoScrollController,
+  bool useHero,
+);
 
 class PostGrid<T extends Post> extends ConsumerStatefulWidget {
   const PostGrid({
@@ -266,9 +263,9 @@ class PostGridScrollToTopButton extends StatelessWidget {
                   controller.fetchMore();
                 }
               },
-              child: ScrollToTop(
+              child: KurumiScrollToTop(
                 scrollController: autoScrollController,
-                child: BooruScrollToTopButton(
+                child: KurumiScrollToTopButton(
                   onPressed: () {
                     autoScrollController.jumpTo(0);
                   },
@@ -455,7 +452,7 @@ class _BlacklistedTagsInterceptedNotice extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final config = ref.watchConfig;
     final enable = config.blacklistConfigs?.enable;
     final mode = config.blacklistConfigs?.combinationMode;
@@ -590,7 +587,7 @@ class _Error401ActionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final config = ref.watchConfig;
     final apiKey = config.apiKey;
     final isEmptyApiKey = apiKey == null || apiKey.isEmpty;
@@ -636,7 +633,7 @@ class _DisableGridItemHeroOnPop extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!kEnableHeroTransition) {
+    if (!Kurumi.enableHeroTransition) {
       return const SliverSizedBox.shrink();
     }
 

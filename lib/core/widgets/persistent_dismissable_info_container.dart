@@ -1,26 +1,21 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../cache/persistent/providers.dart';
 import 'dismissable_info_container.dart';
 
-final dismissedStateProvider = FutureProvider.family<bool, String>((
-  ref,
-  key,
-) async {
-  final box = await ref.watch(persistentCacheBoxProvider.future);
-  return box.get(key) == 'true';
+final dismissedStateProvider = FutureProvider.family<bool, String>((ref, key) {
+  final store = ref.watch(persistentCacheStoreProvider);
+  return store.get(key) == 'true';
 });
 
 Future<void> dismissPersistently(WidgetRef ref, String storageKey) async {
-  final box = await ref.read(persistentCacheBoxProvider.future);
-  await box.put(storageKey, 'true');
+  await ref.read(persistentCacheStoreProvider).put(storageKey, 'true');
   ref.invalidate(dismissedStateProvider(storageKey));
 }
 
@@ -92,7 +87,7 @@ class PersistentDismissableInfoContainer extends ConsumerWidget {
           ...actions,
           TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onSurface,
+              foregroundColor: Kurumi.themeOf(context).colorScheme.onSurface,
             ),
             onPressed: () async {
               await dismissPersistently(ref, storageKey);

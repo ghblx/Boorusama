@@ -1,12 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../themes/configs/types.dart';
-import '../../../../widgets/widgets.dart';
 import '../types/enums.dart';
 import 'theme_list_tile.dart';
 
@@ -29,7 +27,7 @@ class ThemeSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            BooruSwitchListTile(
+            KurumiSwitchListTile(
               title: Text(context.t.booru.appearance.turn_on),
               subtitle: Text(
                 context.t.booru.appearance.turn_on_description,
@@ -40,7 +38,7 @@ class ThemeSection extends StatelessWidget {
               ),
               contentPadding: EdgeInsets.zero,
             ),
-            GrayedOut(
+            KurumiGrayedOut(
               grayedOut: theme?.enable != true,
               child: ThemeListTile(
                 updateMethod: ThemeUpdateMethod.saveAndUpdateLater,

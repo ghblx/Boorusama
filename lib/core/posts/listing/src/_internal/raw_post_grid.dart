@@ -1,5 +1,4 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter/services.dart';
 
@@ -7,9 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:auto_scrolling/auto_scrolling.dart';
 import 'package:context_menus/context_menus.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:foundation/widgets.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
@@ -20,7 +20,6 @@ import 'package:sliver_tools/sliver_tools.dart';
 import '../../../../../foundation/display.dart';
 import '../../../../../foundation/keyboard.dart';
 import '../../../../haptics/types.dart';
-import '../../../../themes/theme/types.dart';
 import '../../../../widgets/animated_footer.dart';
 import '../../../../widgets/default_selection_bar.dart';
 import '../../../../widgets/widgets.dart';
@@ -188,7 +187,7 @@ class _RawPostGridState<T extends Post> extends State<RawPostGrid<T>>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return ColoredBox(
       color: colorScheme.surface,
@@ -211,7 +210,7 @@ class _RawPostGridState<T extends Post> extends State<RawPostGrid<T>>
           child: _Scaffold(
             body: ConditionalParentWidget(
               condition: kPreferredLayout.isMobile,
-              conditionalBuilder: (child) => BooruRefreshIndicator(
+              conditionalBuilder: (child) => KurumiRefreshIndicator(
                 edgeOffset: 60,
                 displacement: 50,
                 notificationPredicate: widget.enablePullToRefresh
@@ -404,7 +403,7 @@ class _RawPostGridState<T extends Post> extends State<RawPostGrid<T>>
           padding: const EdgeInsets.symmetric(vertical: 20),
           sliver: SliverToBoxAdapter(
             child: Center(
-              child: SpinKitPulse(
+              child: KurumiPulseIndicator(
                 color: colorScheme.onSurface,
               ),
             ),
@@ -436,7 +435,7 @@ class _SwipeTo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return SwipeTo(
       enabled: pageMode == PageMode.paginated && !refreshing,
@@ -444,7 +443,7 @@ class _SwipeTo extends StatelessWidget {
       swipeLeftEnabled: controller.hasNextPage(),
       hapticFeedbackEnabled:
           options.hapticFeedbackLevel?.isBalanceAndAbove ?? false,
-      rightSwipeWidget: Chip(
+      rightSwipeWidget: KurumiMaterialChip(
         visualDensity: VisualDensity.compact,
         side: BorderSide(
           color: colorScheme.hintColor,
@@ -467,7 +466,7 @@ class _SwipeTo extends StatelessWidget {
           ],
         ),
       ),
-      leftSwipeWidget: Chip(
+      leftSwipeWidget: KurumiMaterialChip(
         visualDensity: VisualDensity.compact,
         side: BorderSide(
           color: colorScheme.hintColor,

@@ -1,15 +1,13 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../core/configs/config/providers.dart';
 import '../../../../../core/tags/related/widgets.dart';
 import '../../../../../core/tags/tag/providers.dart';
-import '../../../../../core/themes/theme/types.dart';
 import 'danbooru_related_tag.dart';
 import 'route_utils.dart';
 
@@ -70,12 +68,12 @@ class _RelatedTagHeaderState extends ConsumerState<RelatedTagHeader> {
             ),
             child: FilledButton(
               style: FilledButton.styleFrom(
-                foregroundColor: Theme.of(context).iconTheme.color,
-                backgroundColor: Theme.of(
+                foregroundColor: Kurumi.themeOf(context).iconTheme.color,
+                backgroundColor: Kurumi.themeOf(
                   context,
                 ).colorScheme.surfaceContainerHighest,
                 side: BorderSide(
-                  color: Theme.of(context).colorScheme.hintColor,
+                  color: Kurumi.themeOf(context).colorScheme.hintColor,
                 ),
               ),
               onPressed: () => goToRelatedTagsPage(

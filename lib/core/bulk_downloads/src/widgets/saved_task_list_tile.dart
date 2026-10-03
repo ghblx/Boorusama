@@ -1,15 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../foundation/toast.dart';
 import '../../../premiums/routes.dart';
-import '../../../widgets/widgets.dart';
 import '../pages/bulk_download_edit_saved_task_page.dart';
 import '../providers/saved_download_task_provider.dart';
 import '../providers/saved_task_lock_notifier.dart';
@@ -31,13 +28,13 @@ class SavedTaskListTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.watch(savedDownloadTasksProvider.notifier);
     final isLocked = ref.watch(isSavedTaskLockedProvider(savedTask.task.id));
-    final listTileTheme = Theme.of(context).listTileTheme;
+    final listTileTheme = Kurumi.themeOf(context).listTileTheme;
     final currentRouteName = ModalRoute.of(context)?.settings.name;
 
     final downloadConfigs = currentRouteName != kBulkdownload
         ? DownloadConfigs(
             onDownloadStart: () {
-              showSimpleSnackBar(
+              Kurumi.showSimpleSnackBar(
                 context: context,
                 content: Text(
                   'Downloading ${savedTask.name}...',
@@ -47,7 +44,7 @@ class SavedTaskListTile extends ConsumerWidget {
           )
         : null;
 
-    return GrayedOut(
+    return KurumiGrayedOut(
       opacity: 0.2,
       grayedOut: isLocked,
       onTap: () {
@@ -67,10 +64,10 @@ class SavedTaskListTile extends ConsumerWidget {
         margin: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
           border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
+            color: Kurumi.themeOf(context).colorScheme.outlineVariant,
             width: 0.5,
           ),
-          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          color: Kurumi.themeOf(context).colorScheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Material(
@@ -80,7 +77,7 @@ class SavedTaskListTile extends ConsumerWidget {
             borderRadius: BorderRadius.circular(8),
             onTap: enableTap
                 ? () async {
-                    await showBooruModalBottomSheet(
+                    await Kurumi.showAppModalBottomSheet(
                       context: context,
                       routeSettings: const RouteSettings(
                         name: 'bulk_download_create',
@@ -94,7 +91,7 @@ class SavedTaskListTile extends ConsumerWidget {
                 : null,
             onLongPress: enableTap
                 ? () {
-                    showModalBottomSheet(
+                    Kurumi.showModalBottomSheet(
                       context: context,
                       builder: (context) => _ModalOptions(
                         savedTask: savedTask,
@@ -169,14 +166,14 @@ class _ModalOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final navigator = Navigator.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 8),
-          const DragLine(),
+          const KurumiDragLine(),
           const SizedBox(height: 8),
           ListTile(
             title: Text(context.t.bulk_downloads.templates.run),
@@ -221,9 +218,9 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
-    return CircularIconButton(
+    return KurumiCircularIconButton(
       padding: const EdgeInsets.all(8),
       backgroundColor: colorScheme.surfaceContainer,
       icon: Theme(

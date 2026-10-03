@@ -1,20 +1,15 @@
 // Dart imports:
-// ignore_for_file: prefer_int_literals
-
-// Dart imports:
 import 'dart:async';
 
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
-import '../../../../foundation/display.dart';
 import '../../../../foundation/mobile.dart';
 import '../../../../foundation/platform.dart';
-import '../../../widgets/widgets.dart';
 import '../../slideshow/widgets.dart';
 import 'constants.dart';
 import 'drag_sheet.dart';
@@ -26,12 +21,15 @@ import 'post_details_shortcuts.dart';
 import 'sheet_state_storage.dart';
 import 'side_sheet.dart';
 
+// Dart imports:
+// ignore_for_file: prefer_int_literals
+
 enum ViewMode {
   horizontal,
   vertical,
 }
 
-class PostDetailsPageView extends StatefulWidget {
+class PostDetailsPageView extends ConsumerStatefulWidget {
   const PostDetailsPageView({
     required this.sheetBuilder,
     required this.itemCount,
@@ -83,10 +81,11 @@ class PostDetailsPageView extends StatefulWidget {
   final Widget Function(BuildContext context, Widget child)? mainContentBuilder;
 
   @override
-  State<PostDetailsPageView> createState() => _PostDetailsPageViewState();
+  ConsumerState<PostDetailsPageView> createState() =>
+      _PostDetailsPageViewState();
 }
 
-class _PostDetailsPageViewState extends State<PostDetailsPageView>
+class _PostDetailsPageViewState extends ConsumerState<PostDetailsPageView>
     with TickerProviderStateMixin {
   final _pointerCount = ValueNotifier(0);
   final _interacting = ValueNotifier(false);
@@ -211,7 +210,7 @@ class _PostDetailsPageViewState extends State<PostDetailsPageView>
   }
 
   void _onPop() {
-    if (kEnableHeroTransition && !widget.disableAnimation) {
+    if (Kurumi.enableHeroTransition && !widget.disableAnimation) {
       _controller.forceHideOverlay.value = true;
       _controller.forceHideBottomSheet.value = true;
     }
@@ -466,7 +465,7 @@ class _PostDetailsPageViewState extends State<PostDetailsPageView>
                         end: Offset.zero,
                       ).animate(_bottomInfoAnimController),
                       child: ColoredBox(
-                        color: Theme.of(context).colorScheme.surface,
+                        color: Kurumi.themeOf(context).colorScheme.surface,
                         child: FadeTransition(
                           opacity:
                               Tween(
@@ -657,7 +656,7 @@ class _PostDetailsPageViewState extends State<PostDetailsPageView>
             ),
           ),
         ),
-        if (isDesktopPlatform())
+        if (ref.read(appPlatformProvider).isDesktop)
           ...buildNavButtons()
         else if (!isSmall)
           if (blockSwipe) ...buildNavButtons(),

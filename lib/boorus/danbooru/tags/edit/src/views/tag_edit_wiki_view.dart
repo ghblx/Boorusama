@@ -1,17 +1,14 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
 import '../../../../../../core/tags/tag/types.dart';
 import '../../../../../../core/themes/colors/providers.dart';
-import '../../../../../../core/themes/theme/types.dart';
-import '../../../../../../core/widgets/widgets.dart';
 import '../../../../../../foundation/platform.dart';
 import '../../../related/providers.dart';
 
@@ -55,7 +52,7 @@ class _TagEditzwikiViewState extends ConsumerState<TagEditWikiView> {
           child: Column(
             children: [
               Center(
-                child: BooruSegmentedButton(
+                child: KurumiSegmentedButton(
                   segments: {
                     for (final entry in relatedTabs) entry: entry.sentenceCase,
                   },
@@ -142,7 +139,7 @@ class _RelatedTagChips extends ConsumerWidget {
           ),
         );
 
-        return RawChip(
+        return KurumiMaterialRawChip(
           selected: selected,
           showCheckmark: false,
           checkmarkColor: colors?.foregroundColor,
@@ -150,7 +147,7 @@ class _RelatedTagChips extends ConsumerWidget {
           selectedColor: colors?.backgroundColor,
           backgroundColor: selected
               ? colors?.backgroundColor
-              : Theme.of(context).colorScheme.surfaceContainer,
+              : Kurumi.themeOf(context).colorScheme.surfaceContainer,
           side: colors != null
               ? BorderSide(
                   color: selected ? colors.borderColor : Colors.transparent,
@@ -169,20 +166,21 @@ class _RelatedTagChips extends ConsumerWidget {
                 style: TextStyle(
                   color: selected
                       ? colors?.foregroundColor
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                      : Kurumi.themeOf(context).colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
                 ),
                 children: [
                   TextSpan(
                     text: '  ${NumberFormat.compact().format(tag.postCount)}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 11,
-                      color: Theme.of(context).brightness.isLight
-                          ? !selected
-                                ? null
-                                : Colors.white.withValues(alpha: 0.85)
-                          : Theme.of(context).colorScheme.hintColor,
-                    ),
+                    style: Kurumi.themeOf(context).textTheme.bodySmall
+                        ?.copyWith(
+                          fontSize: 11,
+                          color: Kurumi.themeOf(context).brightness.isLight
+                              ? !selected
+                                    ? null
+                                    : Colors.white.withValues(alpha: 0.85)
+                              : Kurumi.themeOf(context).colorScheme.hintColor,
+                        ),
                   ),
                 ],
               ),

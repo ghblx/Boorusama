@@ -1,13 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../search/queries/providers.dart';
-import '../../../../widgets/widgets.dart';
 import '../../../config/data.dart';
 import '../../../config/types.dart';
 import '../../../create/providers.dart';
@@ -24,7 +22,7 @@ class EffectiveTagPreview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     final tags = ref.watch(
       editBooruConfigProvider(
@@ -47,7 +45,7 @@ class EffectiveTagPreview extends ConsumerWidget {
     return TagListPreview(
       header: Text(
         context.t.booru.search.preview_tags,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+        style: Kurumi.themeOf(context).textTheme.bodySmall?.copyWith(
           color: colorScheme.onSurfaceVariant,
         ),
       ),
@@ -57,12 +55,12 @@ class EffectiveTagPreview extends ConsumerWidget {
         runSpacing: 5,
         children: [
           IgnorePointer(
-            child: RawCompactChip(
+            child: KurumiRawCompactChip(
               backgroundColor: Colors.transparent,
               label: Text(
                 context.t.booru.search.any_search_query,
                 style: TextStyle(
-                  color: Theme.of(
+                  color: Kurumi.themeOf(
                     context,
                   ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   fontStyle: FontStyle.italic,

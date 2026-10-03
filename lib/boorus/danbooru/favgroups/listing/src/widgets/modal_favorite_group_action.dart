@@ -1,8 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 class ModalFavoriteGroupAction extends StatelessWidget {
@@ -18,7 +17,7 @@ class ModalFavoriteGroupAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Theme.of(context).colorScheme.surface,
+      color: Kurumi.themeOf(context).colorScheme.surface,
       child: SafeArea(
         top: false,
         child: Column(

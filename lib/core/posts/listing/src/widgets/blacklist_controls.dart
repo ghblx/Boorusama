@@ -1,16 +1,14 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/widgets.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../foundation/display.dart';
 import '../../../../../foundation/utils/flutter_utils.dart';
 import '../../../../../foundation/utils/int_utils.dart';
-import '../../../../themes/theme/types.dart';
 import 'post_grid_controller.dart';
 
 final _currentPageProvider = StateProvider<int>((ref) => 1);
@@ -56,15 +54,15 @@ class BlacklistControls extends StatelessWidget {
     final tagsNonPaginated = [
       ...tags,
       if (allTagsHidden != null)
-        ActionChip(
+        KurumiMaterialActionChip(
           visualDensity: const ShrinkVisualDensity(),
           side: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
+            color: Kurumi.themeOf(context).colorScheme.outlineVariant,
             width: 0.7,
           ),
           shape: StadiumBorder(
             side: BorderSide(
-              color: Theme.of(context).colorScheme.outlineVariant,
+              color: Kurumi.themeOf(context).colorScheme.outlineVariant,
               width: 0.7,
             ),
           ),
@@ -216,7 +214,7 @@ class _BadgedChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return Badge(
       offset: switch (count.digitCount()) {
@@ -233,7 +231,7 @@ class _BadgedChip extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-      child: ChoiceChip(
+      child: KurumiMaterialChoiceChip(
         showCheckmark: false,
         visualDensity: const ShrinkVisualDensity(),
         selected: active,

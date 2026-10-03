@@ -1,16 +1,13 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
 import '../../../boorus/engine/providers.dart';
 import '../../../configs/config/providers.dart';
 import '../../../configs/config/types.dart';
-import '../../../downloads/downloader/providers.dart';
 import '../../../downloads/filename/types.dart';
 import '../../../posts/details/types.dart';
 import '../../../posts/details/widgets.dart';
@@ -233,7 +230,6 @@ class BookmarkPostActionToolbar extends ConsumerWidget {
                   widget: IconButton(
                     splashRadius: 16,
                     onPressed: () {
-                      showDownloadStartToast(context);
                       ref.bookmarks.downloadBookmarks(
                         config.auth,
                         config.download,

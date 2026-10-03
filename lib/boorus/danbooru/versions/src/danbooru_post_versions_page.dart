@@ -1,8 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 
@@ -85,13 +84,13 @@ class _DanbooruPostVersionsPageState
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
         leading: Container(
           margin: const EdgeInsets.all(8),
-          child: CircularIconButton(
+          child: KurumiCircularIconButton(
             icon: const Padding(
               padding: EdgeInsets.only(left: 4),
               child: Icon(Symbols.arrow_back_ios),
@@ -102,7 +101,7 @@ class _DanbooruPostVersionsPageState
       ),
       extendBodyBehindAppBar: true,
       body: Theme(
-        data: Theme.of(context).copyWith(
+        data: Kurumi.themeOf(context).copyWith(
           focusColor: colorScheme.primary,
         ),
         child: MultiSplitViewTheme(

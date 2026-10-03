@@ -1,18 +1,15 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
-import '../../../../../foundation/display.dart';
 import '../../../../configs/appearance/types.dart';
 import '../../../../premiums/providers.dart';
 import '../../../../premiums/routes.dart';
-import '../../../../widgets/widgets.dart';
 import '../providers/theme_previewer_notifier.dart';
 import '../widgets/theme_previewer_page_view.dart';
 import '../widgets/theme_previewer_sheet.dart';
@@ -119,7 +116,7 @@ class _ThemePreviewPageState extends State<ThemePreviewPage> {
                 builder: (_, ref, _) {
                   final notifier = ref.watch(themePreviewerProvider.notifier);
 
-                  return CircularIconButton(
+                  return KurumiCircularIconButton(
                     icon: const Padding(
                       padding: EdgeInsets.only(left: 8),
                       child: Icon(

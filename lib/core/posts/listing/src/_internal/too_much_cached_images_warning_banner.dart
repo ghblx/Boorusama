@@ -1,14 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../foundation/filesystem.dart';
-import '../../../../../foundation/toast.dart';
 import '../../../../../foundation/utils/file_utils.dart';
 import '../../../../images/providers.dart';
 import '../../../../router.dart';
@@ -42,7 +40,7 @@ class TooMuchCachedImagesWarningBanner extends ConsumerWidget {
             return PersistentDismissableInfoContainer(
               storageKey: _kHideImageCacheWarningKey,
               shouldShow: () => cacheSize > threshold,
-              mainColor: Theme.of(context).colorScheme.primary,
+              mainColor: Kurumi.themeOf(context).colorScheme.primary,
               content: context.t.cache.image.reminder.description(
                 size: Filesize.parse(cacheSize),
               ),
@@ -51,16 +49,20 @@ class TooMuchCachedImagesWarningBanner extends ConsumerWidget {
                   onPressed: () async {
                     final success = await clearImageCache(cacheManager);
 
-                    final c = navigatorKey.currentState?.context;
+                    final c = ref
+                        .read(appNavigationProvider)
+                        .navigatorKey
+                        .currentState
+                        ?.context;
 
                     if (c != null && c.mounted) {
                       if (success) {
-                        showSuccessToast(
+                        Kurumi.showSuccessToast(
                           context,
                           context.t.cache.image.reminder.cleared,
                         );
                       } else {
-                        showErrorToast(
+                        Kurumi.showErrorToast(
                           context,
                           context.t.cache.image.reminder.failed,
                         );

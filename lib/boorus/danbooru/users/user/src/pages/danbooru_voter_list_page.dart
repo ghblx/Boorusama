@@ -1,13 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
-import '../../../../../../core/themes/theme/types.dart';
 import '../../../../posts/votes/providers.dart';
 import '../../providers.dart';
 import 'user_list_page.dart';
@@ -42,7 +40,7 @@ class DanbooruVoterListPage extends ConsumerWidget {
               child: Icon(
                 Icons.info,
                 size: 18,
-                color: Theme.of(context).colorScheme.hintColor,
+                color: Kurumi.themeOf(context).colorScheme.hintColor,
               ),
             ),
           ],

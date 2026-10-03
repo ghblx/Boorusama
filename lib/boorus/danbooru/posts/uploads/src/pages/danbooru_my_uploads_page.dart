@@ -1,11 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
 // Project imports:
@@ -102,9 +101,9 @@ class _DanbooruMyUploadsPageState
             ref
                 .watch(danbooruUploadHideProvider(config))
                 .maybeWhen(
-                  data: (state) => BooruPopupMenuButton(
+                  data: (state) => KurumiPopupMenuButton(
                     items: [
-                      BooruPopupMenuItem(
+                      KurumiPopupMenuItem(
                         title: Text(
                           state.showHiddenUploads
                               ? 'Hide hidden'.hc
@@ -426,19 +425,19 @@ class _DanbooruUploadGridState extends ConsumerState<DanbooruUploadGrid> {
             children: [
               TextSpan(
                 text: '${post.postedCount}',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Kurumi.themeOf(context).textTheme.bodySmall,
               ),
               TextSpan(
                 text: ' / ',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Kurumi.themeOf(context).textTheme.bodySmall,
               ),
               TextSpan(
                 text: '${post.mediaAssetCount}',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Kurumi.themeOf(context).textTheme.bodySmall,
               ),
               TextSpan(
                 text: ' posted',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Kurumi.themeOf(context).textTheme.bodySmall,
               ),
             ],
           ),
@@ -448,7 +447,7 @@ class _DanbooruUploadGridState extends ConsumerState<DanbooruUploadGrid> {
   }
 
   Widget _buildUploaderChip(BuildContext context, DanbooruUploadPost post) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
 
     return Positioned(
       bottom: 4,

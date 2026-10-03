@@ -1,18 +1,16 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../foundation/html.dart';
 import '../../../../foundation/iap/iap.dart';
 import '../../../../foundation/info/app_info.dart';
 import '../../../../foundation/url_launcher.dart';
-import '../../../widgets/widgets.dart';
 import '../internal_widgets/subscription_plan_tile.dart';
 import '../providers/premium_purchase_provider.dart';
 
@@ -87,7 +85,7 @@ class _SubscriptionPlans extends ConsumerWidget {
                     e.toString(),
                     style: TextStyle(
                       fontSize: 14,
-                      color: Theme.of(context).colorScheme.error,
+                      color: Kurumi.themeOf(context).colorScheme.error,
                     ),
                   ),
                 ],
@@ -172,10 +170,10 @@ class DiscountChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return IgnorePointer(
-      child: RawCompactChip(
+      child: KurumiRawCompactChip(
         label: Text(
           '-${(value * 100).toStringAsFixed(0)}%',
           style: TextStyle(
@@ -198,7 +196,7 @@ class _PurchaseButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final notifier = ref.watch(premiumPurchaseProvider.notifier);
     final navigator = Navigator.of(context);
 
@@ -257,7 +255,7 @@ class _LegalDisclaimerText extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final appInfo = ref.watch(appInfoProvider);
 
     return Container(
@@ -281,9 +279,15 @@ class _LegalDisclaimerText extends ConsumerWidget {
         data: context.t.premium.legal_disclaimer,
         onLinkTap: (url, attributes, element) {
           if (url == 'terms-of-service') {
-            launchExternalUrlString(appInfo.termsOfServiceUrl);
+            launchExternalUrlString(
+              appInfo.termsOfServiceUrl,
+              launcher: ref.read(externalUrlLauncherProvider),
+            );
           } else if (url == 'privacy-policy') {
-            launchExternalUrlString(appInfo.privacyPolicyUrl);
+            launchExternalUrlString(
+              appInfo.privacyPolicyUrl,
+              launcher: ref.read(externalUrlLauncherProvider),
+            );
           }
         },
       ),

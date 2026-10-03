@@ -1,12 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/router.dart';
-import '../../../../../../core/widgets/widgets.dart';
 import '../../../../../../foundation/display.dart';
 import '../pages/edit_saved_search_sheet.dart';
 import '../types/saved_search.dart';
@@ -16,7 +14,7 @@ void goToSavedSearchCreatePage(
   String? initialValue,
 }) {
   if (kPreferredLayout.isMobile) {
-    showBooruModalBottomSheet(
+    Kurumi.showAppModalBottomSheet(
       context: context,
       resizeToAvoidBottomInset: true,
       routeSettings: const RouteSettings(
@@ -63,7 +61,7 @@ void goToSavedSearchPatchPage(
   BuildContext context,
   SavedSearch savedSearch,
 ) {
-  showBooruModalBottomSheet(
+  Kurumi.showAppModalBottomSheet(
     context: context,
     resizeToAvoidBottomInset: true,
     routeSettings: const RouteSettings(

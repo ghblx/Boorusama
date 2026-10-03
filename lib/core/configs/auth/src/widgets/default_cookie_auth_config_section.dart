@@ -1,14 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:coreutils/coreutils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../../foundation/toast.dart';
-import '../../../../themes/theme/types.dart';
 import '../../../config/types.dart';
 import '../../../create/providers.dart';
 import '../pages/cookie_access_webview_page.dart';
@@ -38,8 +35,8 @@ class DefaultCookieAuthConfigSection extends ConsumerWidget {
         const SizedBox(height: 16),
         Text(
           'Cookie Auth',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: Theme.of(context).colorScheme.hintColor,
+          style: Kurumi.themeOf(context).textTheme.titleSmall?.copyWith(
+            color: Kurumi.themeOf(context).colorScheme.hintColor,
             fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
@@ -47,8 +44,8 @@ class DefaultCookieAuthConfigSection extends ConsumerWidget {
         const SizedBox(height: 4),
         Text(
           'Provide this information so the app can access more content. Note that if you change your password or something looks wrong after some time, try to login again.',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: Theme.of(context).colorScheme.hintColor,
+          style: Kurumi.themeOf(context).textTheme.titleSmall?.copyWith(
+            color: Kurumi.themeOf(context).colorScheme.hintColor,
             fontSize: 12,
             fontWeight: FontWeight.w400,
           ),
@@ -79,7 +76,7 @@ class DefaultCookieAuthConfigSection extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary,
+          color: Kurumi.themeOf(context).colorScheme.primary,
         ),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -94,8 +91,8 @@ class DefaultCookieAuthConfigSection extends ConsumerWidget {
           ),
           Row(
             children: [
-              RawChip(
-                backgroundColor: Theme.of(
+              KurumiMaterialRawChip(
+                backgroundColor: Kurumi.themeOf(
                   context,
                 ).colorScheme.secondaryContainer,
                 onPressed: () {
@@ -104,8 +101,8 @@ class DefaultCookieAuthConfigSection extends ConsumerWidget {
                 label: Text(context.t.auth.relogin),
               ),
               const SizedBox(width: 8),
-              RawChip(
-                backgroundColor: Theme.of(
+              KurumiMaterialRawChip(
+                backgroundColor: Kurumi.themeOf(
                   context,
                 ).colorScheme.secondaryContainer,
                 onPressed: () {
@@ -122,7 +119,10 @@ class DefaultCookieAuthConfigSection extends ConsumerWidget {
 
   void _openBrowser(WidgetRef ref, BuildContext context, BooruConfig config) {
     if (loginUrl == null) {
-      showErrorToast(context, 'Login URL for this booru is not available');
+      Kurumi.showErrorToast(
+        context,
+        'Login URL for this booru is not available',
+      );
       return;
     }
 
@@ -149,7 +149,9 @@ class DefaultCookieAuthConfigSection extends ConsumerWidget {
         children: [
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+              backgroundColor: Kurumi.themeOf(
+                context,
+              ).colorScheme.secondaryContainer,
             ),
             onPressed: () {
               _openBrowser(ref, context, config);
@@ -157,7 +159,7 @@ class DefaultCookieAuthConfigSection extends ConsumerWidget {
             child: Text(
               title ?? 'Login with Browser',
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSecondaryContainer,
+                color: Kurumi.themeOf(context).colorScheme.onSecondaryContainer,
               ),
             ),
           ),

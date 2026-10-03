@@ -1,25 +1,23 @@
 // Dart imports:
 import 'dart:math';
 
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:anchor_ui/anchor_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
 import '../../../../../foundation/platform.dart';
 import '../../../../posts/post/types.dart';
 import '../../../../settings/routes.dart';
-import '../../../../widgets/hover_aware_container.dart';
 import '../../../lock/providers.dart';
 import 'desktop_video_option_sheet.dart';
 import 'mobile_video_option_sheet.dart';
 
-class MoreOptionsControlButton extends StatelessWidget {
+class MoreOptionsControlButton extends ConsumerWidget {
   const MoreOptionsControlButton({
     required this.speed,
     required this.onSpeedChanged,
@@ -34,8 +32,8 @@ class MoreOptionsControlButton extends StatelessWidget {
   final AnchorController? popoverController;
 
   @override
-  Widget build(BuildContext context) {
-    return isDesktopPlatform() && popoverController != null
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ref.watch(appPlatformProvider).isDesktop && popoverController != null
         ? DesktopVideoOptionButton(
             speed: speed,
             onSpeedChanged: onSpeedChanged,
@@ -66,7 +64,7 @@ class DesktopVideoOptionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return AnchorPopover(
       controller: popoverController,
@@ -155,7 +153,7 @@ class MobileVideoOptionsButton extends ConsumerWidget {
         color: Colors.transparent,
         child: InkWell(
           customBorder: const CircleBorder(),
-          onTap: () => showModalBottomSheet(
+          onTap: () => Kurumi.showModalBottomSheet(
             context: context,
             builder: (_) => VideoOptionContainer(
               padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -166,7 +164,7 @@ class MobileVideoOptionsButton extends ConsumerWidget {
                 value: speed,
                 onSpeedChanged: () {
                   Navigator.of(context).pop();
-                  showModalBottomSheet(
+                  Kurumi.showModalBottomSheet(
                     context: context,
                     builder: (_) => PlaybackSpeedActionSheet(
                       onChanged: onSpeedChanged,
@@ -185,7 +183,7 @@ class MobileVideoOptionsButton extends ConsumerWidget {
               ),
             ),
           ),
-          child: const HoverAwareContainer(
+          child: const KurumiHoverAwareContainer(
             child: Icon(
               Symbols.settings,
               fill: 1,
@@ -215,7 +213,7 @@ class VideoOptionContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     return Container(
       padding: padding,
       constraints: constraints,

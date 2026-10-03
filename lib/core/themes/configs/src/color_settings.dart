@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../colors/types.dart';
@@ -55,7 +54,7 @@ class ColorSettings extends Equatable {
     String name,
     ColorScheme colorScheme, {
     String? nickname,
-    ExtendedColorScheme? extendedColorScheme,
+    KurumiExtendedColorScheme? extendedColorScheme,
   }) {
     return ColorSettings(
       name: name,
@@ -98,7 +97,7 @@ class ColorSettings extends Equatable {
   final bool? followSystemDarkMode;
 
   final ColorScheme? colorScheme;
-  final ExtendedColorScheme? extendedColorScheme;
+  final KurumiExtendedColorScheme? extendedColorScheme;
 
   final String _schemeType;
   final String? _dynamicSchemeVariant;

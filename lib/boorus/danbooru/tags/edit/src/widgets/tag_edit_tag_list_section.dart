@@ -1,8 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
@@ -14,9 +13,6 @@ import '../../../../../../core/settings/providers.dart';
 import '../../../../../../core/tags/categories/providers.dart';
 import '../../../../../../core/tags/tag/providers.dart';
 import '../../../../../../core/themes/colors/providers.dart';
-import '../../../../../../core/themes/colors/types.dart';
-import '../../../../../../core/themes/theme/types.dart';
-import '../../../../../../core/widgets/widgets.dart';
 import '../providers/tag_edit_notifier.dart';
 import 'tag_edit_tag_tile.dart';
 
@@ -30,9 +26,9 @@ final tagEditFilteredListProvider = Provider.autoDispose
     });
 
 class DanbooruTagEditColorNotifier
-    extends FamilyNotifier<Map<String, ChipColors?>, BooruConfigAuth> {
+    extends FamilyNotifier<Map<String, KurumiChipColors?>, BooruConfigAuth> {
   @override
-  Map<String, ChipColors> build(BooruConfigAuth arg) {
+  Map<String, KurumiChipColors> build(BooruConfigAuth arg) {
     return {};
   }
 
@@ -59,7 +55,7 @@ class DanbooruTagEditColorNotifier
   }
 
   Future<void> _load(List<String> tags) async {
-    final colors = <String, ChipColors?>{};
+    final colors = <String, KurumiChipColors?>{};
     final tagTypeStore = await ref.read(booruTagTypeStoreProvider.future);
     final booruChipColors = ref.read(booruChipColorsProvider);
 
@@ -92,7 +88,7 @@ class DanbooruTagEditColorNotifier
 final danbooruTagEditColorsProvider =
     NotifierProvider.family<
       DanbooruTagEditColorNotifier,
-      Map<String, ChipColors?>,
+      Map<String, KurumiChipColors?>,
       BooruConfigAuth
     >(
       DanbooruTagEditColorNotifier.new,
@@ -107,18 +103,19 @@ final danbooruTagEditColorsProvider =
       name: 'danbooruTagEditColorsProvider',
     );
 
-final _tagColorProvider = Provider.autoDispose.family<ChipColors?, String>(
-  (ref, tag) {
-    final config = ref.watchConfigAuth;
-    final colors = ref.watch(danbooruTagEditColorsProvider(config));
+final _tagColorProvider = Provider.autoDispose
+    .family<KurumiChipColors?, String>(
+      (ref, tag) {
+        final config = ref.watchConfigAuth;
+        final colors = ref.watch(danbooruTagEditColorsProvider(config));
 
-    return colors[tag];
-  },
-  dependencies: [
-    danbooruTagEditColorsProvider,
-  ],
-  name: 'tagColorProvider',
-);
+        return colors[tag];
+      },
+      dependencies: [
+        danbooruTagEditColorsProvider,
+      ],
+      name: 'tagColorProvider',
+    );
 
 final _tagsProvider = Provider.autoDispose<Set<String>>((ref) {
   throw UnimplementedError();
@@ -142,7 +139,7 @@ class SliverTagEditTagListSection extends ConsumerWidget {
       ],
       child: MultiSliver(
         children: const [
-          SliverDivider(
+          KurumiSliverDivider(
             thickness: 1,
           ),
           SliverToBoxAdapter(
@@ -206,7 +203,7 @@ class _SliverTagEditListViewState
           title: Text(
             tag.replaceAll('_', ' '),
             style: TextStyle(
-              color: Theme.of(context).brightness.isLight
+              color: Kurumi.themeOf(context).brightness.isLight
                   ? colors?.backgroundColor
                   : colors?.foregroundColor,
               fontWeight: isNewlyAdded ? FontWeight.w900 : null,
@@ -246,7 +243,7 @@ class TagEditFilterHeader extends ConsumerWidget {
         children: [
           Text(
             '$tagCount tag${tagCount > 1 ? 's' : ''}',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            style: Kurumi.themeOf(context).textTheme.titleLarge?.copyWith(
               fontSize: 20,
             ),
           ),
@@ -275,7 +272,9 @@ class TagEditFilterHeader extends ConsumerWidget {
                       style: FilledButton.styleFrom(
                         visualDensity: VisualDensity.compact,
                         shape: const CircleBorder(),
-                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        backgroundColor: Kurumi.themeOf(
+                          context,
+                        ).colorScheme.primary,
                       ),
                       onPressed: () {
                         ref.read(tagEditTagFilterModeProvider.notifier).state =
@@ -286,7 +285,7 @@ class TagEditFilterHeader extends ConsumerWidget {
                       child: Icon(
                         Symbols.check,
                         size: 16,
-                        color: Theme.of(context).colorScheme.onPrimary,
+                        color: Kurumi.themeOf(context).colorScheme.onPrimary,
                       ),
                     ),
                   ],
@@ -304,9 +303,9 @@ class TagEditFilterHeader extends ConsumerWidget {
             ),
           if (!filterOn) const Spacer(),
           if (!filterOn)
-            BooruPopupMenuButton(
+            KurumiPopupMenuButton(
               items: [
-                BooruPopupMenuItem(
+                KurumiPopupMenuItem(
                   title: const Text('Fetch tag category'),
                   onTap: () => _fetch(ref),
                 ),

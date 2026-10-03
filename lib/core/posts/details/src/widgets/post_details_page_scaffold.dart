@@ -1,16 +1,16 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/widgets.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 // Project imports:
-import '../../../../../foundation/display.dart';
 import '../../../../../foundation/platform.dart';
 import '../../../../analytics/providers.dart';
 import '../../../../boorus/engine/types.dart';
@@ -20,7 +20,6 @@ import '../../../../configs/gesture/types.dart';
 import '../../../../premiums/providers.dart';
 import '../../../../router.dart';
 import '../../../../settings/providers.dart';
-import '../../../../themes/theme/types.dart';
 import '../../../../videos/lock/widgets.dart';
 import '../../../../widgets/widgets.dart';
 import '../../../details_pageview/widgets.dart';
@@ -158,7 +157,7 @@ class _PostDetailPageScaffoldState<T extends Post>
   }
 
   void _isVideoPlayingChanged() {
-    if (context.isLargeScreen && isDesktopPlatform()) {
+    if (context.isLargeScreen && ref.read(appPlatformProvider).isDesktop) {
       // force overlay to be on when video is not playing
       if (!widget.controller.isVideoPlaying.value) {
         _controller.disableHoverToControlOverlay();
@@ -235,7 +234,7 @@ class _PostDetailPageScaffoldState<T extends Post>
         ),
       },
       child: CustomContextMenuOverlay(
-        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+        backgroundColor: Kurumi.themeOf(context).colorScheme.secondaryContainer,
         child: VisibilityDetector(
           key: const Key('post_details_page_scaffold'),
           onVisibilityChanged: (info) {
@@ -318,7 +317,7 @@ class _PostDetailPageScaffoldState<T extends Post>
         },
         itemCount: posts.length,
         leftActions: [
-          CircularIconButton(
+          KurumiCircularIconButton(
             icon: const Icon(
               Symbols.home,
               fill: 1,
@@ -327,12 +326,12 @@ class _PostDetailPageScaffoldState<T extends Post>
           ),
           const SizedBox(width: 8),
           if (widget.controller.dislclaimer != null)
-            CircularIconButton(
+            KurumiCircularIconButton(
               icon: const Icon(
                 Symbols.warning,
                 fill: 1,
               ),
-              onPressed: () => showAppModalBarBottomSheet(
+              onPressed: () => Kurumi.showAppModalBarBottomSheet(
                 context: context,
                 builder: (_) => DisclaimerDialog(
                   disclaimer: widget.controller.dislclaimer!,
@@ -446,7 +445,7 @@ class _PostDetailPageScaffoldState<T extends Post>
       hasPremium: hasPremium,
     );
 
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final decoration = BoxDecoration(
       color: colorScheme.surface,
       border: Border(
@@ -536,14 +535,14 @@ class DisclaimerDialog extends StatelessWidget {
     final viewPadding = MediaQuery.paddingOf(context);
 
     return ColoredBox(
-      color: Theme.of(context).colorScheme.surface,
+      color: Kurumi.themeOf(context).colorScheme.surface,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 8),
           Text(
             disclaimer,
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: Kurumi.themeOf(context).textTheme.bodyMedium,
           ),
           SizedBox(
             height: viewPadding.bottom + 8,
@@ -559,7 +558,7 @@ class _SliverBottomPadding extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return DecoratedSliver(
       decoration: BoxDecoration(

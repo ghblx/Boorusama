@@ -1,8 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:selection_mode/selection_mode.dart';
 
@@ -104,30 +103,51 @@ class _SelectionAppBar extends StatelessWidget implements PreferredSizeWidget {
           );
         },
       ),
-      leading: IconButton(
-        icon: const Icon(Icons.close),
-        onPressed: () => controller.disable(),
+      leading: Semantics(
+        label: MaterialLocalizations.of(context).closeButtonTooltip,
+        button: true,
+        onTap: controller.disable,
+        excludeSemantics: true,
+        child: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => controller.disable(),
+        ),
       ),
       actions: [
         if (count != null && count > 0)
-          selectAll
-              ? IconButton(
-                  onPressed: () {
-                    controller.deselectAll();
-                  },
-                  icon: Icon(
-                    Symbols.select_all,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                )
-              : IconButton(
-                  onPressed: () {
-                    controller.selectAll(
-                      List.generate(count, (index) => index),
-                    );
-                  },
-                  icon: const Icon(Symbols.select_all),
+          if (selectAll)
+            Semantics(
+              label: context.t.generic.action.select,
+              button: true,
+              onTap: controller.deselectAll,
+              excludeSemantics: true,
+              child: IconButton(
+                onPressed: () {
+                  controller.deselectAll();
+                },
+                icon: Icon(
+                  Symbols.select_all,
+                  color: Kurumi.themeOf(context).colorScheme.primary,
                 ),
+              ),
+            )
+          else
+            Semantics(
+              label: context.t.generic.action.select,
+              button: true,
+              onTap: () => controller.selectAll(
+                List.generate(count, (index) => index),
+              ),
+              excludeSemantics: true,
+              child: IconButton(
+                onPressed: () {
+                  controller.selectAll(
+                    List.generate(count, (index) => index),
+                  );
+                },
+                icon: const Icon(Symbols.select_all),
+              ),
+            ),
       ],
     );
   }

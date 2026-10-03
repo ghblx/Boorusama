@@ -1,21 +1,21 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../core/configs/config/providers.dart';
+import '../../../core/developer_options/blocked_media_placeholder.dart';
+import '../../../core/developer_options/providers.dart';
 import '../../../core/posts/listing/widgets.dart';
 import '../../../core/posts/post/types.dart';
-import '../../../core/themes/theme/types.dart';
 import '../../../core/users/widgets.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../foundation/clipboard.dart';
+import '../../../foundation/url_launcher.dart';
 import '../client_provider.dart';
 import '../posts/parser.dart' as parser;
 import 'providers.dart';
@@ -37,9 +37,9 @@ class EshuushuuUserDetailsPage extends ConsumerWidget {
 
     return UserDetailsPage(
       actions: [
-        BooruPopupMenuButton(
+        KurumiPopupMenuButton(
           items: [
-            BooruPopupMenuItem(
+            KurumiPopupMenuItem(
               title: Text(context.t.profile.copy_user_id),
               onTap: () => AppClipboard.copy(userId.toString()),
             ),
@@ -77,7 +77,7 @@ class EshuushuuUserDetailsPage extends ConsumerWidget {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: Theme.of(
+                  color: Kurumi.themeOf(
                     context,
                   ).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
@@ -86,7 +86,7 @@ class EshuushuuUserDetailsPage extends ConsumerWidget {
               const SizedBox(width: 12),
               Text(
                 username ?? '...',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                style: Kurumi.themeOf(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -161,16 +161,19 @@ class _EshuushuuUserDetailsBody extends StatelessWidget {
   }
 }
 
-class _EshuushuuUserOverview extends StatelessWidget {
+class _EshuushuuUserOverview extends ConsumerWidget {
   const _EshuushuuUserOverview({required this.user});
 
   final EshuushuuUser user;
 
   @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final locale = Localizations.localeOf(context).toString();
     final dateFormat = DateFormat.yMd(locale);
+    final automaticMediaLoadingEnabled = ref.watch(
+      automaticMediaLoadingEnabledProvider,
+    );
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,25 +184,30 @@ class _EshuushuuUserOverview extends StatelessWidget {
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
-            image: switch (user.avatarUrl) {
-              final String url => DecorationImage(
+            image: switch ((
+              automaticMediaLoadingEnabled,
+              user.avatarUrl,
+            )) {
+              (true, final String url) => DecorationImage(
                 image: NetworkImage(url),
                 fit: BoxFit.cover,
               ),
               _ => null,
             },
           ),
-          child: user.avatarUrl == null
-              ? Center(
-                  child: Text(
-                    user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                )
-              : null,
+          child: switch ((automaticMediaLoadingEnabled, user.avatarUrl)) {
+            (false, final String _) => const BlockedMediaPlaceholder(),
+            (_, null) => Center(
+              child: Text(
+                user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+                style: TextStyle(
+                  fontSize: 24,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            _ => null,
+          },
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -208,7 +216,7 @@ class _EshuushuuUserOverview extends StatelessWidget {
             children: [
               Text(
                 user.name,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                style: Kurumi.themeOf(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -223,7 +231,7 @@ class _EshuushuuUserOverview extends StatelessWidget {
               _buildDatesRow(context, dateFormat),
               if (user.isAdmin) ...[
                 const SizedBox(height: 6),
-                Chip(
+                KurumiMaterialChip(
                   label: Text(
                     'Admin',
                     style: TextStyle(
@@ -242,7 +250,7 @@ class _EshuushuuUserOverview extends StatelessWidget {
   }
 
   Widget _buildDatesRow(BuildContext context, DateFormat dateFormat) {
-    final hintColor = Theme.of(context).colorScheme.hintColor;
+    final hintColor = Kurumi.themeOf(context).colorScheme.hintColor;
     final hintStyle = TextStyle(color: hintColor, fontSize: 12);
     final t = context.t.eshuushuu.profile;
 
@@ -342,7 +350,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        color: Kurumi.themeOf(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -385,21 +393,23 @@ class _StatsItem extends StatelessWidget {
         ),
         Text(
           label,
-          style: TextStyle(color: Theme.of(context).colorScheme.hintColor),
+          style: TextStyle(
+            color: Kurumi.themeOf(context).colorScheme.hintColor,
+          ),
         ),
       ],
     );
   }
 }
 
-class _PersonalInfoCard extends StatelessWidget {
+class _PersonalInfoCard extends ConsumerWidget {
   const _PersonalInfoCard({required this.user});
 
   final EshuushuuUser user;
 
   @override
-  Widget build(BuildContext context) {
-    final hintColor = Theme.of(context).colorScheme.hintColor;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hintColor = Kurumi.themeOf(context).colorScheme.hintColor;
 
     final t = context.t.eshuushuu.personal_info;
 
@@ -423,9 +433,9 @@ class _PersonalInfoCard extends StatelessWidget {
                   const SizedBox(width: 16),
                   Expanded(
                     child: InkWell(
-                      onTap: () => launchUrl(
+                      onTap: () => launchExternalUrl(
                         Uri.parse(website),
-                        mode: LaunchMode.externalApplication,
+                        launcher: ref.read(externalUrlLauncherProvider),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -434,7 +444,9 @@ class _PersonalInfoCard extends StatelessWidget {
                             child: Text(
                               website,
                               style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
+                                color: Kurumi.themeOf(
+                                  context,
+                                ).colorScheme.primary,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -443,7 +455,7 @@ class _PersonalInfoCard extends StatelessWidget {
                           Icon(
                             Icons.open_in_new,
                             size: 14,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: Kurumi.themeOf(context).colorScheme.primary,
                           ),
                         ],
                       ),
@@ -476,7 +488,7 @@ class _InfoRow extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: Theme.of(context).colorScheme.hintColor,
+              color: Kurumi.themeOf(context).colorScheme.hintColor,
             ),
           ),
           const SizedBox(width: 16),

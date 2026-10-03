@@ -1,11 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:intl/intl.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../../../core/themes/theme/types.dart';
 import '../../../../users/user/providers.dart';
 import '../../../../users/user/types.dart';
 
@@ -46,7 +44,7 @@ class ForumPostHeader extends StatelessWidget {
         Text(
           DateFormat('MMM d, yyyy hh:mm a').format(createdAt.toLocal()),
           style: TextStyle(
-            color: Theme.of(context).colorScheme.hintColor,
+            color: Kurumi.themeOf(context).colorScheme.hintColor,
             fontSize: 12,
           ),
         ),

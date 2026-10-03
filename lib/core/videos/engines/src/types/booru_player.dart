@@ -2,7 +2,10 @@
 import 'dart:async';
 
 // Flutter imports:
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+
+// Package imports:
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import 'video_source.dart';
@@ -33,6 +36,9 @@ abstract class BooruPlayer {
   int? get height;
   bool get isBuffering;
   bool get hasPlayedOnce;
+
+  /// Becomes true only after a frame is rendered for the current source.
+  ValueListenable<bool> get firstFrameRendered;
   Stream<Duration> get positionStream;
   Stream<bool> get playingStream;
   Stream<bool> get bufferingStream;

@@ -1,14 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../themes/theme/types.dart';
-import '../../../widgets/widgets.dart';
 import '../../types.dart';
 import '../providers/preview_providers.dart';
 import '../routes/route_utils.dart';
@@ -33,7 +30,7 @@ class PremiumLayoutPreviewDialog extends ConsumerWidget {
 
     final previewMinutes = kPreviewDuration.inMinutes.toString();
 
-    return BooruDialog(
+    return KurumiDialog(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -141,7 +138,7 @@ class _PreviewText extends ConsumerWidget {
 
     // Get preview duration in minutes for UI
     final previewMinutes = kPreviewDuration.inMinutes.toString();
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     if (status == LayoutPreviewStatus.on && remaining != null) {
       return Column(

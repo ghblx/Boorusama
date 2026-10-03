@@ -1,11 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../../core/widgets/widgets.dart';
 import '../../../tag/types.dart';
 
 class CategoryToggleSwitch extends StatelessWidget {
@@ -19,7 +17,7 @@ class CategoryToggleSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: BooruSegmentedButton(
+      child: KurumiSegmentedButton(
         initialValue: TagFilterCategory.newest,
         fixedWidth: 120,
         segments: {

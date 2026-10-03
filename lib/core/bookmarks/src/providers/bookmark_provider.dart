@@ -1,6 +1,9 @@
 // Dart imports:
 import 'dart:async';
 
+// Flutter imports:
+import 'package:flutter/widgets.dart';
+
 // Package imports:
 import 'package:cache_manager/cache_manager.dart';
 import 'package:collection/collection.dart';
@@ -8,15 +11,19 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
 
 // Project imports:
-import '../../../../foundation/toast.dart';
 import '../../../boorus/booru/types.dart';
 import '../../../boorus/engine/providers.dart';
 import '../../../configs/config/types.dart';
+import '../../../configs/network/providers.dart';
+import '../../../ddos/handler/providers.dart';
+import '../../../download_activity/activity.dart';
 import '../../../downloads/downloader/providers.dart';
 import '../../../downloads/downloader/types.dart';
 import '../../../downloads/filename/types.dart';
+import '../../../downloads/sidecar/types.dart';
 import '../../../http/client/providers.dart';
 import '../../../posts/post/providers.dart';
 import '../../../posts/post/types.dart';
@@ -46,6 +53,9 @@ final bookmarkUrlResolverProvider = Provider.autoDispose
     });
 
 class BookmarkNotifier extends AsyncNotifier<BookmarkState> {
+  BuildContext? get _navigationContext =>
+      ref.read(appNavigationProvider).navigatorKey.currentContext;
+
   ImageCacheManager? get _cacheManager =>
       ref.read(bookmarkImageCacheManagerProvider);
 
@@ -249,6 +259,12 @@ class BookmarkNotifier extends AsyncNotifier<BookmarkState> {
     List<Bookmark> bookmarks,
   ) async {
     final settings = ref.read(settingsProvider);
+    final networkConstraint = await resolveDownloadNetworkConstraint(
+      ref,
+      settings.downloadNetworkPolicy,
+    );
+    if (networkConstraint == null) return;
+
     final downloader = ref.read(downloadServiceProvider);
     final headers = ref.read(httpHeadersProvider(auth));
 
@@ -263,30 +279,66 @@ class BookmarkNotifier extends AsyncNotifier<BookmarkState> {
           downloadUrl: bookmark.originalUrl,
         );
 
-        return downloader.download(
+        final request = ref
+            .read(networkSettingsProvider(auth))
+            .resolveMedia(bookmark.originalUrl, headers: headers);
+        final bypassHeaders = request.overridden
+            ? await ref.read(bypassDdosHeadersProvider(request.url).future)
+            : const <String, String>{};
+        final result = await downloader.download(
           DownloadOptions.fromSettings(
             settings,
             config: download,
-            url: bookmark.originalUrl,
+            sidecar: settings.downloadSidecarFormat == SidecarFormat.off
+                ? null
+                : SidecarSnapshot(
+                    format: settings.downloadSidecarFormat,
+                    quality: DownloadQuality.original.name,
+                    tags: bookmark.tags,
+                    postId: bookmark.sitePostId,
+                    site: bookmark.sourceUrl,
+                    urls: [?bookmark.realSourceUrl],
+                  ),
+            url: request.url,
             metadata: DownloaderMetadata(
+              mediaHostOverridden: request.overridden,
               thumbnailUrl: bookmark.thumbnailUrl,
               fileSize: null,
               siteUrl: bookmark.sourceUrl,
               group: null,
             ),
             filename: fileName,
-            headers: headers,
+            headers: {...request.headers, ...bypassHeaders},
+            networkConstraint: networkConstraint,
           ),
+        );
+        return (
+          result: result,
+          fileName: fileName,
+          thumbnailUrl: bookmark.thumbnailUrl,
         );
       },
     ).toList();
 
     final results = await Future.wait(tasks);
 
-    final failures = results.whereType<DownloadFailure>().toList();
+    for (final outcome in results) {
+      ref
+          .read(immediateDownloadActivitiesProvider.notifier)
+          .recordImmediateOutcome(
+            outcome.result,
+            label: outcome.fileName,
+            thumbnailUrl: outcome.thumbnailUrl,
+          );
+    }
+
+    final failures = results
+        .map((outcome) => outcome.result)
+        .whereType<DownloadFailure>()
+        .toList();
 
     if (failures.isNotEmpty) {
-      final context = navigatorKey.currentContext;
+      final context = _navigationContext;
 
       final uniqueErrors = failures
           .map((e) => e.error.getErrorMessage())
@@ -295,7 +347,7 @@ class BookmarkNotifier extends AsyncNotifier<BookmarkState> {
           .join('\n');
 
       if (context != null && context.mounted) {
-        showErrorToast(
+        Kurumi.showErrorToast(
           context,
           'Download failed:\n$uniqueErrors',
           duration: const Duration(seconds: 5),
@@ -310,7 +362,7 @@ extension BookmarkCubitToastX on BookmarkNotifier {
     BooruConfigAuth config,
     Post post,
   ) async {
-    final context = navigatorKey.currentContext;
+    final context = _navigationContext;
 
     if (context == null || !context.mounted) {
       return;
@@ -319,8 +371,10 @@ extension BookmarkCubitToastX on BookmarkNotifier {
     await addBookmark(
       config,
       post,
-      onSuccess: () => showSuccessToast(context, context.t.bookmark.added),
-      onError: () => showErrorToast(context, context.t.bookmark.failed_to_add),
+      onSuccess: () =>
+          Kurumi.showSuccessToast(context, context.t.bookmark.added),
+      onError: () =>
+          Kurumi.showErrorToast(context, context.t.bookmark.failed_to_add),
     );
   }
 
@@ -329,7 +383,7 @@ extension BookmarkCubitToastX on BookmarkNotifier {
     String booruUrl,
     Iterable<Post> posts,
   ) async {
-    final context = navigatorKey.currentContext;
+    final context = _navigationContext;
 
     if (context == null || !context.mounted) {
       return;
@@ -338,12 +392,12 @@ extension BookmarkCubitToastX on BookmarkNotifier {
     await addBookmarks(
       config,
       posts,
-      onSuccess: (count) => showSuccessToast(
+      onSuccess: (count) => Kurumi.showSuccessToast(
         context,
         context.t.bookmark.many_added.replaceAll('{0}', '$count'),
       ),
       onError: () =>
-          showErrorToast(context, context.t.bookmark.failed_to_add_many),
+          Kurumi.showErrorToast(context, context.t.bookmark.failed_to_add_many),
     );
   }
 
@@ -351,7 +405,7 @@ extension BookmarkCubitToastX on BookmarkNotifier {
     BookmarkUniqueId bookmarkId, {
     void Function()? onSuccess,
   }) async {
-    final context = navigatorKey.currentContext;
+    final context = _navigationContext;
 
     if (context == null || !context.mounted) {
       return;
@@ -360,11 +414,11 @@ extension BookmarkCubitToastX on BookmarkNotifier {
     await removeBookmarkFromId(
       bookmarkId,
       onSuccess: () {
-        showSuccessToast(context, context.t.bookmark.removed);
+        Kurumi.showSuccessToast(context, context.t.bookmark.removed);
         onSuccess?.call();
       },
       onError: () =>
-          showErrorToast(context, context.t.bookmark.failed_to_remove),
+          Kurumi.showErrorToast(context, context.t.bookmark.failed_to_remove),
     );
   }
 }

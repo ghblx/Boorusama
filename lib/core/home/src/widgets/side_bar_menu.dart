@@ -1,12 +1,11 @@
 // Dart imports:
 import 'dart:math';
 
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -50,7 +49,7 @@ class SideBarMenu extends ConsumerWidget {
     );
     final viewKey = ref.watch(customHomeViewKeyProvider);
     final hasPremium = ref.watch(hasPremiumProvider);
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final colorScheme = theme.colorScheme;
     final viewPadding = MediaQuery.viewPaddingOf(context);
     final hasConfigs = ref.watch(hasBooruConfigsProvider);
@@ -146,7 +145,7 @@ class SideBarMenu extends ConsumerWidget {
                         ),
                         SideMenuTile(
                           icon: const Icon(Symbols.tag),
-                          title: Text(context.t.favorite_tags.favorite_tags),
+                          title: Text(context.t.favorite_tags.title),
                           onTap: () {
                             goToFavoriteTagsPage(ref);
                           },

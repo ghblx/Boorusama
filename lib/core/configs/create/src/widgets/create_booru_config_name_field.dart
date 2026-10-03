@@ -1,12 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../widgets/booru_text_form_field.dart';
 import '../providers/providers.dart';
 
 class BooruConfigNameField extends ConsumerWidget {
@@ -56,7 +54,7 @@ class _CreateBooruConfigNameFieldState
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: BooruTextFormField(
+      child: KurumiTextFormField(
         controller: controller,
         onChanged: widget.onChanged,
         decoration: InputDecoration(

@@ -3,8 +3,8 @@ description: Custom image widget for Boorusama.
 publish_to: 'none' 
 
 environment:
-  sdk: ^3.9.0
-  flutter: ">=1.17.0"
+  sdk: ^3.12.0
+  flutter: ">=3.41.0"
 
 resolution: workspace
 
@@ -19,11 +19,9 @@ dependencies:
       ref: fork
   flutter:
     sdk: flutter
-  flutter_avif:
-    git:
-      url: https://github.com/khoadng/flutter_avif.git
-      ref: e144e7e6eb61af6e349be60a6a3afb21b4cdb613
-      path: flutter_avif
+  material_ui: ^1.2.0
+  cupertino_ui: ^1.0.2
+  flutter_libavif: ^0.1.1
   path: ^1.8.3
   path_provider: ^2.1.2
   retriable:

@@ -1,16 +1,15 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../foundation/info/device_info.dart';
 import '../../../foundation/loggers.dart';
 import '../../../foundation/picker.dart';
-import '../../../foundation/toast.dart';
+import '../../../foundation/platform.dart';
 import '../../settings/providers.dart';
 import '../auto/providers.dart';
 import '../auto/types.dart';
@@ -92,14 +91,14 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
 
   Future<void> exportToZip(BuildContext context, List<String> sourceIds) async {
     final logger = ref.read(loggerProvider);
-    final platform = Theme.of(context).platform;
+    final platform = Kurumi.themeOf(context).platform;
 
     if (state.isActive) {
       logger.warn(
         'Backup.UI',
         'Export requested but backup already in progress',
       );
-      showErrorToast(
+      Kurumi.showErrorToast(
         context,
         context.t.settings.backup_and_restore.backup_in_progress,
       );
@@ -173,7 +172,7 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
       );
 
       if (context.mounted) {
-        showErrorToast(
+        Kurumi.showErrorToast(
           context,
           context.t.settings.backup_and_restore.export_operation_failed
               .replaceAll('{error}', errorMessage),
@@ -193,7 +192,7 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
         'Backup.UI',
         'Import requested but backup already in progress',
       );
-      showErrorToast(
+      Kurumi.showErrorToast(
         context,
         context.t.settings.backup_and_restore.backup_in_progress,
       );
@@ -208,6 +207,8 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
     try {
       await BackupFilePicker.pickFile(
         context: context,
+        picker: ref.read(appFilePickerProvider),
+        platform: ref.read(appPlatformProvider),
         androidDeviceInfo: ref.read(deviceInfoProvider).androidDeviceInfo,
         allowedExtensions: ['zip'],
         onPick: (path) async {
@@ -218,7 +219,7 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
       logger.error('Backup.UI', 'Import failed: $e');
 
       if (context.mounted) {
-        showErrorToast(
+        Kurumi.showErrorToast(
           context,
           context.t.settings.backup_and_restore.import_operation_failed
               .replaceAll('{error}', e.toString()),
@@ -270,7 +271,7 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
       if (finalSourceIds.isEmpty) {
         logger.verbose('Backup.UI', 'No matching sources selected for import');
         if (context.mounted) {
-          showErrorToast(
+          Kurumi.showErrorToast(
             context,
             'No selected sources match the requested filter',
           );
@@ -320,7 +321,7 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
       );
 
       if (context.mounted) {
-        showErrorToast(
+        Kurumi.showErrorToast(
           context,
           context.t.settings.backup_and_restore.import_operation_failed
               .replaceAll('{error}', e.toString()),
@@ -341,7 +342,7 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
       return;
     }
 
-    if (!settings.shouldBackup) {
+    if (!settings.shouldBackup(ref.read(appPlatformProvider))) {
       logger.verbose('Backup.Auto', 'Auto backup skipped - conditions not met');
       return;
     }
@@ -451,6 +452,7 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
 
     await pickDirectoryPathToastOnError(
       context: context,
+      picker: ref.read(appFilePickerProvider),
       onPick: (path) {
         selectedPath = path;
       },
@@ -469,9 +471,9 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
           : context.t.settings.backup_and_restore.export_complete_success
                 .replaceAll('{exported}', result.exported.length.toString());
 
-      showSuccessToast(context, message);
+      Kurumi.showSuccessToast(context, message);
     } else {
-      showErrorToast(
+      Kurumi.showErrorToast(
         context,
         context.t.settings.backup_and_restore.export_no_items,
       );
@@ -506,7 +508,7 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
         );
       }
 
-      showSuccessToast(
+      Kurumi.showSuccessToast(
         context,
         context.t.settings.backup_and_restore.import_results.replaceAll(
           '{results}',
@@ -514,7 +516,7 @@ class BackupNotifier extends AutoDisposeNotifier<BackupState> {
         ),
       );
     } else {
-      showErrorToast(
+      Kurumi.showErrorToast(
         context,
         context.t.settings.backup_and_restore.import_no_items,
       );

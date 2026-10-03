@@ -1,10 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../foundation/display.dart';
 import '../../../../config_widgets/website_logo.dart';
-import '../../../../widgets/booru_tooltip.dart';
 import '../../../config/types.dart';
 import 'drag_state_controller.dart';
 
@@ -54,7 +54,7 @@ class BooruSelectorItem extends StatelessWidget {
                 left: 4,
               ),
         child: InkWell(
-          hoverColor: Theme.of(context).hoverColor.withValues(alpha: 0.1),
+          hoverColor: Kurumi.themeOf(context).hoverColor.withValues(alpha: 0.1),
           customBorder: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -92,7 +92,7 @@ class BooruSelectorItem extends StatelessWidget {
                 border: Border(
                   top: BorderSide(
                     color: selected
-                        ? Theme.of(context).colorScheme.primary
+                        ? Kurumi.themeOf(context).colorScheme.primary
                         : Colors.transparent,
                     width: 4,
                   ),
@@ -114,7 +114,7 @@ class BooruSelectorItem extends StatelessWidget {
                 border: Border(
                   top: BorderSide(
                     color: selected
-                        ? Theme.of(context).colorScheme.primary
+                        ? Kurumi.themeOf(context).colorScheme.primary
                         : Colors.transparent,
                     width: 48,
                   ),
@@ -209,7 +209,7 @@ class _PopoverTooltip extends StatelessWidget {
       return child;
     }
 
-    return BooruTooltip(
+    return KurumiTooltip(
       message: config.name,
       placement: switch (direction) {
         Axis.horizontal => Placement.top,

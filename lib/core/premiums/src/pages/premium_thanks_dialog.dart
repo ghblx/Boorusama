@@ -1,19 +1,16 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../themes/theme/types.dart';
-import '../../../widgets/widgets.dart';
 
 class PremiumThanksDialog extends StatelessWidget {
   const PremiumThanksDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BooruDialog(
+    return KurumiDialog(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -30,7 +27,7 @@ class PremiumThanksDialog extends StatelessWidget {
             context.t.premium.thanks.description,
             style: TextStyle(
               fontWeight: FontWeight.w400,
-              color: Theme.of(context).colorScheme.hintColor,
+              color: Kurumi.themeOf(context).colorScheme.hintColor,
             ),
           ),
           const SizedBox(height: 20),

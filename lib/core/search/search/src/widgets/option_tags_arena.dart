@@ -1,7 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -16,7 +16,7 @@ class OptionTagsArenaController extends ChangeNotifier {
   }
 }
 
-class OptionTagsArena extends StatefulWidget {
+class OptionTagsArena extends ConsumerStatefulWidget {
   const OptionTagsArena({
     required this.title,
     required this.children,
@@ -33,10 +33,10 @@ class OptionTagsArena extends StatefulWidget {
   final OptionTagsArenaController? controller;
 
   @override
-  State<OptionTagsArena> createState() => _OptionTagsArenaState();
+  ConsumerState<OptionTagsArena> createState() => _OptionTagsArenaState();
 }
 
-class _OptionTagsArenaState extends State<OptionTagsArena> {
+class _OptionTagsArenaState extends ConsumerState<OptionTagsArena> {
   late final controller = widget.controller ?? OptionTagsArenaController();
 
   @override
@@ -55,7 +55,7 @@ class _OptionTagsArenaState extends State<OptionTagsArena> {
         _buildHeader(),
         Wrap(
           spacing: 4,
-          runSpacing: isDesktopPlatform() ? 4 : 0,
+          runSpacing: ref.watch(appPlatformProvider).isDesktop ? 4 : 0,
           children: widget.children,
         ),
       ],
@@ -70,7 +70,7 @@ class _OptionTagsArenaState extends State<OptionTagsArena> {
           children: [
             Text(
               widget.title.toUpperCase(),
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              style: Kurumi.themeOf(context).textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -85,8 +85,8 @@ class _OptionTagsArenaState extends State<OptionTagsArena> {
                       minimumSize: const Size(32, 32),
                       shape: const CircleBorder(),
                       backgroundColor: editMode
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(
+                          ? Kurumi.themeOf(context).colorScheme.primary
+                          : Kurumi.themeOf(
                               context,
                             ).colorScheme.surfaceContainerHighest,
                     ),
@@ -95,8 +95,10 @@ class _OptionTagsArenaState extends State<OptionTagsArena> {
                       editMode ? Symbols.check : Symbols.edit,
                       size: 16,
                       color: editMode
-                          ? Theme.of(context).colorScheme.onPrimary
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                          ? Kurumi.themeOf(context).colorScheme.onPrimary
+                          : Kurumi.themeOf(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                       fill: 1,
                     ),
                   );

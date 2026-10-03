@@ -1,11 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../../foundation/display.dart';
 import '../../../boorus/engine/providers.dart';
 import '../../../configs/config/types.dart';
 import '../../../posts/post/types.dart';
@@ -22,7 +20,7 @@ Future<bool?> goToShowTaglistPage(
   final viewTagListBuilder = booruBuilder?.viewTagListBuilder;
 
   if (viewTagListBuilder == null) {
-    return showAdaptiveSheet(
+    return Kurumi.showAdaptiveSheet(
       ref.context,
       expand: true,
       settings: const RouteSettings(
@@ -36,8 +34,8 @@ Future<bool?> goToShowTaglistPage(
     );
   }
 
-  return showAdaptiveSheet(
-    navigatorKey.currentContext ?? ref.context,
+  return Kurumi.showAdaptiveSheet(
+    ref.read(appNavigationProvider).navigatorKey.currentContext ?? ref.context,
     expand: true,
     settings: const RouteSettings(
       name: 'view_tag_list',

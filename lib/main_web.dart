@@ -1,14 +1,13 @@
 // Dart imports:
 import 'dart:js_interop';
 
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
+import 'package:kurumi/material.dart';
 import 'package:web/web.dart' as web;
 
 // Project imports:
-import 'core/boorusama_app.dart';
+import 'core/bootstrap/bootstrap_host.dart';
+import 'core/bootstrap/production_boorusama_bootstrap.dart';
 import 'foundation/filesystem.dart';
 import 'foundation/iap/iap.dart';
 
@@ -23,9 +22,11 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   runApp(
-    BoorusamaApp(
-      fileSystem: const IoFileSystem(),
-      iapFunc: () => initDummyIap(),
+    const BoorusamaBootstrapHost(
+      bootstrap: ProductionBoorusamaBootstrap(
+        fileSystem: IoFileSystem(),
+        iapFactory: initDummyIap,
+      ),
     ),
   );
 }

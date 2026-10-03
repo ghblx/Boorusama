@@ -1,12 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../widgets/enable_proxy_switch.dart';
 import '../widgets/http_protocol_option_tile.dart';
+import '../widgets/media_host_overrides_section.dart';
 import '../widgets/proxy_host_input.dart';
 import '../widgets/proxy_password_input.dart';
 import '../widgets/proxy_port_input.dart';
@@ -44,6 +43,8 @@ class BooruConfigNetworkView extends ConsumerWidget {
           ProxyPasswordInput(),
           SizedBox(height: 12),
           TestProxyButton(),
+          Divider(),
+          MediaHostOverridesSection(),
         ],
       ),
     );

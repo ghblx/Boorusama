@@ -1,27 +1,31 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:oktoast/oktoast.dart';
 
 // Project imports:
 import '../../../../../foundation/loggers.dart';
 import '../../../../../foundation/permissions.dart';
 import '../../../../../foundation/platform.dart';
-import '../../../../../foundation/toast.dart';
 import '../../../../configs/config/types.dart';
+import '../../../../configs/network/providers.dart';
 import '../../../../ddos/handler/providers.dart';
+import '../../../../download_activity/activity.dart';
 import '../../../../http/client/types.dart';
+import '../../../../posts/post/providers.dart';
 import '../../../../posts/post/types.dart';
 import '../../../../router.dart';
 import '../../../../settings/types.dart';
 import '../../../filename/types.dart';
+import '../../../sidecar/types.dart';
 import '../../../urls/types.dart';
 import '../types/download.dart';
+import '../types/download_network_policy.dart';
 import '../types/metadata.dart';
 import '../types/observer.dart';
+import 'download_network_policy_provider.dart';
 
 final downloadNotifierProvider =
     NotifierProvider.family<DownloadNotifier, void, DownloadNotifierParams>(
@@ -52,20 +56,15 @@ class DownloadNotifier extends FamilyNotifier<void, DownloadNotifierParams> {
 
   Future<PermissionStatus?> _getPermissionStatus() async {
     final perm = await ref.read(deviceStoragePermissionProvider.future);
-    return isAndroid() || isIOS() ? perm.storagePermission : null;
-  }
-
-  void _showToastIfPossible({String? message}) {
-    final context = navigatorKey.currentState?.context;
-
-    if (context != null && context.mounted) {
-      showDownloadStartToast(context, message: message);
-    }
+    return ref.read(appPlatformProvider).isMobile
+        ? perm.storagePermission
+        : null;
   }
 
   Future<DownloadTaskInfo?> download(
     Post post, {
     String? overrideUrl,
+    String? quality,
   }) async {
     final perm = await _getPermissionStatus();
     final observer = arg.observer;
@@ -76,12 +75,8 @@ class DownloadNotifier extends FamilyNotifier<void, DownloadNotifierParams> {
       params: arg,
       permission: perm,
       overrideUrl: overrideUrl,
+      quality: quality,
       onStarted: () {
-        final c = navigatorKey.currentState?.context;
-        if (c != null) {
-          showDownloadStartToast(c);
-        }
-
         observer?.onSingleDownloadStart();
       },
     );
@@ -96,17 +91,22 @@ class DownloadNotifier extends FamilyNotifier<void, DownloadNotifierParams> {
   }) async {
     // ensure that the booru supports bulk download
     if (!arg.canDownloadMultipleFiles()) {
-      final context = navigatorKey.currentState?.context;
+      final context = ref
+          .read(appNavigationProvider)
+          .navigatorKey
+          .currentState
+          ?.context;
 
       showBulkDownloadUnsupportErrorToast(context);
       return;
     }
 
     final perm = await _getPermissionStatus();
-
-    _showToastIfPossible(
-      message: 'Downloading ${posts.length} files...',
+    final networkConstraint = await resolveDownloadNetworkConstraint(
+      ref,
+      arg.settings.downloadNetworkPolicy,
     );
+    if (networkConstraint == null) return;
 
     arg.observer?.onBulkDownloadStart(
       total: posts.length,
@@ -125,6 +125,7 @@ class DownloadNotifier extends FamilyNotifier<void, DownloadNotifierParams> {
           'total': posts.length.toString(),
           'index': i.toString(),
         },
+        networkConstraint: networkConstraint,
       );
     }
   }
@@ -141,6 +142,8 @@ Future<DownloadTaskInfo?> _download(
   void Function()? onStarted,
   //FIXME: bad solution, need better design
   String? overrideUrl,
+  String? quality,
+  DownloadNetworkConstraint? networkConstraint,
 }) async {
   final downloadConfig = params.download;
   final service = params.downloader;
@@ -153,27 +156,18 @@ Future<DownloadTaskInfo?> _download(
     deviceStoragePermissionProvider.notifier,
   );
 
-  final notificationPermManager = ref.read(
-    notificationPermissionManagerProvider,
-  );
-
-  final extractedUrlData = await params.downloadFileUrlExtractor
-      .getDownloadFileUrl(
-        post: downloadable,
-        quality: params.settings.downloadQuality.name,
-      );
-
+  final effectiveQuality = quality ?? params.settings.downloadQuality.name;
   final urlData = overrideUrl != null
-      ? DownloadUrlData(
-          url: overrideUrl,
-          cookie: null,
-        )
-      : extractedUrlData;
+      ? DownloadUrlData.urlOnly(overrideUrl)
+      : await params.downloadFileUrlExtractor.getDownloadFileUrl(
+          post: downloadable,
+          quality: effectiveQuality,
+        );
 
   if (fileNameBuilder == null) {
     logger.error('Single Download', 'No file name builder found, aborting...');
     // if (ref.context.mounted) {
-    //   showErrorToast(ref.context, 'Download aborted, cannot create file name');
+    //   Kurumi.showErrorToast(ref.context, 'Download aborted, cannot create file name');
     // }
     return null;
   }
@@ -181,10 +175,18 @@ Future<DownloadTaskInfo?> _download(
   if (urlData == null || urlData.url.isEmpty) {
     logger.error('Single Download', 'No download url found, aborting...');
     // if (ref.context.mounted) {
-    //   showErrorToast(ref.context, 'Download aborted, no download url found');
+    //   Kurumi.showErrorToast(ref.context, 'Download aborted, no download url found');
     // }
     return null;
   }
+
+  final resolvedNetworkConstraint =
+      networkConstraint ??
+      await resolveDownloadNetworkConstraint(
+        ref,
+        params.settings.downloadNetworkPolicy,
+      );
+  if (resolvedNetworkConstraint == null) return null;
 
   Future<DownloadTaskInfo?> download() async {
     final fileNameFuture = bulkMetadata != null
@@ -204,15 +206,36 @@ Future<DownloadTaskInfo?> _download(
 
     final fileName = await fileNameFuture;
 
+    final network = ref.read(networkSettingsProvider(params.auth));
+    final request = network.resolveMedia(
+      urlData.url,
+      headers: {
+        ...headers,
+        if (urlData.cookie != null)
+          AppHttpHeaders.cookieHeader: urlData.cookie!,
+      },
+    );
     final bypassHeaders = await ref.read(
-      bypassDdosHeadersProvider(urlData.url).future,
+      bypassDdosHeadersProvider(request.url).future,
     );
 
     final result = await service.download(
       DownloadOptions.fromSettings(
         params.settings,
         config: downloadConfig,
+        sidecar: params.settings.downloadSidecarFormat == SidecarFormat.off
+            ? null
+            : SidecarSnapshot.fromPost(
+                downloadable,
+                format: params.settings.downloadSidecarFormat,
+                quality: effectiveQuality,
+                site: params.auth.url,
+                postUrl: ref
+                    .read(postLinkGeneratorProvider(params.auth))
+                    .getLink(downloadable),
+              ),
         metadata: DownloaderMetadata(
+          mediaHostOverridden: request.overridden,
           thumbnailUrl: downloadable.thumbnailImageUrl,
           fileSize: downloadable.fileSize,
           siteUrl: params.auth.url,
@@ -220,22 +243,39 @@ Future<DownloadTaskInfo?> _download(
           group: group,
           isVideo: downloadable.isVideo,
         ),
-        url: urlData.url,
+        url: request.url,
         filename: fileName,
         headers: {
-          ...headers,
+          ...request.headers,
           ...bypassHeaders,
-          if (urlData.cookie != null)
+          if (!request.overridden && urlData.cookie != null)
             AppHttpHeaders.cookieHeader: urlData.cookie!,
         },
         customPath: downloadPath,
+        networkConstraint: resolvedNetworkConstraint,
       ),
     );
 
+    ref
+        .read(immediateDownloadActivitiesProvider.notifier)
+        .recordImmediateOutcome(
+          result,
+          label: fileName,
+          thumbnailUrl: downloadable.thumbnailImageUrl,
+        );
+
     return switch (result) {
-      DownloadSuccess(:final info) => () {
+      DownloadEnqueued(:final info) => () {
         onStarted?.call();
 
+        return info;
+      }(),
+      DownloadCompleted(:final info) => () {
+        onStarted?.call();
+        return info;
+      }(),
+      DownloadSkipped(:final info) => () {
+        onStarted?.call();
         return info;
       }(),
       final DownloadFailure e => () {
@@ -243,18 +283,12 @@ Future<DownloadTaskInfo?> _download(
 
         logger.error(
           'Single Download',
-          msg,
-        );
-
-        showDownloadErrorToast(
-          navigatorKey.currentState?.context,
-          msg,
+          'Download failed: ${e.error.runtimeType}',
+          sensitiveMessage: msg,
         );
       }(),
     };
   }
-
-  await notificationPermManager.requestIfNotGranted();
 
   // Platform doesn't require permissions, just download it right away
   if (permission == null) {
@@ -291,7 +325,7 @@ void showDownloadErrorToast(
   if (context == null) return;
   if (!context.mounted) return;
 
-  showErrorToast(
+  Kurumi.showErrorToast(
     context,
     duration: const Duration(seconds: 5),
     message,
@@ -299,22 +333,33 @@ void showDownloadErrorToast(
 }
 
 void showDownloadStartToast(BuildContext context, {String? message}) {
+  final colorScheme = Theme.of(context).colorScheme;
+
   showToast(
     message ?? context.t.download.notification.started,
-    context: context,
-    position: const ToastPosition(
-      align: Alignment.bottomCenter,
+    position: ToastPosition.bottom,
+    margin: const EdgeInsets.symmetric(
+      horizontal: 20,
+      vertical: 60,
     ),
-    textPadding: const EdgeInsets.all(12),
-    textStyle: TextStyle(color: Theme.of(context).colorScheme.surface),
-    backgroundColor: Theme.of(context).colorScheme.onSurface,
+    textPadding: const EdgeInsets.symmetric(
+      horizontal: 8,
+      vertical: 4,
+    ),
+    duration: const Duration(seconds: 2),
+    backgroundColor: colorScheme.surfaceContainerHigh,
+    textStyle: TextStyle(
+      color: colorScheme.onSurfaceVariant,
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+    ),
   );
 }
 
 void showBulkDownloadUnsupportErrorToast(BuildContext? context) {
   if (context == null) return;
 
-  showErrorToast(
+  Kurumi.showErrorToast(
     context,
     duration: const Duration(seconds: 3),
     'This booru does not support downloading multiple files',

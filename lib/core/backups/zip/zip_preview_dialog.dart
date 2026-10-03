@@ -1,14 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
 import 'package:intl/intl.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../themes/theme/types.dart';
-import '../../widgets/widgets.dart';
 import '../types/backup_data_source.dart';
 import 'types.dart';
 
@@ -39,9 +36,9 @@ class _ZipPreviewDialogState extends ConsumerState<ZipPreviewDialog> {
   @override
   Widget build(BuildContext context) {
     final availableSources = widget.previewResult.availableSources;
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
 
-    return BooruDialog(
+    return KurumiDialog(
       child: Container(
         constraints: const BoxConstraints(maxWidth: 500),
         child: Column(
@@ -211,7 +208,7 @@ class _InfoRow extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              color: Theme.of(context).colorScheme.hintColor,
+              color: Kurumi.themeOf(context).colorScheme.hintColor,
             ),
           ),
         ],

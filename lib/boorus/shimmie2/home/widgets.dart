@@ -1,9 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -37,9 +35,11 @@ class _Shimmie2HomePageState extends ConsumerState<Shimmie2HomePage> {
     return HomePageScaffold(
       mobileMenu: [
         if (favoritePageBuilder != null)
-          if (ref.watch(shimmie2CanFavoriteProvider(config)) case AsyncData(
-            value: final canFavorite,
-          ) when canFavorite)
+          if (ref.watch(shimmie2CanFavoriteProvider(config))
+              case AsyncData(
+                value: final canFavorite,
+              )
+              when canFavorite)
             SideMenuTile(
               icon: const Icon(
                 Symbols.favorite,

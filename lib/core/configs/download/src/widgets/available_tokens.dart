@@ -1,14 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../../foundation/display.dart';
 import '../../../../../foundation/platform.dart';
-import '../../../../../foundation/toast.dart';
 import '../../../../downloads/filename/types.dart';
 import 'token_option_help_modal.dart';
 
@@ -26,7 +23,7 @@ class AvailableTokens extends ConsumerWidget {
         downloadFilenameBuilder?.availableTokens ?? <TokenInfo>{};
 
     return Wrap(
-      runSpacing: isDesktopPlatform() ? 4 : -4,
+      runSpacing: ref.watch(appPlatformProvider).isDesktop ? 4 : -4,
       spacing: 4,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
@@ -34,8 +31,10 @@ class AvailableTokens extends ConsumerWidget {
           context.t.booru.downloads.filename.available_tokens,
         ),
         for (final token in availableTokens)
-          RawChip(
-            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+          KurumiMaterialRawChip(
+            backgroundColor: Kurumi.themeOf(
+              context,
+            ).colorScheme.secondaryContainer,
             visualDensity: VisualDensity.compact,
             label: Text(token.name),
             avatar: token.type == TokenType.async
@@ -49,7 +48,7 @@ class AvailableTokens extends ConsumerWidget {
               );
 
               if (tokenOptions == null) {
-                showErrorToast(
+                Kurumi.showErrorToast(
                   context,
                   context.t.booru.downloads.filename.no_token_error(
                     token: token.name,
@@ -58,7 +57,7 @@ class AvailableTokens extends ConsumerWidget {
                 return;
               }
 
-              showAdaptiveBottomSheet(
+              Kurumi.showAdaptiveBottomSheet(
                 context,
                 settings: const RouteSettings(name: 'download_token_options'),
                 builder: (context) => TokenOptionHelpModal(

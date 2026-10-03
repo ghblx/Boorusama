@@ -1,13 +1,11 @@
 // Dart imports:
 import 'dart:math';
 
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
-import 'package:anchor_ui/anchor_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -15,9 +13,6 @@ import '../../../../configs/config/providers.dart';
 import '../../../../downloads/downloader/providers.dart';
 import '../../../../downloads/urls/providers.dart';
 import '../../../../downloads/urls/types.dart';
-import '../../../../widgets/booru_anchor.dart';
-import '../../../../widgets/booru_tooltip.dart';
-import '../../../../widgets/widgets.dart';
 import '../../../post/types.dart';
 
 class DownloadPostButton extends ConsumerStatefulWidget {
@@ -69,18 +64,26 @@ class _DownloadPostButtonState extends ConsumerState<DownloadPostButton> {
       controller: _controller,
       items: [
         ...?sources?.map(
-          (e) => BooruPopupMenuItem(
+          (e) => KurumiPopupMenuItem(
             title: Text(e.name),
             onTap: () {
-              notifier.download(
-                widget.post,
-                overrideUrl: e.url,
-              );
+              final quality = e.quality;
+              if (quality != null) {
+                notifier.download(
+                  widget.post,
+                  quality: quality,
+                );
+              } else {
+                notifier.download(
+                  widget.post,
+                  overrideUrl: e.url,
+                );
+              }
             },
           ),
         ),
       ],
-      child: BooruTooltip(
+      child: KurumiTooltip(
         message: context.t.download.download,
         child: !widget.small
             ? IconButton(
@@ -239,7 +242,7 @@ class _PopupMenuButton extends ConsumerWidget {
       return child;
     }
 
-    return BooruAnchor(
+    return KurumiAnchor(
       controller: controller,
       overlayBuilder: (context) => Container(
         padding: const EdgeInsets.symmetric(

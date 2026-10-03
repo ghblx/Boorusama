@@ -1,14 +1,13 @@
 // Dart imports:
 import 'dart:collection';
 
-// Flutter imports:
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/cupertino.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -79,7 +78,7 @@ class _FavoriteGroupDetailsPageState
                 floating: true,
                 snap: true,
                 pinned: true,
-                backgroundColor: Theme.of(context).colorScheme.surface,
+                backgroundColor: Kurumi.themeOf(context).colorScheme.surface,
               ),
             ],
             itemBuilder: (context, index, autoScrollController, useHero) {
@@ -278,7 +277,7 @@ class _FavoriteGroupEditPageState extends State<FavoriteGroupEditPage> {
                     IconButton(
                       icon: Icon(
                         Icons.close,
-                        color: Theme.of(context).colorScheme.error,
+                        color: Kurumi.themeOf(context).colorScheme.error,
                       ),
                       onPressed: () {
                         setState(() {

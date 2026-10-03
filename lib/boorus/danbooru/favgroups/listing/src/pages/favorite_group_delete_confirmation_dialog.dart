@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
@@ -27,7 +26,7 @@ class FavoriteGroupDeleteConfirmationDialog extends ConsumerWidget {
       actions: [
         TextButton(
           style: TextButton.styleFrom(
-            foregroundColor: Theme.of(context).colorScheme.onSurface,
+            foregroundColor: Kurumi.themeOf(context).colorScheme.onSurface,
           ),
           onPressed: () => Navigator.of(context).pop(),
           child: Text(context.t.generic.action.cancel),

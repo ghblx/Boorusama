@@ -1,5 +1,6 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/types.dart';
@@ -13,7 +14,7 @@ void showFavgroupEditSheet(
   DanbooruFavoriteGroup favGroup,
   BooruConfigSearch config,
 ) {
-  showModalBottomSheet(
+  Kurumi.showModalBottomSheet(
     context: context,
     routeSettings: const RouteSettings(name: 'favorite_groups_action'),
     builder: (_) => ModalFavoriteGroupAction(

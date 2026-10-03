@@ -1,16 +1,14 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:foundation/foundation.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
 import '../../../../configs/config/types.dart';
 import '../../../../posts/post/types.dart';
-import '../../../../widgets/widgets.dart';
 import '../providers/notes_controller_provider.dart';
 import '../providers/notes_providers.dart';
 import '../types/note.dart';
@@ -73,7 +71,7 @@ class NoteActionButton<T extends Post> extends StatelessWidget {
     if (!post.isTranslated) return const SizedBox.shrink();
 
     if (showDownload) {
-      return CircularIconButton(
+      return KurumiCircularIconButton(
         icon: const Icon(
           Symbols.translate,
         ),
@@ -81,7 +79,7 @@ class NoteActionButton<T extends Post> extends StatelessWidget {
       );
     }
 
-    return CircularIconButton(
+    return KurumiCircularIconButton(
       icon: enableNotes
           ? const FaIcon(
               FontAwesomeIcons.eyeSlash,

@@ -1,13 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import 'booru_dialog.dart';
-import 'booru_text_field.dart';
 
 class ImportTagsDialog extends ConsumerStatefulWidget {
   const ImportTagsDialog({
@@ -36,8 +33,8 @@ class _ImportTagsDialogState extends ConsumerState<ImportTagsDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return BooruDialog(
-      color: Theme.of(context).colorScheme.surfaceContainer,
+    return KurumiDialog(
+      color: Kurumi.themeOf(context).colorScheme.surfaceContainer,
       child: SingleChildScrollView(
         child: Container(
           margin: const EdgeInsets.symmetric(
@@ -54,7 +51,7 @@ class _ImportTagsDialogState extends ConsumerState<ImportTagsDialog> {
               Center(
                 child: Text(
                   context.t.settings.backup_and_restore.import,
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Kurumi.themeOf(context).textTheme.titleLarge,
                 ),
               ),
               const SizedBox(
@@ -62,7 +59,7 @@ class _ImportTagsDialogState extends ConsumerState<ImportTagsDialog> {
               ),
               Container(
                 constraints: const BoxConstraints(maxHeight: 150),
-                child: BooruTextField(
+                child: KurumiTextField(
                   controller: textController,
                   maxLines: null,
                   decoration: InputDecoration(

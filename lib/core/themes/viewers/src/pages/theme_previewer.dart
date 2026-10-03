@@ -1,15 +1,15 @@
 // Flutter imports:
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../configs/appearance/types.dart';
-import '../../../colors/widgets.dart';
+import '../../../colors/types.dart';
 import '../../../configs/types.dart';
-import '../../../theme/types.dart';
 import '../providers/theme_previewer_notifier.dart';
 import 'theme_preview_page.dart';
 
@@ -31,7 +31,7 @@ class ThemePreviewer extends ConsumerWidget {
     final systemDarkMode =
         MediaQuery.platformBrightnessOf(context) == Brightness.dark;
 
-    return AppDynamicColorBuilder(
+    return KurumiDynamicColorBuilder(
       builder: (light, dark) => ProviderScope(
         key: ValueKey((light, dark, systemDarkMode)),
         overrides: [
@@ -82,11 +82,11 @@ class ThemePreviewApp extends ConsumerWidget {
       ),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.themeFrom(
+        theme: Kurumi.themeFrom(
           null,
           colorScheme: colorScheme,
           systemDarkMode: notifier.systemDarkMode,
-        ),
+        ).withBoorusamaColors(),
         home: home,
       ),
     );

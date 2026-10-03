@@ -1,15 +1,12 @@
-// Flutter imports:
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../foundation/display.dart';
 import '../../../../../foundation/utils/flutter_utils.dart';
 import '../../../../themes/colors/providers.dart';
-import '../pages/favorite_tag_label_details_page.dart';
 
 class FavoriteTagLabelChip extends ConsumerWidget {
   const FavoriteTagLabelChip({
@@ -24,24 +21,12 @@ class FavoriteTagLabelChip extends ConsumerWidget {
     final colors = ref
         .watch(booruChipColorsProvider)
         .fromColor(
-          Theme.of(context).colorScheme.primary,
+          Kurumi.themeOf(context).colorScheme.primary,
         );
 
     return SizedBox(
       height: 28,
-      child: RawChip(
-        onPressed: () {
-          Navigator.of(context).push(
-            CupertinoPageRoute(
-              settings: const RouteSettings(
-                name: 'favorite_tag_label_details',
-              ),
-              builder: (context) => FavoriteTagLabelDetailsPage(
-                label: label,
-              ),
-            ),
-          );
-        },
+      child: KurumiMaterialChip(
         padding: kPreferredLayout.isMobile
             ? const EdgeInsets.all(4)
             : EdgeInsets.zero,

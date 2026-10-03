@@ -1,11 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../widgets/widgets.dart';
 import 'types.dart';
 
 class TimeScaleToggleSwitch extends StatelessWidget {
@@ -21,7 +19,7 @@ class TimeScaleToggleSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: BooruSegmentedButton(
+      child: KurumiSegmentedButton(
         segments: {
           for (final entry in TimeScale.values)
             entry: _timeScaleToString(context, entry),

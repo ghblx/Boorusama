@@ -1,11 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-
-// Project imports:
-import 'booru_bottom_sheet.dart';
 
 class SettingsSelector<T> extends StatelessWidget {
   const SettingsSelector({
@@ -27,39 +23,51 @@ class SettingsSelector<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        customBorder: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+    final selectedLabel = itemBuilder(value);
+
+    void openSheet() {
+      Kurumi.showAppModalBottomSheet<void>(
+        context: context,
+        builder: (context) => SettingsSheet<T>(
+          title: title,
+          value: value,
+          items: items,
+          itemBuilder: itemBuilder,
+          subtitleBuilder: subtitleBuilder,
+          onChanged: onChanged,
         ),
-        onTap: () {
-          showBooruModalBottomSheet(
-            context: context,
-            builder: (context) => SettingsSheet<T>(
-              title: title,
-              value: value,
-              items: items,
-              itemBuilder: itemBuilder,
-              subtitleBuilder: subtitleBuilder,
-              onChanged: onChanged,
-            ),
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: 8,
-            horizontal: 8,
+      );
+    }
+
+    return Semantics(
+      button: true,
+      enabled: true,
+      label: selectedLabel,
+      onTap: openSheet,
+      excludeSemantics: true,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          customBorder: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Row(
-            children: [
-              Text(itemBuilder(value)),
-              Icon(
-                Symbols.keyboard_arrow_down,
-                size: 20,
-                color: Theme.of(context).iconTheme.color,
-              ),
-            ],
+          onTap: openSheet,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              vertical: 8,
+              horizontal: 8,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(selectedLabel),
+                Icon(
+                  Symbols.keyboard_arrow_down,
+                  size: 20,
+                  color: Kurumi.themeOf(context).iconTheme.color,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -97,11 +105,14 @@ class SettingsSheet<T> extends StatelessWidget {
               vertical: 8,
               horizontal: 16,
             ),
-            child: Text(
-              title!,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+            child: Semantics(
+              header: true,
+              child: Text(
+                title!,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -137,7 +148,7 @@ class SettingsOptionTile<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final borderRadius = BorderRadius.circular(12);
 
     return Padding(
@@ -145,46 +156,55 @@ class SettingsOptionTile<T> extends StatelessWidget {
         vertical: 6,
         horizontal: 12,
       ),
-      child: InkWell(
+      child: Semantics(
+        button: true,
+        enabled: onTap != null,
+        selected: selected,
+        label: title,
+        value: subtitle,
         onTap: onTap,
-        customBorder: RoundedRectangleBorder(
-          borderRadius: borderRadius,
-        ),
-        child: Container(
-          constraints: const BoxConstraints(
-            minHeight: 72,
-          ),
-          padding: EdgeInsets.all(12 + (selected ? 0 : 1.5)),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
+        excludeSemantics: true,
+        child: InkWell(
+          onTap: onTap,
+          customBorder: RoundedRectangleBorder(
             borderRadius: borderRadius,
-            border: Border.all(
-              width: selected ? 1.5 : 0.25,
-              color: selected
-                  ? colorScheme.onSurface
-                  : colorScheme.outlineVariant,
-            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
-                ),
+          child: Container(
+            constraints: const BoxConstraints(
+              minHeight: 72,
+            ),
+            padding: EdgeInsets.all(12 + (selected ? 0 : 1.5)),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerLow,
+              borderRadius: borderRadius,
+              border: Border.all(
+                width: selected ? 1.5 : 0.25,
+                color: selected
+                    ? colorScheme.onSurface
+                    : colorScheme.outlineVariant,
               ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  subtitle!,
-                  style: TextStyle(
-                    color: colorScheme.outline,
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
                   ),
                 ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    subtitle!,
+                    style: TextStyle(
+                      color: colorScheme.outline,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -210,7 +230,7 @@ class SettingsNavigationTile<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
 
     return ListTile(
       title: Text(title),
@@ -234,59 +254,6 @@ class SettingsNavigationTile<T> extends StatelessWidget {
         ],
       ),
       onTap: onTap,
-    );
-  }
-}
-
-class SettingsSelectionSheet<T> extends StatelessWidget {
-  const SettingsSelectionSheet({
-    required this.title,
-    required this.value,
-    required this.items,
-    required this.itemBuilder,
-    required this.onChanged,
-    super.key,
-    this.subtitleBuilder,
-  });
-
-  final String title;
-  final T value;
-  final List<T> items;
-  final String Function(T) itemBuilder;
-  final String Function(T)? subtitleBuilder;
-  final ValueChanged<T> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 8,
-            horizontal: 16,
-          ),
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        ...items.map(
-          (item) => SettingsOptionTile<T>(
-            selected: value == item,
-            title: itemBuilder(item),
-            subtitle: subtitleBuilder?.call(item),
-            onTap: () {
-              onChanged(item);
-              Navigator.of(context).pop();
-            },
-          ),
-        ),
-      ],
     );
   }
 }

@@ -1,15 +1,13 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/widgets.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
 import '../../../../../../core/tags/tag/providers.dart';
-import '../../../../../../core/widgets/widgets.dart';
 import '../../../../../../foundation/url_launcher.dart';
 import '../../../../artists/urls/widgets.dart';
 import '../../../../sources/providers.dart';
@@ -56,9 +54,9 @@ class TagEditUploadSource extends ConsumerWidget {
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.all(Radius.circular(8)),
               border: Border.all(
-                color: Theme.of(context).colorScheme.onSecondaryContainer,
+                color: Kurumi.themeOf(context).colorScheme.onSecondaryContainer,
               ),
-              color: Theme.of(context).colorScheme.secondaryContainer,
+              color: Kurumi.themeOf(context).colorScheme.secondaryContainer,
             ),
             child: ref
                 .watch(danbooruSourceProvider(post.pageUrl))
@@ -150,7 +148,12 @@ class TagEditUploadSource extends ConsumerWidget {
                               onPressed: () {
                                 final url =
                                     '${ref.readConfigAuth.url}/artists/new?artist[source]=${post.pageUrl}';
-                                launchExternalUrlString(url);
+                                launchExternalUrlString(
+                                  url,
+                                  launcher: ref.read(
+                                    externalUrlLauncherProvider,
+                                  ),
+                                );
                               },
                               child: Text(context.t.generic.action.create),
                             ),
@@ -174,7 +177,7 @@ class TagEditUploadSource extends ConsumerWidget {
         const SliverSizedBox(height: 16),
         SliverToBoxAdapter(
           child: AutofillGroup(
-            child: BooruTextFormField(
+            child: KurumiTextFormField(
               initialValue: post.pageUrl,
               readOnly: true,
               autocorrect: false,
@@ -193,7 +196,7 @@ class TagEditUploadSource extends ConsumerWidget {
         switch (ref.watch(danbooruSourceProvider(post.pageUrl))) {
           AsyncData(:final value) => SliverToBoxAdapter(
             child: AutofillGroup(
-              child: BooruTextFormField(
+              child: KurumiTextFormField(
                 initialValue:
                     ref.watch(
                       danbooruUploadNotifierProvider(
@@ -217,7 +220,7 @@ class TagEditUploadSource extends ConsumerWidget {
         switch (ref.watch(danbooruSourceProvider(post.pageUrl))) {
           AsyncData(:final value) => SliverToBoxAdapter(
             child: AutofillGroup(
-              child: BooruTextFormField(
+              child: KurumiTextFormField(
                 initialValue:
                     ref.watch(
                       danbooruUploadNotifierProvider(
@@ -242,7 +245,7 @@ class TagEditUploadSource extends ConsumerWidget {
         const SliverSizedBox(height: 16),
         SliverToBoxAdapter(
           child: AutofillGroup(
-            child: BooruTextFormField(
+            child: KurumiTextFormField(
               initialValue: ref.watch(
                 danbooruUploadNotifierProvider(
                   config,
@@ -260,7 +263,7 @@ class TagEditUploadSource extends ConsumerWidget {
         const SliverSizedBox(height: 16),
         SliverToBoxAdapter(
           child: AutofillGroup(
-            child: BooruTextFormField(
+            child: KurumiTextFormField(
               initialValue: ref.watch(
                 danbooruUploadNotifierProvider(
                   config,

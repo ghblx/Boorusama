@@ -1,8 +1,6 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
-// Project imports:
-import '../display.dart';
+// Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 class RemoveLeftPaddingOnLargeScreen extends StatelessWidget {
   const RemoveLeftPaddingOnLargeScreen({
@@ -14,12 +12,9 @@ class RemoveLeftPaddingOnLargeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return context.isLargeScreen
-        ? MediaQuery.removePadding(
-            context: context,
-            removeLeft: true,
-            child: child,
-          )
-        : child;
+    return KurumiRemoveLeftPaddingOnLargeScreen(
+      isLargeScreen: context.isLargeScreen,
+      child: child,
+    );
   }
 }

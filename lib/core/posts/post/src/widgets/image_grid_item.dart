@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:foundation/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
@@ -79,21 +78,50 @@ class ImageGridItem extends StatelessWidget {
         child: Stack(
           children: [
             _buildImage(context),
-            if (!hideOverlay)
-              if (quickActionButton != null)
-                Positioned(
-                  bottom: 4,
-                  right: 4,
-                  child: quickActionButton!,
-                )
-              else
-                const SizedBox.shrink(),
-            if (scoreWidget != null)
-              Positioned(
-                bottom: 4,
-                left: 4,
-                child: scoreWidget!,
+            Positioned.fill(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 1, left: 1),
+                    child: _buildOverlayIcon(context),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) => Row(
+                          children: [
+                            if (scoreWidget != null)
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: constraints.maxWidth,
+                                ),
+                                child: Align(
+                                  widthFactor: 1,
+                                  alignment: Alignment.bottomLeft,
+                                  child: scoreWidget,
+                                ),
+                              ),
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  left: scoreWidget == null ? 0 : 4,
+                                ),
+                                child: Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: hideOverlay ? null : quickActionButton,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
+            ),
           ],
         ),
       ),
@@ -164,10 +192,6 @@ class ImageGridItem extends StatelessWidget {
     return Stack(
       children: [
         image,
-        Padding(
-          padding: const EdgeInsets.only(top: 1, left: 1),
-          child: _buildOverlayIcon(context),
-        ),
         Positioned.fill(
           child: Material(
             color: Colors.transparent,
@@ -204,6 +228,9 @@ class ImageScoreWidget extends StatelessWidget {
       ),
       child: Text(
         NumberFormat.compact().format(score),
+        maxLines: 1,
+        softWrap: false,
+        overflow: TextOverflow.ellipsis,
         textAlign: TextAlign.center,
         style: TextStyle(
           color: switch (score) {
@@ -272,7 +299,7 @@ class _ImageInkWellWithBorderOnFocusState
                             widget.borderRadius ??
                             const BorderRadius.all(Radius.circular(8)),
                         border: Border.all(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: Kurumi.themeOf(context).colorScheme.primary,
                           width: 6,
                         ),
                       ),
@@ -283,7 +310,7 @@ class _ImageInkWellWithBorderOnFocusState
         ),
         InkWell(
           focusNode: node,
-          focusColor: Theme.of(context).colorScheme.primary.withAlpha(50),
+          focusColor: Kurumi.themeOf(context).colorScheme.primary.withAlpha(50),
           highlightColor: Colors.transparent,
           splashFactory: FasterInkSplash.splashFactory,
           splashColor: widget.splashColor ?? Colors.black38,

@@ -1,8 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../core/configs/config/providers.dart';
@@ -80,13 +79,13 @@ class _Chip extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: ChoiceChip(
+      child: KurumiMaterialChoiceChip(
         showCheckmark: false,
-        disabledColor: Theme.of(context).chipTheme.disabledColor,
+        disabledColor: Kurumi.themeOf(context).chipTheme.disabledColor,
         backgroundColor:
             colors?.backgroundColor ??
-            Theme.of(context).chipTheme.backgroundColor,
-        selectedColor: Theme.of(context).colorScheme.onSurface,
+            Kurumi.themeOf(context).chipTheme.backgroundColor,
+        selectedColor: Kurumi.themeOf(context).colorScheme.onSurface,
         selected: isSelected,
         side: BorderSide(
           color: isSelected
@@ -104,7 +103,7 @@ class _Chip extends ConsumerWidget {
           search.displayName,
           style: TextStyle(
             color: isSelected
-                ? Theme.of(context).colorScheme.surface
+                ? Kurumi.themeOf(context).colorScheme.surface
                 : colors?.foregroundColor,
           ),
           overflow: TextOverflow.ellipsis,

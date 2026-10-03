@@ -1,12 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../../foundation/toast.dart';
 import '../../../config/types.dart';
 import '../../../create/providers.dart';
 import '../widgets/theme_section.dart';
@@ -32,7 +30,7 @@ class ThemeConfigsPage extends ConsumerWidget {
         theme: theme,
         onThemeUpdated: (theme) {
           ref.editNotifier.updateTheme(theme);
-          showSimpleSnackBar(
+          Kurumi.showSimpleSnackBar(
             context: context,
             duration: const Duration(seconds: 3),
             content: Text(

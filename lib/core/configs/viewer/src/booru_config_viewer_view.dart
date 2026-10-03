@@ -1,14 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../settings/types.dart';
 import '../../../settings/widgets.dart';
-import '../../../widgets/widgets.dart';
 import '../../config/types.dart';
 import '../../create/providers.dart';
 import 'create_booru_image_details_resolution_option_tile.dart';
@@ -36,8 +34,8 @@ class BooruConfigViewerView extends ConsumerWidget {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Theme(
-        data: Theme.of(context).copyWith(
-          listTileTheme: Theme.of(context).listTileTheme.copyWith(
+        data: Kurumi.themeOf(context).copyWith(
+          listTileTheme: Kurumi.themeOf(context).listTileTheme.copyWith(
             contentPadding: EdgeInsets.zero,
           ),
         ),
@@ -50,7 +48,7 @@ class BooruConfigViewerView extends ConsumerWidget {
             ?autoLoadNotes,
             const SizedBox(height: 16),
             const Divider(),
-            BooruSwitchListTile(
+            KurumiSwitchListTile(
               title: Text(
                 context.t.booru.listing.enable_profile_specific_settings,
               ),
@@ -75,7 +73,7 @@ class BooruConfigViewerView extends ConsumerWidget {
                 }
               },
             ),
-            GrayedOut(
+            KurumiGrayedOut(
               grayedOut: !viewerEnabled,
               child: ImageViewerSettingsSection(
                 viewer:

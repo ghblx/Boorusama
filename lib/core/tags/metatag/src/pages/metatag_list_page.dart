@@ -1,12 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
-import '../../../../../core/widgets/widgets.dart';
 import '../types/metatag.dart';
 
 class MetatagListPage extends StatelessWidget {
@@ -34,7 +32,7 @@ class MetatagListPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          InfoContainer(
+          KurumiInfoContainer(
             title: 'Free tags'.hc,
             contentBuilder: (context) => Text(context.t.search.metatags_notice),
           ),
@@ -51,14 +49,16 @@ class MetatagListPage extends StatelessWidget {
                   },
                   title: Text(tag.name),
                   trailing: tag.isFree
-                      ? Chip(
-                          backgroundColor: Theme.of(
+                      ? KurumiMaterialChip(
+                          backgroundColor: Kurumi.themeOf(
                             context,
                           ).colorScheme.primary,
                           label: Text(
                             'Free'.hc,
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.onPrimary,
+                              color: Kurumi.themeOf(
+                                context,
+                              ).colorScheme.onPrimary,
                             ),
                           ),
                         )

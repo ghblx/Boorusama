@@ -1,9 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../core/configs/auth/widgets.dart';
@@ -60,7 +58,10 @@ class CreateDanbooruConfigPage extends ConsumerWidget {
         customInstruction: DefaultBooruInstructionHtmlText(
           context.t.booru.api_key_instructions.variants_3,
           onApiLinkTap: () {
-            launchExternalUrlString(getDanbooruProfileUrl(config.url));
+            launchExternalUrlString(
+              getDanbooruProfileUrl(config.url),
+              launcher: ref.read(externalUrlLauncherProvider),
+            );
           },
         ),
       ),

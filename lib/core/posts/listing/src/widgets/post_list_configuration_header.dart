@@ -1,8 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -41,7 +40,7 @@ class _PostListConfigurationHeaderState
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final hiddenCount = widget.hiddenCount;
 
     return Card(
@@ -53,7 +52,7 @@ class _PostListConfigurationHeaderState
           ? null
           : Colors.transparent,
       child: Theme(
-        data: Theme.of(context).copyWith(
+        data: Kurumi.themeOf(context).copyWith(
           dividerColor: Colors.transparent,
           listTileTheme: ListTileTheme.of(context).copyWith(
             contentPadding: EdgeInsets.zero,
@@ -91,7 +90,7 @@ class _PostListConfigurationHeaderState
                         if (hiddenCount != null)
                           if (hiddenCount > 0)
                             if (constraints.maxWidth > 250)
-                              Chip(
+                              KurumiMaterialChip(
                                 padding: EdgeInsets.zero,
                                 visualDensity: const ShrinkVisualDensity(),
                                 backgroundColor: colorScheme.primary,
@@ -128,7 +127,7 @@ class _PostListConfigurationHeaderState
                     if (widget.axis == Axis.horizontal)
                       Text(
                         context.t.posts.counter(n: widget.postCount),
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: Kurumi.themeOf(context).textTheme.titleLarge,
                       ),
                     const Spacer(),
                     FittedBox(

@@ -1,10 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:foundation/widgets.dart';
+import 'package:kurumi/material.dart';
 import 'package:selection_mode/selection_mode.dart';
 
 // Project imports:
@@ -77,7 +75,7 @@ class SliverPostGridImageGridItem<T extends Post> extends ConsumerWidget {
     final scoreWidget = showScoresInGrid
         ? score.toOption().fold(
             () => null,
-            (s) => ImageScoreWidget(score: s),
+            (s) => s == 0 ? null : ImageScoreWidget(score: s),
           )
         : null;
 
@@ -126,7 +124,7 @@ class SliverPostGridImageGridItem<T extends Post> extends ConsumerWidget {
             hasParentOrChildren: post.hasParentOrChildren,
             hasSound: post.hasSound,
             duration: post.duration,
-            scoreWidget: scoreWidget ?? const SizedBox.shrink(),
+            scoreWidget: scoreWidget,
           ),
           if (overlay != null) ...[
             Positioned.fill(

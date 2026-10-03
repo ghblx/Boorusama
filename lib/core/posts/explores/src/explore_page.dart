@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/widgets.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../foundation/display.dart';
@@ -12,7 +11,6 @@ import '../../../configs/config/providers.dart';
 import '../../../images/booru_image.dart';
 import '../../../images/utils.dart';
 import '../../../videos/player/widgets.dart';
-import '../../../widgets/widgets.dart';
 import '../../details/providers.dart';
 import '../../details/routes.dart';
 import '../../post/types.dart';
@@ -222,7 +220,7 @@ class ExploreList extends ConsumerWidget {
                         ),
                       ),
                     Positioned.fill(
-                      child: ShadowGradientOverlay(
+                      child: KurumiShadowGradientOverlay(
                         alignment: Alignment.bottomCenter,
                         colors: [
                           const Color(0xC2000000),
@@ -235,7 +233,7 @@ class ExploreList extends ConsumerWidget {
                       bottom: 1,
                       child: Text(
                         '${index + 1}',
-                        style: Theme.of(context).textTheme.displayMedium
+                        style: Kurumi.themeOf(context).textTheme.displayMedium
                             ?.copyWith(
                               color: Colors.white,
                             ),

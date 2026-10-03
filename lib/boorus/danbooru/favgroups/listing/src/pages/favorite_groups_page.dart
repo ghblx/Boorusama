@@ -1,16 +1,14 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
 import '../../../../../../core/configs/auth/widgets.dart';
 import '../../../../../../core/configs/config/providers.dart';
 import '../../../../../../core/images/booru_image.dart';
-import '../../../../../../core/themes/theme/types.dart';
 import '../../../details/routes.dart';
 import '../../../favgroups/providers.dart';
 import '../../../favgroups/routes.dart';
@@ -123,7 +121,7 @@ class FavoriteGroupsPageInternal extends ConsumerWidget {
   }
 
   Widget _buildEmpty(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final textTheme = theme.textTheme;
     final colorScheme = theme.colorScheme;
 

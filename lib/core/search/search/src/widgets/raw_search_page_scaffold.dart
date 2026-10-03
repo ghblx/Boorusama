@@ -1,12 +1,11 @@
 // Dart imports:
 import 'dart:math';
 
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/widgets.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:selection_mode/selection_mode.dart';
@@ -28,14 +27,13 @@ import '../routes/params.dart';
 import '../types/search_bar_position.dart';
 import 'search_controller.dart';
 
-typedef IndexedSelectableSearchWidgetBuilder<T extends Post> =
-    Widget Function(
-      BuildContext context,
-      int index,
-      AutoScrollController autoScrollController,
-      PostGridController<T> controller,
-      bool useHero,
-    );
+typedef IndexedSelectableSearchWidgetBuilder<T extends Post> = Widget Function(
+  BuildContext context,
+  int index,
+  AutoScrollController autoScrollController,
+  PostGridController<T> controller,
+  bool useHero,
+);
 
 const kSearchBarHeight = kToolbarHeight;
 const _kSelectedTagHeight = 48.0;
@@ -250,7 +248,7 @@ class _SearchPageScaffoldState<T extends Post>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return CustomContextMenuOverlay(
       child: InheritedSearchPageController(
@@ -375,7 +373,7 @@ class _SearchPageScaffoldState<T extends Post>
     final searchBarPosition = ref.watch(searchBarPositionProvider);
 
     return ColoredBox(
-      color: Theme.of(context).colorScheme.surface,
+      color: Kurumi.themeOf(context).colorScheme.surface,
       child: SafeArea(
         bottom: false,
         child: PostGrid<T>(
@@ -690,7 +688,7 @@ class _SearchOptionsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = InheritedSearchPageController.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return SearchRegionSafeArea(
       selectionModeController: selectionModeController,

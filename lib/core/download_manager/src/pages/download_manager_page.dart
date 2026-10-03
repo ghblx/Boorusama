@@ -1,17 +1,15 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:selection_mode/selection_mode.dart';
 import 'package:share_plus/share_plus.dart';
 
 // Project imports:
-import '../../../../foundation/toast.dart';
 import '../../../configs/config/providers.dart';
 import '../../../configs/config/types.dart';
 import '../../../ddos/handler/providers.dart';
@@ -22,6 +20,7 @@ import '../../../widgets/default_selection_bar.dart';
 import '../../../widgets/widgets.dart';
 import '../../types.dart';
 import '../l10n.dart';
+import '../data/file_downloader_task_client.dart';
 import '../providers/download_task_updates_notifier.dart';
 import '../providers/internal_providers.dart';
 import '../widgets/download_filter_options.dart';
@@ -125,15 +124,15 @@ class _DownloadManagerPageState extends ConsumerState<DownloadManagerPage> {
                     openDownloadSettingsPage(ref);
                   },
                 ),
-              BooruPopupMenuButton(
+              KurumiPopupMenuButton(
                 items: [
-                  BooruPopupMenuItem(
+                  KurumiPopupMenuItem(
                     title: Text(context.t.generic.action.select),
                     onTap: () {
                       _selectionModeController.enable();
                     },
                   ),
-                  BooruPopupMenuItem(
+                  KurumiPopupMenuItem(
                     title: Text(context.t.generic.action.clear),
                     onTap: () {
                       // clear default group only
@@ -142,7 +141,7 @@ class _DownloadManagerPageState extends ConsumerState<DownloadManagerPage> {
                           .clear(
                             FileDownloader.defaultGroup,
                             onFailed: () {
-                              showSimpleSnackBar(
+                              Kurumi.showSimpleSnackBar(
                                 context: context,
                                 content: Text(
                                   context.t.download.nothing_to_clear,
@@ -234,7 +233,9 @@ class _DownloadManagerPageState extends ConsumerState<DownloadManagerPage> {
                               ? () async {
                                   final futures = selectedItems
                                       .map(
-                                        (task) => task.task.filePath(),
+                                        (task) => ref
+                                            .read(downloadTaskClientProvider)
+                                            .filePath(task.task),
                                       )
                                       .toList();
                                   final paths = await Future.wait(futures);
@@ -282,38 +283,42 @@ class _DownloadManagerPageState extends ConsumerState<DownloadManagerPage> {
 
               if (dt == null) return;
 
-              FileDownloader().resume(dt);
+              ref.read(downloadTaskClientProvider).resume(dt);
             },
             onPause: () {
               final dt = castOrNull<DownloadTask>(task.task);
 
               if (dt == null) return;
 
-              FileDownloader().pause(dt);
+              ref.read(downloadTaskClientProvider).pause(dt);
             },
             onResumeFailed: () {
               final dt = castOrNull<DownloadTask>(task.task);
 
               if (dt == null) return;
 
-              FileDownloader().resume(dt);
+              ref.read(downloadTaskClientProvider).resume(dt);
             },
             onRestart: () {
-              //FIXME: need to centralize the headers injection
-              ref.invalidate(cachedBypassDdosHeadersProvider);
+              ref.invalidate(bypassDdosHeadersProvider(task.task.url));
               WidgetsBinding.instance.addPostFrameCallback(
-                (_) {
+                (_) async {
                   final headers = ref.read(httpHeadersProvider(config.auth));
-
-                  FileDownloader().retryTask(
-                    task.task,
-                    headers: headers,
+                  final bypassHeaders = await ref.read(
+                    bypassDdosHeadersProvider(task.task.url).future,
                   );
+                  await ref
+                      .read(downloadTaskClientProvider)
+                      .retry(
+                        task.task,
+                        headers: headers,
+                        bypassHeaders: bypassHeaders,
+                      );
                 },
               );
             },
             onCancel: () {
-              FileDownloader().cancelTaskWithId(task.task.taskId);
+              ref.read(downloadTaskClientProvider).cancel(task.task.taskId);
             },
           ),
         );

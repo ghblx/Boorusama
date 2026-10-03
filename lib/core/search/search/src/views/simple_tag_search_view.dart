@@ -1,14 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
-import '../../../../../../../core/widgets/widgets.dart';
-import '../../../../../foundation/display.dart';
 import '../../../../configs/config/providers.dart';
 import '../../../../configs/config/types.dart';
 import '../../../../tags/autocompletes/types.dart';
@@ -24,7 +21,7 @@ void showSimpleTagSearchView(
   Widget Function(String text)? floatingActionButton,
   RouteSettings? settings,
 }) {
-  showAppModalBarBottomSheet(
+  Kurumi.showAppModalBarBottomSheet(
     context: context,
     settings: settings,
     builder: (context) => builder(context, true),
@@ -37,6 +34,7 @@ class SimpleTagSearchView extends ConsumerStatefulWidget {
     super.key,
     this.ensureValidTag = true,
     this.closeOnSelected = true,
+    this.showInputSelector = true,
     this.floatingActionButton,
     this.backButton,
     this.onSubmitted,
@@ -49,6 +47,7 @@ class SimpleTagSearchView extends ConsumerStatefulWidget {
   final void Function(String tag, bool isRaw) onSelected;
   final bool ensureValidTag;
   final bool closeOnSelected;
+  final bool showInputSelector;
   final Widget Function(String currentText)? floatingActionButton;
   final Widget? backButton;
   final void Function(BuildContext context, String text, bool isRaw)?
@@ -79,13 +78,16 @@ class _SimpleTagSearchViewState extends ConsumerState<SimpleTagSearchView> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final config = widget.initialConfig ?? ref.watchConfigAuth;
     final suggestionNotifier = ref.watch(
       suggestionsNotifierProvider(config).notifier,
     );
 
-    final inputType = ref.watch(selectedInputTypeSelectorProvider);
+    final selectedInputType = ref.watch(selectedInputTypeSelectorProvider);
+    final inputType = widget.showInputSelector
+        ? selectedInputType
+        : InputType.single;
     final isRaw = inputType == InputType.raw;
 
     return ValueListenableBuilder(
@@ -143,7 +145,7 @@ class _SimpleTagSearchViewState extends ConsumerState<SimpleTagSearchView> {
                         },
                       ),
                     ),
-                    const InputSelectorButton(),
+                    if (widget.showInputSelector) const InputSelectorButton(),
                   ],
                 ),
               ),
@@ -210,7 +212,7 @@ class InputSelectorButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return OptionDropDownButton(
+    return KurumiOptionDropDownButton(
       alignment: AlignmentDirectional.centerStart,
       value: ref.watch(selectedInputTypeSelectorProvider),
       onChanged: (value) =>
@@ -241,7 +243,7 @@ class _AddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return Semantics(
       button: true,

@@ -2,13 +2,13 @@
 import 'package:equatable/equatable.dart';
 
 // Project imports:
+import '../../../downloads/sidecar/types.dart';
 import '../../../search/selected_tags/types.dart';
 
 class DownloadTask extends Equatable {
   const DownloadTask({
     required this.id,
     required this.path,
-    required this.notifications,
     required this.skipIfExists,
     required this.createdAt,
     required this.updatedAt,
@@ -17,13 +17,13 @@ class DownloadTask extends Equatable {
     this.quality,
     this.tags,
     this.blacklistedTags,
+    this.sidecarFormat,
   });
 
   factory DownloadTask.empty() {
     return DownloadTask(
       id: '',
       path: '',
-      notifications: true,
       skipIfExists: true,
       createdAt: DateTime(1),
       updatedAt: DateTime(1),
@@ -35,7 +35,6 @@ class DownloadTask extends Equatable {
   factory DownloadTask.fromJson(Map<String, dynamic> json) => DownloadTask(
     id: json['id'] as String? ?? '',
     path: json['path'] as String? ?? '',
-    notifications: json['notifications'] as bool? ?? false,
     skipIfExists: json['skipIfExists'] as bool? ?? false,
     quality: json['quality'] as String?,
     createdAt: json['createdAt'] != null
@@ -48,11 +47,13 @@ class DownloadTask extends Equatable {
     concurrency: json['concurrency'] as int? ?? 1,
     tags: json['tags'] as String?,
     blacklistedTags: json['blacklistedTags'] as String?,
+    sidecarFormat: json['sidecarFormat'] == null
+        ? null
+        : SidecarFormat.parse(json['sidecarFormat']),
   );
 
   final String id;
   final String path;
-  final bool notifications;
   final bool skipIfExists;
   final String? quality;
   final DateTime createdAt;
@@ -61,6 +62,7 @@ class DownloadTask extends Equatable {
   final int concurrency;
   final String? tags;
   final String? blacklistedTags;
+  final SidecarFormat? sidecarFormat;
 
   String? get prettyTags => tags == null
       ? null
@@ -68,17 +70,16 @@ class DownloadTask extends Equatable {
 
   DownloadTask copyWith({
     String? path,
-    bool? notifications,
     bool? skipIfExists,
     String? quality,
     int? perPage,
     int? concurrency,
     String? tags,
     String? blacklistedTags,
+    SidecarFormat? Function()? sidecarFormat,
   }) => DownloadTask(
     id: id,
     path: path ?? this.path,
-    notifications: notifications ?? this.notifications,
     skipIfExists: skipIfExists ?? this.skipIfExists,
     quality: quality ?? this.quality,
     createdAt: createdAt,
@@ -87,12 +88,12 @@ class DownloadTask extends Equatable {
     concurrency: concurrency ?? this.concurrency,
     tags: tags ?? this.tags,
     blacklistedTags: blacklistedTags ?? this.blacklistedTags,
+    sidecarFormat: sidecarFormat != null ? sidecarFormat() : this.sidecarFormat,
   );
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'path': path,
-    'notifications': notifications,
     'skipIfExists': skipIfExists,
     'quality': quality,
     'createdAt': createdAt.toIso8601String(),
@@ -101,13 +102,13 @@ class DownloadTask extends Equatable {
     'concurrency': concurrency,
     'tags': tags,
     'blacklistedTags': blacklistedTags,
+    'sidecarFormat': sidecarFormat?.name,
   };
 
   @override
   List<Object?> get props => [
     id,
     path,
-    notifications,
     skipIfExists,
     quality,
     createdAt,
@@ -116,5 +117,6 @@ class DownloadTask extends Equatable {
     concurrency,
     tags,
     blacklistedTags,
+    sidecarFormat,
   ];
 }

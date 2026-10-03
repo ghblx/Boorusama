@@ -1,16 +1,14 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:context_menus/context_menus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/widgets.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:reorderables/reorderables.dart';
 
 // Project imports:
-import '../../../../../foundation/toast.dart';
 import '../../../../router.dart';
 import '../../../../settings/providers.dart';
 import '../../../config/providers.dart';
@@ -59,7 +57,7 @@ class _BooruSelectorVerticalState extends ConsumerState<BooruSelectorVertical>
 
     return Container(
       width: 68,
-      color: Theme.of(context).colorScheme.surface,
+      color: Kurumi.themeOf(context).colorScheme.surface,
       child: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
         child: ref
@@ -136,7 +134,7 @@ class _BooruSelectorHorizontalState
 
     return Container(
       height: 48,
-      color: Theme.of(context).colorScheme.surface,
+      color: Kurumi.themeOf(context).colorScheme.surface,
       child: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
         child: ref
@@ -244,7 +242,7 @@ mixin BooruSelectorActionMixin<T extends ConsumerStatefulWidget>
           ContextMenuButtonConfig(
             context.t.generic.action.delete,
             labelStyle: TextStyle(
-              color: Theme.of(context).colorScheme.error,
+              color: Kurumi.themeOf(context).colorScheme.error,
             ),
             onPressed: () {
               showDialog(
@@ -257,7 +255,8 @@ mixin BooruSelectorActionMixin<T extends ConsumerStatefulWidget>
                   description: context.t.booru.deletion.confirmation,
                   onConfirm: () => notifier.delete(
                     config,
-                    onFailure: (message) => showErrorToast(context, message),
+                    onFailure: (message) =>
+                        Kurumi.showErrorToast(context, message),
                   ),
                 ),
               );

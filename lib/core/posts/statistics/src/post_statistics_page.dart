@@ -1,13 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:collection/collection.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
-import '../../../../foundation/display.dart';
 import '../../../../foundation/utils/statistics.dart';
 import 'post_stats.dart';
 import 'post_stats_display.dart';
@@ -53,7 +51,7 @@ class PostStatisticsPage extends StatelessWidget {
               PostStatsSectionTitle(
                 title: 'Score'.hc,
                 onMore: () {
-                  showAppModalBarBottomSheet(
+                  Kurumi.showAppModalBarBottomSheet(
                     context: context,
                     settings: const RouteSettings(name: 'posts_score_stats'),
                     builder: (context) => StatisticalSummaryDetailsPage(
@@ -100,7 +98,7 @@ class PostStatisticsPage extends StatelessWidget {
               PostStatsSectionTitle(
                 title: context.t.post.detail.source_label,
                 onMore: () {
-                  showAppModalBarBottomSheet(
+                  Kurumi.showAppModalBarBottomSheet(
                     context: context,
                     settings: const RouteSettings(name: 'posts_source_stats'),
                     builder: (context) => StatisticsFromMapPage(
@@ -140,7 +138,7 @@ class PostStatisticsPage extends StatelessWidget {
               PostStatsSectionTitle(
                 title: 'Tags'.hc,
                 onMore: () {
-                  showAppModalBarBottomSheet(
+                  Kurumi.showAppModalBarBottomSheet(
                     context: context,
                     settings: const RouteSettings(name: 'posts_tags_stats'),
                     builder: (context) => StatisticalSummaryDetailsPage(
@@ -377,7 +375,7 @@ class PostStatsTile extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: Kurumi.themeOf(context).textTheme.titleLarge?.copyWith(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: titleColor,
@@ -392,13 +390,13 @@ class PostStatsTile extends StatelessWidget {
             ),
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHigh,
+              color: Kurumi.themeOf(context).colorScheme.surfaceContainerHigh,
               borderRadius: const BorderRadius.all(Radius.circular(4)),
             ),
             child: Text(
               value,
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: Kurumi.themeOf(context).colorScheme.onSurfaceVariant,
                 fontSize: 14,
               ),
             ),

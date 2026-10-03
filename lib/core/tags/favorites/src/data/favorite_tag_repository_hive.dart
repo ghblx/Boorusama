@@ -11,6 +11,8 @@ class FavoriteTagRepositoryHive implements FavoriteTagRepository {
 
   final Box<FavoriteTagHiveObject> box;
 
+  Future<void> close() => box.close();
+
   @override
   Future<FavoriteTag?> deleteFirst(String name) async {
     try {
@@ -69,6 +71,16 @@ class FavoriteTagRepositoryHive implements FavoriteTagRepository {
   }
 
   @override
+  Future<FavoriteTag?> restore(FavoriteTag tag) async {
+    if (box.values.any((obj) => obj.name == tag.name)) return null;
+
+    final obj = favoriteTagToFavoriteTagHiveObject(tag);
+    await box.put(obj.name, obj);
+
+    return favoriteTagHiveObjectToFavoriteTag(obj);
+  }
+
+  @override
   Future<FavoriteTag?> updateFirst(String name, FavoriteTag tag) async {
     final t = tag.copyWith(
       updatedAt: () => DateTime.now(),
@@ -77,7 +89,11 @@ class FavoriteTagRepositoryHive implements FavoriteTagRepository {
 
     final old = box.values.firstWhere((e) => e.name == name);
 
-    await box.put(old.name, obj);
+    if (old.name != obj.name) {
+      await box.delete(old.key);
+    }
+
+    await box.put(obj.name, obj);
 
     return favoriteTagHiveObjectToFavoriteTag(obj);
   }
@@ -91,6 +107,7 @@ class FavoriteTagRepositoryHive implements FavoriteTagRepository {
         await create(
           name: tag.name,
           labels: tag.labels,
+          queryType: tag.queryType,
         ),
       );
     }

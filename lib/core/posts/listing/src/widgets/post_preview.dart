@@ -1,25 +1,23 @@
 // Dart imports:
 import 'dart:math';
 
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:anchor_ui/anchor_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../configs/config/types.dart';
 import '../../../../configs/manage/providers.dart';
-import '../../../../images/providers.dart';
 import '../../../../http/client/providers.dart';
+import '../../../../images/providers.dart';
 import '../../../../search/search/routes.dart';
 import '../../../../tags/show/providers.dart';
 import '../../../../tags/tag/providers.dart';
 import '../../../../tags/tag/types.dart';
-import '../../../../widgets/hover_aware_container.dart';
 import '../../../../widgets/widgets.dart';
 import '../../../post/types.dart';
 import '../../../rating/types.dart';
@@ -79,7 +77,7 @@ class DefaultPostPreviewHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final dio = ref.watch(faviconDioProvider);
     final style =
         this.style ??
@@ -209,7 +207,7 @@ class PostListPrevewTooltip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final screenWidth = MediaQuery.widthOf(context);
     final adjustedMaxWidth = min(
       _maxSize.width,
@@ -388,7 +386,7 @@ class TagPreviewChip extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () => goToSearchPage(ref, tag: tag.name),
-      child: HoverAwareContainer(
+      child: KurumiHoverAwareContainer(
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 4,

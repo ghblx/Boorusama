@@ -1,16 +1,14 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:booru_clients/danbooru.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/widgets.dart';
 import 'package:i18n/i18n.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../core/configs/config/providers.dart';
-import '../../../../../core/widgets/widgets.dart';
 import '../../artist/providers.dart';
 import '../../artist/types.dart';
 import 'widgets/artist_search_info_card.dart';
@@ -138,13 +136,13 @@ class _DanbooruArtistSearchPageState
             width: 54,
             child: Text(
               context.t.sort.sort_by,
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Kurumi.themeOf(context).textTheme.titleMedium,
             ),
           ),
           ValueListenableBuilder(
             valueListenable: order,
             builder: (context, ord, child) {
-              return OptionDropDownButton(
+              return KurumiOptionDropDownButton(
                 alignment: AlignmentDirectional.centerStart,
                 value: ord,
                 onChanged: (value) {
@@ -186,12 +184,12 @@ class _DanbooruArtistSearchPageState
             width: 48,
             child: Text(
               'URL',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Kurumi.themeOf(context).textTheme.titleMedium,
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: BooruTextField(
+            child: KurumiTextField(
               controller: urlController,
               onSubmitted: (_) => pagingController.refresh(),
               textInputAction: TextInputAction.search,
@@ -217,12 +215,12 @@ class _DanbooruArtistSearchPageState
             width: 48,
             child: Text(
               context.t.artists.search.name,
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Kurumi.themeOf(context).textTheme.titleMedium,
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: BooruTextField(
+            child: KurumiTextField(
               controller: nameController,
               onSubmitted: (_) => pagingController.refresh(),
               textInputAction: TextInputAction.search,

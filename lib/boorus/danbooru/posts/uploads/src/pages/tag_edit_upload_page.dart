@@ -1,18 +1,14 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
 import '../../../../../../core/posts/sources/types.dart';
 import '../../../../../../core/search/suggestions/providers.dart';
-import '../../../../../../core/widgets/widgets.dart';
-import '../../../../../../foundation/animations/constants.dart';
-import '../../../../../../foundation/toast.dart';
 import '../../../../sources/providers.dart';
 import '../../../../tags/edit/widgets.dart';
 import '../../../post/providers.dart';
@@ -58,10 +54,10 @@ class _TagEditUploadPageState extends ConsumerState<TagEditUploadPage> {
       danbooruUploadNotifierProvider(config).select((state) => state.error),
       (previous, next) {
         if (next != null) {
-          showErrorToast(
+          Kurumi.showErrorToast(
             context,
             next.toString(),
-            duration: AppDurations.longToast,
+            duration: KurumiDurations.longToast,
           );
         }
       },
@@ -99,20 +95,20 @@ class _TagEditUploadPageState extends ConsumerState<TagEditUploadPage> {
                             text,
                             const SizedBox(width: 8),
                             if (pixelPerfectDup != null)
-                              CompactChip(
+                              KurumiCompactChip(
                                 textColor: Colors.white,
                                 label: 'Pixel-Perfect Duplicate',
                                 onTap: () {},
-                                backgroundColor: Theme.of(
+                                backgroundColor: Kurumi.themeOf(
                                   context,
                                 ).colorScheme.errorContainer,
                               )
                             else
-                              CompactChip(
+                              KurumiCompactChip(
                                 textColor: Colors.white,
                                 label: 'Duplicate',
                                 onTap: () {},
-                                backgroundColor: Theme.of(
+                                backgroundColor: Kurumi.themeOf(
                                   context,
                                 ).colorScheme.errorContainer,
                               ),

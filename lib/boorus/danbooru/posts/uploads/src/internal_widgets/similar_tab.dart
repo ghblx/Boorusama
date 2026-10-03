@@ -1,15 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/widgets.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
 import '../../../../../../core/images/booru_image.dart';
-import '../../../../../../core/themes/theme/types.dart';
-import '../../../../../../core/widgets/widgets.dart';
 import '../../../post/providers.dart';
 import '../../../post/types.dart';
 import '../providers/providers.dart';
@@ -36,7 +33,7 @@ class TagEditUploadSimilar extends ConsumerWidget {
       slivers: [
         const SliverSizedBox(height: 16),
         SliverToBoxAdapter(
-          child: BooruTextFormField(
+          child: KurumiTextFormField(
             autocorrect: false,
             onChanged: (value) {
               uploadNotifier.updateParentId(value);
@@ -82,15 +79,19 @@ class TagEditUploadSimilar extends ConsumerWidget {
                                 padding: const EdgeInsets.all(4),
                                 child: Text(
                                   buildDetailsText(post),
-                                  style: Theme.of(context).textTheme.bodySmall,
+                                  style: Kurumi.themeOf(
+                                    context,
+                                  ).textTheme.bodySmall,
                                 ),
                               ),
                               // xx% similar
                               Text(
                                 '${similar.toInt()}% Similar',
-                                style: Theme.of(context).textTheme.bodySmall
+                                style: Kurumi.themeOf(context)
+                                    .textTheme
+                                    .bodySmall
                                     ?.copyWith(
-                                      color: Theme.of(
+                                      color: Kurumi.themeOf(
                                         context,
                                       ).colorScheme.hintColor,
                                     ),
@@ -103,7 +104,9 @@ class TagEditUploadSimilar extends ConsumerWidget {
                         child: Center(
                           child: Text(
                             'No similar images found',
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: Kurumi.themeOf(
+                              context,
+                            ).textTheme.titleMedium,
                           ),
                         ),
                       );

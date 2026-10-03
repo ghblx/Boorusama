@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:foundation/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -42,10 +41,12 @@ class DateTimeSelector extends StatelessWidget {
           ),
           TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).textTheme.titleLarge?.color,
+              foregroundColor: Kurumi.themeOf(
+                context,
+              ).textTheme.titleLarge?.color,
               backgroundColor:
                   backgroundColor ??
-                  Theme.of(context).colorScheme.surfaceContainerHighest,
+                  Kurumi.themeOf(context).colorScheme.surfaceContainerHighest,
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(18)),
               ),

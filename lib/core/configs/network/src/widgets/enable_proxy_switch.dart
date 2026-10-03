@@ -1,12 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../widgets/widgets.dart';
 import '../../../config/types.dart';
 import '../../../create/providers.dart';
 
@@ -21,7 +19,7 @@ class EnableProxySwitch extends ConsumerWidget {
       ).select((value) => value.proxySettingsTyped),
     );
 
-    return BooruSwitchListTile(
+    return KurumiSwitchListTile(
       contentPadding: const EdgeInsets.only(left: 4),
       title: Text(
         context.t.booru.network.proxy.title,

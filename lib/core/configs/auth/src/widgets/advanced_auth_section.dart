@@ -1,15 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../../foundation/toast.dart';
-import '../../../../themes/theme/types.dart';
-import '../../../../widgets/widgets.dart';
+import '../../../../../foundation/loggers.dart';
 import '../../../config/types.dart';
 import '../../../create/providers.dart';
 import '../pages/cookie_access_webview_page.dart';
@@ -51,8 +48,8 @@ class AdvancedAuthSection extends ConsumerWidget {
         const SizedBox(height: 8),
         Text(
           context.t.booru.authentication.gelbooru.advanced_auth,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: Theme.of(context).colorScheme.hintColor,
+          style: Kurumi.themeOf(context).textTheme.titleSmall?.copyWith(
+            color: Kurumi.themeOf(context).colorScheme.hintColor,
             fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
@@ -60,8 +57,8 @@ class AdvancedAuthSection extends ConsumerWidget {
         const SizedBox(height: 4),
         Text(
           context.t.booru.authentication.gelbooru.advanced_auth_description,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: Theme.of(context).colorScheme.hintColor,
+          style: Kurumi.themeOf(context).textTheme.titleSmall?.copyWith(
+            color: Kurumi.themeOf(context).colorScheme.hintColor,
             fontSize: 12,
             fontWeight: FontWeight.w400,
           ),
@@ -77,7 +74,7 @@ class AdvancedAuthSection extends ConsumerWidget {
                   warningTitle != null &&
                   warningDescription != null) ...[
                 const SizedBox(height: 8),
-                WarningContainer(
+                KurumiWarningContainer(
                   margin: EdgeInsets.zero,
                   title: warningTitle,
                   contentBuilder: (context) => Text(warningDescription!),
@@ -102,7 +99,7 @@ class AdvancedAuthSection extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary,
+          color: Kurumi.themeOf(context).colorScheme.primary,
         ),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -117,8 +114,8 @@ class AdvancedAuthSection extends ConsumerWidget {
           ),
           Row(
             children: [
-              RawChip(
-                backgroundColor: Theme.of(
+              KurumiMaterialRawChip(
+                backgroundColor: Kurumi.themeOf(
                   context,
                 ).colorScheme.secondaryContainer,
                 onPressed: () {
@@ -129,8 +126,8 @@ class AdvancedAuthSection extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              RawChip(
-                backgroundColor: Theme.of(
+              KurumiMaterialRawChip(
+                backgroundColor: Kurumi.themeOf(
                   context,
                 ).colorScheme.secondaryContainer,
                 onPressed: () {
@@ -152,10 +149,14 @@ class AdvancedAuthSection extends ConsumerWidget {
     WidgetRef ref,
     BooruConfig config,
   ) {
+    final logger = ref.read(loggerProvider);
     final loginUrl = getLoginUrl();
 
     if (loginUrl == null || loginUrl.isEmpty) {
-      showErrorToast(context, 'Login URL for this booru is not available');
+      Kurumi.showErrorToast(
+        context,
+        'Login URL for this booru is not available',
+      );
       return;
     }
 
@@ -167,6 +168,10 @@ class AdvancedAuthSection extends ConsumerWidget {
           onGet: (cookies) {
             if (cookies.isNotEmpty) {
               if (onGetCookies != null) {
+                logger.info(
+                  'Login',
+                  'cookie import delegated to source callback',
+                );
                 onGetCookies!(cookies);
                 Navigator.of(context).pop();
                 return;
@@ -177,6 +182,10 @@ class AdvancedAuthSection extends ConsumerWidget {
               );
               final uid = cookies.firstWhereOrNull((e) => e.name == 'user_id');
 
+              logger.info(
+                'Login',
+                'cookie import passHashPresent=${passHash != null} userIdPresent=${uid != null}',
+              );
               if (passHash != null) {
                 ref.editNotifier.updatePassHash(
                   passHash.value,
@@ -186,11 +195,18 @@ class AdvancedAuthSection extends ConsumerWidget {
                   loginController.text = uid.value;
                 }
                 onCookiesReceived?.call(cookies);
+                logger.info('Login', 'cookie import applied');
               } else {
-                showErrorToast(context, 'No hashed password found');
+                logger.info(
+                  'Login',
+                  'cookie import rejected reason=missing_pass_hash',
+                );
+                Kurumi.showErrorToast(context, 'No hashed password found');
               }
 
               Navigator.of(context).pop();
+            } else {
+              logger.info('Login', 'cookie import skipped reason=no_cookies');
             }
           },
         ),
@@ -211,7 +227,9 @@ class AdvancedAuthSection extends ConsumerWidget {
         children: [
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+              backgroundColor: Kurumi.themeOf(
+                context,
+              ).colorScheme.secondaryContainer,
             ),
             onPressed: () {
               _openBrowser(context, ref, config);
@@ -219,7 +237,7 @@ class AdvancedAuthSection extends ConsumerWidget {
             child: Text(
               title ?? 'Login with Browser',
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onSecondaryContainer,
+                color: Kurumi.themeOf(context).colorScheme.onSecondaryContainer,
               ),
             ),
           ),

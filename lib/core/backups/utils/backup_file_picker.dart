@@ -1,45 +1,52 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:foundation/foundation.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:path/path.dart' as p;
 
 // Project imports:
 import '../../../../foundation/picker.dart';
 import '../../../../foundation/platform.dart';
-import '../../../../foundation/toast.dart';
 
 class BackupFilePicker {
   static Future<void> pickFile({
     required BuildContext context,
+    required AppPlatform platform,
     required AndroidDeviceInfo? androidDeviceInfo,
+    required AppFilePicker picker,
     required void Function(String path) onPick,
     List<String> allowedExtensions = const ['json'],
     bool forceAnyFileType = false,
   }) {
     if (forceAnyFileType) {
-      return _pickFileManualExtensionCheck(context, allowedExtensions, onPick);
+      return _pickFileManualExtensionCheck(
+        context,
+        allowedExtensions,
+        onPick,
+        picker,
+      );
     }
 
-    if (isAndroid()) {
+    if (platform.isAndroid) {
       final androidVersion = androidDeviceInfo?.version.sdkInt;
       // Android 9 or lower will need to use any file type
       if (androidVersion != null &&
-          androidVersion <= AndroidVersions.android9) {
+          androidVersion <= AndroidVersions.android9.apiLevel) {
         return _pickFileManualExtensionCheck(
           context,
           allowedExtensions,
           onPick,
+          picker,
         );
       }
     }
 
     return pickSingleFilePathToastOnError(
       context: context,
-      type: FileType.custom,
+      customFileType: true,
       allowedExtensions: allowedExtensions,
+      picker: picker,
       onPick: onPick,
     );
   }
@@ -48,13 +55,15 @@ class BackupFilePicker {
     BuildContext context,
     List<String> allowedExtensions,
     void Function(String path) onPick,
+    AppFilePicker picker,
   ) => pickSingleFilePathToastOnError(
     context: context,
+    picker: picker,
     onPick: (path) {
       final ext = p.extension(path);
 
       if (!allowedExtensions.contains(ext.substring(1))) {
-        showErrorToast(
+        Kurumi.showErrorToast(
           context,
           'Invalid file type, only ${allowedExtensions.map((e) => '.$e').join(', ')} files are allowed',
         );

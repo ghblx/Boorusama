@@ -1,11 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../themes/theme/types.dart';
 import '../../../widgets/widgets.dart';
 import '_internal/details_widget_frame.dart';
 
@@ -50,7 +48,7 @@ class SimplePostStatsTile extends StatelessWidget {
                 text: '$favCount ',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Kurumi.themeOf(context).colorScheme.primary,
                 ),
                 children: [
                   TextSpan(
@@ -58,7 +56,7 @@ class SimplePostStatsTile extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: Theme.of(context).colorScheme.hintColor,
+                      color: Kurumi.themeOf(context).colorScheme.hintColor,
                     ),
                   ),
                 ],
@@ -73,7 +71,7 @@ class SimplePostStatsTile extends StatelessWidget {
                 text: '$score ',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Kurumi.themeOf(context).colorScheme.primary,
                 ),
                 children: [
                   TextSpan(
@@ -82,7 +80,7 @@ class SimplePostStatsTile extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: Theme.of(context).colorScheme.hintColor,
+                      color: Kurumi.themeOf(context).colorScheme.hintColor,
                     ),
                   ),
                 ],
@@ -97,7 +95,7 @@ class SimplePostStatsTile extends StatelessWidget {
                 text: '$totalComments ',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Kurumi.themeOf(context).colorScheme.primary,
                 ),
                 children: [
                   TextSpan(
@@ -105,7 +103,7 @@ class SimplePostStatsTile extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: Theme.of(context).colorScheme.hintColor,
+                      color: Kurumi.themeOf(context).colorScheme.hintColor,
                     ),
                   ),
                 ],

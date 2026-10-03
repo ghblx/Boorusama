@@ -1,8 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 class CommentSideSheetContainer extends StatelessWidget {
@@ -23,7 +22,7 @@ class CommentSideSheetContainer extends StatelessWidget {
           Container(
             height: kToolbarHeight * 0.8,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: Kurumi.themeOf(context).colorScheme.surface,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(6),
               ),
@@ -34,7 +33,7 @@ class CommentSideSheetContainer extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   context.t.comment.comments,
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Kurumi.themeOf(context).textTheme.titleLarge,
                 ),
                 const Spacer(),
                 Material(

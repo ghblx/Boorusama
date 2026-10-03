@@ -1,8 +1,8 @@
 // Dart imports:
 import 'dart:async';
 
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../configs/config/types.dart';
@@ -82,8 +82,8 @@ extension AnalyticsInterfaceX on AnalyticsInterface {
 
     unawaited(
       _logChangedEvent(
-        oldValue: oldValue.defaultPreviewImageButtonAction ?? '<none>',
-        newValue: newValue.defaultPreviewImageButtonAction ?? '<none>',
+        oldValue: oldValue.thumbnailActions.toJson().join(','),
+        newValue: newValue.thumbnailActions.toJson().join(','),
         eventName: 'preview_img_btn_changed',
         source: SettingsChangedSource.configs,
       ),

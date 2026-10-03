@@ -1,10 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -14,6 +13,7 @@ import '../../../../router.dart';
 import '../../../../tags/favorites/types.dart';
 import '../../../../tags/favorites/widgets.dart';
 import '../../../../themes/colors/providers.dart';
+import '../../../selected_tags/types.dart';
 import 'constants.dart';
 
 class FavoriteTagsSection extends ConsumerWidget {
@@ -63,14 +63,21 @@ class FavoriteTagsSection extends ConsumerWidget {
         final colors = ref
             .watch(booruChipColorsProvider)
             .fromColor(
-              Theme.of(ref.context).colorScheme.onSurface,
+              Kurumi.themeOf(ref.context).colorScheme.onSurface,
             );
 
-        return RawChip(
+        return KurumiMaterialRawChip(
           visualDensity: VisualDensity.compact,
           onPressed: () => onTagTap?.call(tag),
+          avatar: tag.queryType == QueryType.simple
+              ? Icon(
+                  Symbols.code,
+                  size: 16,
+                  color: colors?.foregroundColor,
+                )
+              : null,
           label: Text(
-            tag.name.replaceAll('_', ' '),
+            tag.name,
             style: TextStyle(
               color: colors?.foregroundColor,
             ),
@@ -119,7 +126,7 @@ class OptionTagsArenaNoEdit extends ConsumerWidget {
               children: [
                 Text(
                   title.toUpperCase(),
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  style: Kurumi.themeOf(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -129,7 +136,7 @@ class OptionTagsArenaNoEdit extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     minimumSize: const Size(32, 32),
                     shape: const CircleBorder(),
-                    backgroundColor: Theme.of(
+                    backgroundColor: Kurumi.themeOf(
                       context,
                     ).colorScheme.surfaceContainerHighest,
                   ),
@@ -137,7 +144,7 @@ class OptionTagsArenaNoEdit extends ConsumerWidget {
                   child: Icon(
                     Symbols.settings,
                     size: 16,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: Kurumi.themeOf(context).colorScheme.onSurfaceVariant,
                     fill: 1,
                   ),
                 ),
@@ -149,7 +156,7 @@ class OptionTagsArenaNoEdit extends ConsumerWidget {
         const SizedBox(height: 2),
         Wrap(
           spacing: 4,
-          runSpacing: isDesktopPlatform() ? 4 : 0,
+          runSpacing: ref.watch(appPlatformProvider).isDesktop ? 4 : 0,
           children: children,
         ),
       ],

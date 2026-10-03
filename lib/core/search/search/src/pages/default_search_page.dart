@@ -1,12 +1,11 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../configs/config/providers.dart';
 import '../../../../posts/post/providers.dart';
+import '../../../syntax/providers.dart';
 import '../routes/params.dart';
 import '../widgets/search_page_scaffold.dart';
 
@@ -24,6 +23,7 @@ class DefaultSearchPage extends ConsumerWidget {
 
     return SearchPageScaffold(
       params: params,
+      textMatchers: [?ref.watch(queryMatcherProvider(ref.watchConfigAuth))],
       fetcher: (page, controler) => postRepo.getPostsFromController(
         controler.tagSet,
         page,

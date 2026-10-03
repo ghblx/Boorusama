@@ -1,7 +1,6 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -79,7 +78,7 @@ class PostDetailsOverlay extends StatelessWidget {
           Flexible(
             child: OverflowBar(
               children: [
-                CircularIconButton(
+                KurumiCircularIconButton(
                   icon: const Padding(
                     padding: EdgeInsets.only(left: 8),
                     child: Icon(
@@ -133,7 +132,7 @@ class _SheetControlButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return ValueListenableBuilder(
       valueListenable: controller.sheetState,
@@ -148,7 +147,7 @@ class _SheetControlButton extends StatelessWidget {
   }
 
   Widget _buildCollapseButton(BuildContext context, ColorScheme colorScheme) {
-    return CircularIconButton(
+    return KurumiCircularIconButton(
       onPressed: () {
         if (controller.animating.value) return;
 
@@ -166,15 +165,15 @@ class _SheetControlButton extends StatelessWidget {
           );
         }
       },
-      icon: InfoCircleIcon(
-        style: InfoCircleStyle.solid,
+      icon: KurumiInfoCircleIcon(
+        style: KurumiInfoCircleStyle.solid,
         color: colorScheme.primary,
       ),
     );
   }
 
   Widget _buildExpandButton(BuildContext context) {
-    return CircularIconButton(
+    return KurumiCircularIconButton(
       onPressed: () {
         if (controller.animating.value) return;
 
@@ -195,7 +194,7 @@ class _SheetControlButton extends StatelessWidget {
           );
         }
       },
-      icon: const InfoCircleIcon(),
+      icon: const KurumiInfoCircleIcon(),
     );
   }
 }

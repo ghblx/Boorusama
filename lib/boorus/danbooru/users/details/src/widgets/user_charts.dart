@@ -1,11 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:collection/collection.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../../core/posts/details/widgets.dart';
@@ -23,7 +22,7 @@ class UserUploadDailyDeltaChart extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
     final titles = <int, String>{};
@@ -65,7 +64,10 @@ class UserUploadDailyDeltaChart extends ConsumerWidget {
 
         final showMonths = {
           for (var i = 0; i < 4; i++)
-            (firstMonth + i * 3) % 12 == 0 ? 12 : (firstMonth + i * 3) % 12,
+            switch ((firstMonth + i * 3) % 12) {
+              0 => 12,
+              final month => month,
+            },
 
           // always include today's month
           DateTime.now().month,

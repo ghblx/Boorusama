@@ -1,7 +1,6 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -29,7 +28,7 @@ class SelectedTagChip extends StatelessWidget {
     final hasMeta = tagSearchItem.metatag != null;
     final isRaw = tagSearchItem.isRaw;
 
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final tagColors = TagColors.fromBrightness(colorScheme.brightness);
 
     return GestureDetector(
@@ -51,7 +50,7 @@ class SelectedTagChip extends StatelessWidget {
           },
         );
       },
-      child: Chip(
+      child: KurumiMaterialChip(
         visualDensity: const ShrinkVisualDensity(),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),

@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -88,10 +87,10 @@ class _MetatagsSectionState extends ConsumerState<MetatagsSection> {
     final colors = ref
         .watch(booruChipColorsProvider)
         .fromColor(
-          Theme.of(context).colorScheme.primary,
+          Kurumi.themeOf(context).colorScheme.primary,
         );
 
-    return RawChip(
+    return KurumiMaterialRawChip(
       visualDensity: VisualDensity.compact,
       label: Text(tag, style: TextStyle(color: colors?.foregroundColor)),
       backgroundColor: colors?.backgroundColor,

@@ -1,8 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../bulk_downloads/routes.dart';
@@ -12,7 +11,6 @@ import '../../../../settings/providers.dart';
 import '../../../../tags/metatag/providers.dart';
 import '../../../queries/providers.dart';
 import '../../../selected_tags/providers.dart';
-import '../../../selected_tags/types.dart';
 import '../types/search_bar_position.dart';
 import 'selected_tag_list.dart';
 
@@ -31,7 +29,7 @@ class SelectedTagListWithData extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tagComposer = ref.watch(tagQueryComposerProvider(config.search));
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final searchBarPosition = ref.watch(searchBarPositionProvider);
     final metatagExtractor = ref.watch(metatagExtractorProvider(config.auth));
 
@@ -77,7 +75,7 @@ class SelectedTagListWithData extends ConsumerWidget {
                   onUpdate: (oldTag, newTag) {
                     controller.updateTag(
                       oldTag,
-                      TagSearchItem.fromString(
+                      oldTag.withQuery(
                         newTag,
                         extractor: metatagExtractor,
                       ),

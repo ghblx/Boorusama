@@ -1,13 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
-import '../../../themes/theme/types.dart';
-import '../../../widgets/widgets.dart';
 
 class CommentComposer extends StatefulWidget {
   const CommentComposer({
@@ -63,7 +60,7 @@ class _CommentComposerState extends State<CommentComposer> {
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
+            color: Kurumi.themeOf(context).colorScheme.outlineVariant,
           ),
         ),
       ),
@@ -77,12 +74,12 @@ class _CommentComposerState extends State<CommentComposer> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ?widget.header,
-          BooruTextField(
+          KurumiTextField(
             focusNode: widget.focusNode,
             controller: textEditingController,
             decoration: InputDecoration(
               hintStyle: TextStyle(
-                color: Theme.of(context).colorScheme.hintColor,
+                color: Kurumi.themeOf(context).colorScheme.hintColor,
               ),
               hintText: context.t.comment.create.hint,
               suffixIcon: _buildSuffixIcon(context),

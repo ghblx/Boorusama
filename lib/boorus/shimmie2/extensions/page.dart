@@ -1,14 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../core/configs/config/providers.dart';
-import '../../../core/themes/theme/types.dart';
 import '../../../core/widgets/booru_version_chip.dart';
 import '../../../core/widgets/widgets.dart';
 import 'providers.dart';
@@ -86,7 +84,7 @@ class _ExtensionsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final grouped = state.getAllByCategory();
     final categories = state.getCategoriesSorted();
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final textTheme = theme.textTheme;
     final colorScheme = theme.colorScheme;
 

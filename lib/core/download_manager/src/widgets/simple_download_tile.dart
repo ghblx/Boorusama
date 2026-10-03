@@ -1,30 +1,28 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:percent_indicator/percent_indicator.dart';
 import 'package:readmore/readmore.dart';
 import 'package:share_plus/share_plus.dart';
 
 // Project imports:
+import '../../../../foundation/networking/network_provider.dart';
 import '../../../../foundation/platform.dart';
 import '../../../../foundation/url_launcher.dart';
 import '../../../downloads/background/types.dart';
 import '../../../downloads/configs/widgets.dart';
 import '../../../downloads/downloader/types.dart';
-import '../../../themes/theme/types.dart';
-import '../../../widgets/drag_line.dart';
+import '../data/file_downloader_task_client.dart';
 import '../providers/task_update_ex.dart';
 
 final _checkResumableProvider = FutureProvider.autoDispose.family<bool, Task>((
   ref,
   task,
 ) {
-  return FileDownloader().taskCanResume(task);
+  return ref.watch(downloadTaskClientProvider).canResume(task);
 });
 
 class SimpleDownloadTile extends ConsumerWidget {
@@ -67,9 +65,12 @@ class SimpleDownloadTile extends ConsumerWidget {
           p.hasTimeRemaining ? p.timeRemaining : null,
       },
       onLongPress: () {
-        showModalBottomSheet(
+        Kurumi.showModalBottomSheet(
           context: context,
-          builder: (_) => _ModalOptions(task: task),
+          builder: (_) => _ModalOptions(
+            task: task,
+            launcher: ref.read(externalUrlLauncherProvider),
+          ),
         );
       },
       onTap: onTap,
@@ -77,7 +78,9 @@ class SimpleDownloadTile extends ConsumerWidget {
       builder: (_) => RawDownloadTile(
         fileName: task.task.filename,
         strikeThrough: task.isCanceled,
-        color: task.isCanceled ? Theme.of(context).colorScheme.hintColor : null,
+        color: task.isCanceled
+            ? Kurumi.themeOf(context).colorScheme.hintColor
+            : null,
         trailing: switch (task) {
           final TaskStatusUpdate s => switch (s.status) {
             TaskStatus.failed =>
@@ -145,12 +148,8 @@ class SimpleDownloadTile extends ConsumerWidget {
           final TaskStatusUpdate s => _TaskSubtitle(task: s),
           final TaskProgressUpdate p =>
             p.progress >= 0
-                ? LinearPercentIndicator(
-                    lineHeight: 2,
-                    percent: p.progress,
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    animation: true,
-                    animateFromLastPercent: true,
+                ? KurumiLinearProgressIndicator(
+                    value: p.progress,
                     trailing: Text(
                       '${(p.progress * 100).floor()}%',
                     ),
@@ -164,7 +163,7 @@ class SimpleDownloadTile extends ConsumerWidget {
 }
 
 final _filePathProvider = FutureProvider.autoDispose.family<String, Task>(
-  (ref, task) => task.filePath(),
+  (ref, task) => ref.watch(downloadTaskClientProvider).filePath(task),
 );
 
 class _TaskSubtitle extends ConsumerWidget {
@@ -174,8 +173,8 @@ class _TaskSubtitle extends ConsumerWidget {
 
   final TaskStatusUpdate task;
 
-  String _prettifyFilePathIfNeeded(String path) {
-    if (isAndroid()) {
+  String _prettifyFilePathIfNeeded(String path, AppPlatform platform) {
+    if (platform.isAndroid) {
       if (path.startsWith('/storage/emulated/0/')) {
         return path.replaceAll('/storage/emulated/0/', '/');
       }
@@ -188,20 +187,28 @@ class _TaskSubtitle extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final status = task.status;
     final exception = task.exception;
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
+    final waitingForWifi =
+        task.task.requiresWiFi &&
+        !ref.watch(connectedToWifiProvider) &&
+        status == TaskStatus.enqueued;
+    final platform = ref.watch(appPlatformProvider);
 
     return ReadMoreText(
       exception == null
-          ? switch (status) {
-              TaskStatus.complete =>
-                ref
-                    .watch(_filePathProvider(task.task))
-                    .maybeWhen(
-                      data: (data) => _prettifyFilePathIfNeeded(data),
-                      orElse: () => '...',
-                    ),
-              _ => status.name.sentenceCase,
-            }
+          ? waitingForWifi
+                ? context.t.download.status.waiting_for_wifi
+                : switch (status) {
+                    TaskStatus.complete =>
+                      ref
+                          .watch(_filePathProvider(task.task))
+                          .maybeWhen(
+                            data: (data) =>
+                                _prettifyFilePathIfNeeded(data, platform),
+                            orElse: () => '...',
+                          ),
+                    _ => status.name.sentenceCase,
+                  }
           : '${exception.getErrorDescription()} ',
       trimLines: 1,
       trimMode: TrimMode.Line,
@@ -228,9 +235,11 @@ class _TaskSubtitle extends ConsumerWidget {
 class _ModalOptions extends ConsumerWidget {
   const _ModalOptions({
     required this.task,
+    required this.launcher,
   });
 
   final TaskUpdate task;
+  final ExternalUrlLauncher launcher;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -246,7 +255,7 @@ class _ModalOptions extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 8),
-            const DragLine(),
+            const KurumiDragLine(),
             const SizedBox(height: 8),
             ListTile(
               shape: RoundedRectangleBorder(
@@ -254,7 +263,10 @@ class _ModalOptions extends ConsumerWidget {
               ),
               title: Text(context.t.post.action.view_in_browser),
               onTap: () {
-                launchExternalUrlString(task.task.url);
+                launchExternalUrlString(
+                  task.task.url,
+                  launcher: launcher,
+                );
                 navigator.pop();
               },
             ),
@@ -309,8 +321,7 @@ extension TaskExceptionX on TaskException {
     final responseCode = map['httpResponseCode'] as int?;
 
     return switch (responseCode) {
-      416 =>
-        'HTTP 416 Requested range not satisfiable, this is likely because you have an invalid download location or filename rule. Please change the download location or filename rule and try again.',
+      416 => 'HTTP 416 Requested range not satisfiable, this is likely because you have an invalid download location or filename rule. Please change the download location or filename rule and try again.',
       _ => 'Failed: $description',
     };
   }

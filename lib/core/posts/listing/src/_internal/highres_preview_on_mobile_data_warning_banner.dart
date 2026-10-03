@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../foundation/networking.dart';
@@ -26,7 +25,7 @@ class HighresPreviewOnMobileDataWarningBanner extends ConsumerWidget {
       final NetworkConnectedState s => PersistentDismissableInfoContainer(
         storageKey: _kHideHighresOnMobileDataWarningKey,
         shouldShow: () => s.result.isMobile && imageQuality.isHighres,
-        mainColor: Theme.of(context).colorScheme.error,
+        mainColor: Kurumi.themeOf(context).colorScheme.error,
         content: context.t.infinite_scroll.reminder.highres,
       ),
       _ => const SizedBox.shrink(),

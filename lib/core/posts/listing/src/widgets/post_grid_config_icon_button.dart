@@ -1,10 +1,9 @@
-// Flutter imports:
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/cupertino.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:selection_mode/selection_mode.dart';
 
@@ -21,8 +20,6 @@ import '../../../../images/types.dart';
 import '../../../../settings/providers.dart';
 import '../../../../settings/routes.dart';
 import '../../../../settings/widgets.dart';
-import '../../../../themes/theme/types.dart';
-import '../../../../widgets/widgets.dart';
 import '../../../post/types.dart';
 import '../types/grid_size.dart';
 import '../types/image_list_type.dart';
@@ -72,13 +69,13 @@ class PostGridConfigIconButton<T> extends ConsumerWidget {
           valueListenable: postController.itemsNotifier,
           builder: (_, posts, _) {
             return posts.isNotEmpty
-                ? BooruPopupMenuButton(
+                ? KurumiPopupMenuButton(
                     iconBackgroundColor:
                         context.extendedColorScheme.surfaceContainerOverlay,
                     iconColor:
                         context.extendedColorScheme.onSurfaceContainerOverlay,
                     items: [
-                      BooruPopupMenuItem(
+                      KurumiPopupMenuItem(
                         title: Text(context.t.generic.action.select),
                         icon: const Icon(
                           Symbols.select_all,
@@ -87,7 +84,7 @@ class PostGridConfigIconButton<T> extends ConsumerWidget {
                         onTap: () => selectionModeController.enable(),
                       ),
                       if (postStatsPageBuilder != null)
-                        BooruPopupMenuItem(
+                        KurumiPopupMenuItem(
                           onTap: () {
                             Navigator.of(context).push(
                               CupertinoPageRoute(
@@ -110,7 +107,7 @@ class PostGridConfigIconButton<T> extends ConsumerWidget {
                       if (showBlacklist &&
                           blacklistEntries != null &&
                           blacklistEntries.isNotEmpty)
-                        BooruPopupMenuItem(
+                        KurumiPopupMenuItem(
                           onTap: () {
                             // check if all entries are global then just open the global blacklist page
                             final isGlobal = blacklistEntries.every(
@@ -121,7 +118,7 @@ class PostGridConfigIconButton<T> extends ConsumerWidget {
                             if (isGlobal) {
                               goToGlobalBlacklistedTagsPage(ref);
                             } else {
-                              showBooruModalBottomSheet(
+                              Kurumi.showAppModalBottomSheet(
                                 context: context,
                                 routeSettings: const RouteSettings(
                                   name: 'edit_blacklist_select',
@@ -139,7 +136,7 @@ class PostGridConfigIconButton<T> extends ConsumerWidget {
                             size: 18,
                           ),
                         ),
-                      BooruPopupMenuItem(
+                      KurumiPopupMenuItem(
                         onTap: () =>
                             _showViewOptions(context, settingsNotifier),
                         title: Text(
@@ -163,7 +160,7 @@ class PostGridConfigIconButton<T> extends ConsumerWidget {
     BuildContext context,
     SettingsNotifier settingsNotifier,
   ) {
-    return showBooruModalBottomSheet(
+    return Kurumi.showAppModalBottomSheet(
       context: context,
       routeSettings: const RouteSettings(name: 'grid_config'),
       builder: (_) => PostGridActionSheet(
@@ -199,7 +196,7 @@ class EditBlacklistActionSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final config = ref.watchConfigFilter;
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return ref
         .watch(blacklistTagEntriesProvider(config))
@@ -320,7 +317,7 @@ class PostGridActionSheet extends ConsumerWidget {
       imageListingSettingsProvider.select((value) => value.imageQuality),
     );
 
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -347,7 +344,7 @@ class PostGridActionSheet extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SettingsTile<PageMode>(
+                  KurumiSettingsTile<PageMode>(
                     title: Text(context.t.settings.result_layout.result_layout),
                     selectedOption: pageMode,
                     items: const [...PageMode.values],
@@ -355,7 +352,7 @@ class PostGridActionSheet extends ConsumerWidget {
                     optionBuilder: (value) => Text(value.localize(context)),
                     visualDensity: VisualDensity.compact,
                   ),
-                  SettingsTile(
+                  KurumiSettingsTile(
                     title: Text(
                       context.t.settings.image_grid.grid_size.grid_size,
                     ),
@@ -365,7 +362,7 @@ class PostGridActionSheet extends ConsumerWidget {
                     optionBuilder: (value) => Text(value.localize(context)),
                     visualDensity: VisualDensity.compact,
                   ),
-                  SettingsTile<ImageListType>(
+                  KurumiSettingsTile<ImageListType>(
                     title: Text(context.t.settings.image_list.image_list),
                     selectedOption: imageListType,
                     items: ImageListType.values,
@@ -373,7 +370,7 @@ class PostGridActionSheet extends ConsumerWidget {
                     optionBuilder: (value) => Text(value.localize(context)),
                     visualDensity: VisualDensity.compact,
                   ),
-                  SettingsTile<ImageQuality>(
+                  KurumiSettingsTile<ImageQuality>(
                     title: Text(
                       context.t.settings.image_grid.image_quality.image_quality,
                     ),

@@ -1,5 +1,6 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../colors/types.dart';
@@ -139,7 +140,9 @@ extension ColorSchemeConverter on ColorScheme {
   }
 }
 
-ExtendedColorScheme? extendedColorSchemeFromJson(Map<String, dynamic>? json) {
+KurumiExtendedColorScheme? extendedColorSchemeFromJson(
+  Map<String, dynamic>? json,
+) {
   if (json == null) return null;
 
   final surfaceContainerOverlay = _parse(json['surfaceContainerOverlay']);
@@ -149,7 +152,7 @@ ExtendedColorScheme? extendedColorSchemeFromJson(Map<String, dynamic>? json) {
     json['onSurfaceContainerOverlayDim'],
   );
 
-  return ExtendedColorScheme(
+  return KurumiExtendedColorScheme(
     surfaceContainerOverlay: surfaceContainerOverlay,
     onSurfaceContainerOverlay: onSurfaceContainerOverlay,
     surfaceContainerOverlayDim: surfaceContainerOverlayDim,
@@ -157,7 +160,7 @@ ExtendedColorScheme? extendedColorSchemeFromJson(Map<String, dynamic>? json) {
   );
 }
 
-extension ExtendedColorSchemeConverter on ExtendedColorScheme {
+extension ExtendedColorSchemeConverter on KurumiExtendedColorScheme {
   Map<String, dynamic> toJson() {
     return {
       'surfaceContainerOverlay': surfaceContainerOverlay.hex,

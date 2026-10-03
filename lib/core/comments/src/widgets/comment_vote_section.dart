@@ -1,8 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -47,7 +46,7 @@ class CommentVoteSection extends StatelessWidget {
             Symbols.arrow_upward_alt,
             color: voteState == CommentVoteState.upvoted
                 ? context.colors.upvoteColor
-                : Theme.of(context).iconTheme.color,
+                : Kurumi.themeOf(context).iconTheme.color,
             size: 24,
           ),
         ),
@@ -71,7 +70,7 @@ class CommentVoteSection extends StatelessWidget {
             Symbols.arrow_downward_alt,
             color: voteState == CommentVoteState.downvoted
                 ? context.colors.downvoteColor
-                : Theme.of(context).iconTheme.color,
+                : Kurumi.themeOf(context).iconTheme.color,
             size: 24,
           ),
         ),

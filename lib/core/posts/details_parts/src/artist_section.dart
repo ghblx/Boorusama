@@ -1,9 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
@@ -11,7 +11,6 @@ import '../../../../foundation/html.dart';
 import '../../../../foundation/url_launcher.dart';
 import '../../../artists/types.dart';
 import '../../../comments/types.dart';
-import '../../../widgets/widgets.dart';
 import '../../sources/types.dart';
 import 'source_link.dart';
 
@@ -20,7 +19,7 @@ enum TranlationState {
   translated,
 }
 
-class ArtistSection extends StatefulWidget {
+class ArtistSection extends ConsumerStatefulWidget {
   const ArtistSection({
     required this.commentary,
     required this.artistTags,
@@ -33,10 +32,10 @@ class ArtistSection extends StatefulWidget {
   final PostSource source;
 
   @override
-  State<ArtistSection> createState() => _ArtistSectionState();
+  ConsumerState<ArtistSection> createState() => _ArtistSectionState();
 }
 
-class _ArtistSectionState extends State<ArtistSection> {
+class _ArtistSectionState extends ConsumerState<ArtistSection> {
   late var display = widget.commentary.isTranslated
       ? TranlationState.translated
       : TranlationState.original;
@@ -77,7 +76,7 @@ class _ArtistSectionState extends State<ArtistSection> {
             }
           else
             const SizedBox.shrink(),
-          BooruAnimatedCrossFade(
+          KurumiAnimatedCrossFade(
             firstChild: const SizedBox.shrink(),
             secondChild: commentary.isEmpty
                 ? const SizedBox.shrink()
@@ -98,7 +97,10 @@ class _ArtistSectionState extends State<ArtistSection> {
                       },
                       data: getDescriptionText(display, commentary),
                       onLinkTap: (url, attributes, element) => url != null
-                          ? launchExternalUrl(Uri.parse(url))
+                          ? launchExternalUrl(
+                              Uri.parse(url),
+                              launcher: ref.read(externalUrlLauncherProvider),
+                            )
                           : null,
                     ),
                   ),
@@ -153,19 +155,18 @@ class _Link extends StatelessWidget {
       title: Text(artistTags.join(' ')),
       url: url,
       actionBuilder: () => commentary.isTranslated
-          ? PopupMenuButton(
-              padding: EdgeInsets.zero,
+          ? KurumiPopupMenuButton(
               icon: const Icon(Symbols.keyboard_arrow_down),
-              onSelected: onChanged,
-              itemBuilder: (_) => [
+              iconPadding: EdgeInsets.zero,
+              items: [
                 switch (display) {
-                  TranlationState.original => PopupMenuItem(
-                    value: TranlationState.translated,
-                    child: Text(context.t.post.detail.show_translated),
+                  TranlationState.original => KurumiPopupMenuItem(
+                    title: Text(context.t.post.detail.show_translated),
+                    onTap: () => onChanged(TranlationState.translated),
                   ),
-                  TranlationState.translated => PopupMenuItem(
-                    value: TranlationState.original,
-                    child: Text(context.t.post.detail.show_original),
+                  TranlationState.translated => KurumiPopupMenuItem(
+                    title: Text(context.t.post.detail.show_original),
+                    onTap: () => onChanged(TranlationState.original),
                   ),
                 },
               ],

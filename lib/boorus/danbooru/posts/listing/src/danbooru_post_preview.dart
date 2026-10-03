@@ -1,8 +1,7 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../core/configs/config/providers.dart';
@@ -11,7 +10,6 @@ import '../../../../../core/posts/listing/widgets.dart';
 import '../../../../../core/posts/votes/types.dart';
 import '../../../../../core/tags/tag/types.dart';
 import '../../../../../core/themes/theme/types.dart';
-import '../../../../../core/widgets/hover_aware_container.dart';
 import '../../post/types.dart';
 import '../../votes/providers.dart';
 
@@ -62,7 +60,7 @@ class DanbooruPostPreviewPopover extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final style = theme.textTheme.bodySmall?.copyWith(
       color: theme.listTileTheme.subtitleTextStyle?.color,
       fontSize: 11,
@@ -108,7 +106,7 @@ class __VotesState extends ConsumerState<_Votes> {
     final params = (widget.config, widget.post.id);
     final postVote = ref.watch(danbooruPostVoteProvider(params));
     final voteState = postVote?.voteState ?? VoteState.unvote;
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final postId = widget.post.id;
     final voteId = postVote?.voteId;
 
@@ -169,7 +167,7 @@ class _VoteButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: HoverAwareContainer(
+      child: KurumiHoverAwareContainer(
         child: Padding(
           padding: const EdgeInsets.all(2),
           child: child,

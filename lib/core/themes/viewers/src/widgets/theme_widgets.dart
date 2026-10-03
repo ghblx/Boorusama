@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../widgets/widgets.dart';
@@ -50,7 +49,7 @@ class ColorVariantSelector extends ConsumerWidget {
         ),
       ],
       child: Theme(
-        data: Theme.of(context).copyWith(
+        data: Kurumi.themeOf(context).copyWith(
           colorScheme: colorScheme,
         ),
         child: ChoiceOptionSelectorList(
@@ -100,7 +99,7 @@ class ThemeCategoryToggleSwitch extends ConsumerWidget {
     );
 
     return Center(
-      child: BooruSegmentedButton(
+      child: KurumiSegmentedButton(
         initialValue: initialCategory,
         segments: {
           ThemeCategory.basic: context.t.settings.theme.viewer.groups.basic,
@@ -139,7 +138,7 @@ class PreviewColorContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return GestureDetector(
       onTap: onTap,

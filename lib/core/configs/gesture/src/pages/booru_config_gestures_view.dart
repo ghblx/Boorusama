@@ -1,13 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../themes/theme/types.dart';
-import '../../../../widgets/widgets.dart';
 import '../../../config/types.dart';
 import '../../../create/providers.dart';
 import '../types/actions.dart';
@@ -118,8 +115,8 @@ class BooruConfigGesturesView extends ConsumerWidget {
           const SizedBox(height: 32),
           Text(
             context.t.booru.gestures.override_notice,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Theme.of(context).colorScheme.hintColor,
+            style: Kurumi.themeOf(context).textTheme.titleSmall?.copyWith(
+              color: Kurumi.themeOf(context).colorScheme.hintColor,
               fontSize: 14,
               fontWeight: FontWeight.w400,
             ),
@@ -155,7 +152,7 @@ class _GestureConfigTile extends StatelessWidget {
         constraints: const BoxConstraints(
           minWidth: 160,
         ),
-        child: OptionDropDownButton<String?>(
+        child: KurumiOptionDropDownButton<String?>(
           value: value,
           alignment: AlignmentDirectional.bottomStart,
           onChanged: onChanged,

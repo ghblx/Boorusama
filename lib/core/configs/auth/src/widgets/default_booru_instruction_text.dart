@@ -1,9 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../../foundation/html.dart';
-import '../../../../themes/theme/types.dart';
 
 class DefaultBooruInstructionText extends StatelessWidget {
   const DefaultBooruInstructionText(
@@ -17,8 +17,8 @@ class DefaultBooruInstructionText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-        color: Theme.of(context).colorScheme.hintColor,
+      style: Kurumi.themeOf(context).textTheme.titleSmall?.copyWith(
+        color: Kurumi.themeOf(context).colorScheme.hintColor,
         fontSize: 12,
         fontWeight: FontWeight.w400,
       ),
@@ -38,7 +38,7 @@ class DefaultBooruInstructionHtmlText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
 
     return AppHtml(
       data: text,

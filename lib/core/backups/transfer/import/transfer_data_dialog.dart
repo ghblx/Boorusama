@@ -1,14 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../settings/providers.dart';
 import '../../../settings/types.dart';
-import '../../../themes/theme/types.dart';
 import '../../../widgets/widgets.dart';
 import 'import_data_notifier.dart';
 
@@ -22,14 +20,14 @@ class TransferDataDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final step = ref.watch(importDataProvider(url).select((s) => s.step));
 
-    return BooruDialog(
+    return KurumiDialog(
       color: theme.colorScheme.surfaceContainerLow,
       dismissible: false,
       child: Theme(
-        data: Theme.of(context).copyWith(
+        data: Kurumi.themeOf(context).copyWith(
           listTileTheme: theme.listTileTheme.copyWith(
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 4,
@@ -63,7 +61,7 @@ class ImportingStep extends ConsumerWidget {
       return element.importStatus is ImportDone;
     });
 
-    final theme = Theme.of(context);
+    final theme = Kurumi.themeOf(context);
     final colorScheme = theme.colorScheme;
     final reloadPayload = ref.watch(
       importDataProvider(url).select((s) => s.reloadPayload),
@@ -156,98 +154,98 @@ class ImportingStep extends ConsumerWidget {
         ),
         if (!isDone)
           _buildCancelButton(context, isDone, reloadPayload, settings)
-        else
-          forceRestart
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
+        else if (forceRestart)
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'PLEASE CLOSE AND REOPEN THE APP'.hc,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: colorScheme.errorContainer.withValues(
+                    alpha: 0.2,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
                   children: [
-                    Text(
-                      'PLEASE CLOSE AND REOPEN THE APP'.hc,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                      ),
+                    Icon(
+                      Icons.info,
+                      color: colorScheme.error,
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorScheme.errorContainer.withValues(
-                          alpha: 0.2,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info,
-                            color: colorScheme.error,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'This is required to apply all changes and prevent data corruption.',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.error,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                )
-              : reloadPayload != null
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    FilledButton(
-                      onPressed: () {
-                        Reboot.start(
-                          context,
-                          RebootData(
-                            config: reloadPayload.selectedConfig,
-                            configs: reloadPayload.configs,
-                            settings: reloadPayload.settings ?? settings,
-                          ),
-                        );
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 14),
-                        child: Text(
-                          'Restart App',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                          ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'This is required to apply all changes and prevent data corruption.',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.error,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    _buildCancelButton(
-                      context,
-                      isDone,
-                      reloadPayload,
-                      settings,
-                    ),
                   ],
-                )
-              : FilledButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    child: Text(
-                      context.t.generic.done,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
+                ),
+              ),
+            ],
+          )
+        else if (reloadPayload != null)
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              FilledButton(
+                onPressed: () {
+                  Reboot.start(
+                    context,
+                    RebootData(
+                      config: reloadPayload.selectedConfig,
+                      configs: reloadPayload.configs,
+                      settings: reloadPayload.settings ?? settings,
+                    ),
+                  );
+                },
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  child: Text(
+                    'Restart App',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
+              ),
+              const SizedBox(height: 8),
+              _buildCancelButton(
+                context,
+                isDone,
+                reloadPayload,
+                settings,
+              ),
+            ],
+          )
+        else
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              child: Text(
+                context.t.generic.done,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -325,7 +323,7 @@ class ImportingStep extends ConsumerWidget {
                 'Close',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
+                  color: Kurumi.themeOf(context).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -439,7 +437,7 @@ class SelectDataStep extends ConsumerWidget {
               context.t.generic.action.cancel,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: Kurumi.themeOf(context).colorScheme.onSurface,
               ),
             ),
           ),

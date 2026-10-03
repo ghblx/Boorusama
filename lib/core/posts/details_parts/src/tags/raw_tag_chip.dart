@@ -1,9 +1,8 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
+// Package imports:
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../themes/theme/types.dart';
-import '../../../../widgets/compact_chip.dart';
 
 class RawTagChip extends StatelessWidget {
   const RawTagChip({
@@ -33,7 +32,7 @@ class RawTagChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.widthOf(context);
     final baseStyle =
-        Theme.of(context).textTheme.bodyMedium ??
+        Kurumi.themeOf(context).textTheme.bodyMedium ??
         DefaultTextStyle.of(context).style;
     final labelStyle = baseStyle.copyWith(
       color: foregroundColor,
@@ -42,7 +41,7 @@ class RawTagChip extends StatelessWidget {
     );
     final labelFontSize = labelStyle.fontSize ?? 14;
 
-    return RawCompactChip(
+    return KurumiRawCompactChip(
       onTap: onTap,
       padding: padding,
       foregroundColor: foregroundColor,
@@ -76,9 +75,9 @@ class RawTagChip extends StatelessWidget {
               if (subtitle != null)
                 TextSpan(
                   text: '  $subtitle',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  style: Kurumi.themeOf(context).textTheme.bodySmall?.copyWith(
                     fontSize: 11,
-                    color: Theme.of(context).brightness.isLight
+                    color: Kurumi.themeOf(context).brightness.isLight
                         ? Colors.white.withValues(alpha: 0.85)
                         : Colors.grey.withValues(alpha: 0.85),
                   ),

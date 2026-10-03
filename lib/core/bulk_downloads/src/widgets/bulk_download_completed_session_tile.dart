@@ -1,24 +1,20 @@
-// Flutter imports:
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:context_menus/context_menus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:foundation/foundation.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/cupertino.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:readmore/readmore.dart';
 
 // Project imports:
 import '../../../../foundation/clipboard.dart';
-import '../../../../foundation/toast.dart';
 import '../../../config_widgets/website_logo.dart';
 import '../../../configs/config/providers.dart';
 import '../../../images/booru_image.dart';
-import '../../../themes/theme/types.dart';
-import '../../../widgets/widgets.dart';
 import '../pages/bulk_download_saved_task_page.dart';
 import '../providers/bulk_download_notifier.dart';
 import '../providers/saved_download_task_provider.dart';
@@ -39,7 +35,7 @@ class BulkDownloadCompletedSessionTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final notifier = ref.watch(bulkDownloadProvider.notifier);
 
     return Dismissible(
@@ -148,10 +144,10 @@ class _CreateSavedTaskButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Kurumi.themeOf(context).colorScheme;
     final notifier = ref.watch(savedDownloadTasksProvider.notifier);
 
-    return CircularIconButton(
+    return KurumiCircularIconButton(
       backgroundColor: colorScheme.surfaceContainer,
       constraints: const BoxConstraints(
         minWidth: 32,
@@ -167,7 +163,7 @@ class _CreateSavedTaskButton extends ConsumerWidget {
 
         if (success) {
           if (context.mounted) {
-            showSimpleSnackBar(
+            Kurumi.showSimpleSnackBar(
               context: context,
               content: Text(context.t.bulk_downloads.templates.created),
               action: SnackBarAction(
@@ -203,7 +199,7 @@ class _CoverImage extends ConsumerWidget {
           : SizedBox(
               height: 72,
               child: Card(
-                color: Theme.of(context).colorScheme.tertiaryContainer,
+                color: Kurumi.themeOf(context).colorScheme.tertiaryContainer,
                 child: const Icon(
                   Symbols.image,
                   color: Colors.white,
@@ -288,7 +284,7 @@ class _ContextMenu extends ConsumerWidget {
             },
           ),
           ContextMenuButtonConfig(
-            context.t.bulk_downloads.actions.copy_path,
+            context.t.generic.action.copy_path,
             onPressed: () => AppClipboard.copyWithDefaultToast(context, path),
           ),
           ContextMenuButtonConfig(
@@ -364,7 +360,7 @@ class _InfoText extends ConsumerWidget {
         overflow: TextOverflow.fade,
         softWrap: false,
         style: TextStyle(
-          color: Theme.of(context).colorScheme.hintColor,
+          color: Kurumi.themeOf(context).colorScheme.hintColor,
           fontSize: 12,
         ),
       ),
@@ -392,15 +388,15 @@ class _Subtitle extends ConsumerWidget {
       lessStyle: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.primary,
+        color: Kurumi.themeOf(context).colorScheme.primary,
       ),
       moreStyle: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.primary,
+        color: Kurumi.themeOf(context).colorScheme.primary,
       ),
       style: TextStyle(
-        color: Theme.of(context).colorScheme.hintColor,
+        color: Kurumi.themeOf(context).colorScheme.hintColor,
         fontSize: 12,
       ),
     );

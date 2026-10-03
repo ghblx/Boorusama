@@ -1,11 +1,9 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:coreutils/coreutils.dart';
 import 'package:dio/dio.dart';
 import 'package:filename_generator/filename_generator.dart';
 import 'package:foundation/foundation.dart';
+import 'package:kurumi/material.dart';
 import 'package:rich_text_controller/rich_text_controller.dart';
 
 // Project imports:
@@ -36,7 +34,7 @@ class DownloadFileNameBuilder<T extends Post>
     final customHandlers = tokenHandlers.toMap();
 
     baseTokenHandlers = {
-      'id': (post, config) => post.id.toString(),
+      'id': (post, config) => post.sitePostId,
       'tags': (post, config) => post.tags.join(' '),
       'extension':
           extensionHandler ??

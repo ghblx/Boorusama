@@ -1,17 +1,14 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:animated_list_plus/animated_list_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
 import '../../../../../../core/configs/config/providers.dart';
 import '../../../../../../core/search/search/routes.dart';
-import '../../../../../../core/themes/theme/types.dart';
-import '../../../../../../core/widgets/generic_no_data_box.dart';
 import '../../../saved_search/providers.dart';
 import '../../../saved_search/routes.dart';
 import '../../../saved_search/types.dart';
@@ -63,7 +60,7 @@ class _SuccessView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return savedSearches.isEmpty
-        ? GenericNoDataBox(
+        ? KurumiGenericNoDataBox(
             text: context.t.saved_search.empty_saved_search,
           )
         : CustomScrollView(
@@ -82,9 +79,11 @@ class _SuccessView extends ConsumerWidget {
                         context.t.saved_search
                             .saved_search_counter(n: savedSearches.length)
                             .toUpperCase(),
-                        style: Theme.of(context).textTheme.titleMedium
+                        style: Kurumi.themeOf(context).textTheme.titleMedium
                             ?.copyWith(
-                              color: Theme.of(context).colorScheme.hintColor,
+                              color: Kurumi.themeOf(
+                                context,
+                              ).colorScheme.hintColor,
                               fontWeight: FontWeight.bold,
                             ),
                       ),
@@ -128,7 +127,7 @@ class _SuccessView extends ConsumerWidget {
     BuildContext context,
     SavedSearch savedSearch,
   ) {
-    showModalBottomSheet(
+    Kurumi.showModalBottomSheet(
       context: context,
       routeSettings: const RouteSettings(name: 'saved_search_action_select'),
       builder: (_) => SavedSearchQuickEditSheet(

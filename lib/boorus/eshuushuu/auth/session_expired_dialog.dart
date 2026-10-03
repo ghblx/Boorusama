@@ -1,20 +1,15 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:i18n/i18n.dart';
-
-// Project imports:
-import '../../../core/router.dart';
+import 'package:kurumi/material.dart';
 
 var _isDialogVisible = false;
 
 void showSessionExpiredDialog({
+  required BuildContext? context,
   required VoidCallback onReLogin,
 }) {
   if (_isDialogVisible) return;
 
-  final context = navigatorKey.currentContext;
   if (context == null || !context.mounted) return;
 
   _isDialogVisible = true;

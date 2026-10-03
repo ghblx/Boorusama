@@ -83,6 +83,8 @@
         type: api
         endpoint: "/index.php?page=dapi&s=comment&q=index"
         user-params: {post-id: "post_id"}
+        capabilities:
+          pagination-type: "none"
       
       notes:
         type: html
@@ -117,6 +119,32 @@
             parser: "parseDefaultFavoritePostsHtml"
           post:
             parser: "parseR34PostHtml"
+          comments:
+            type: html
+            endpoint: "/index.php?page=post&s=view"
+            parser: "parseR34CommentsHtml"
+            user-params: {post-id: "id", cursor: "cursor", tags: "tags"}
+            capabilities:
+              pagination-type: "cursor"
+            sorting:
+              transport: cookie
+              key: comments_direction
+              default: newest
+              values: {newest: desc, oldest: asc}
+            actions:
+              upvote:
+                method: get
+                endpoint: "/index.php"
+                auth: session-cookie
+                response: integer
+                params:
+                  page: comment
+                  s: vote
+                  vote: up
+                required-user-params: [post-id, comment-id]
+                user-params:
+                  post-id: id
+                  comment-id: cid
 
       - url: https://hypnohub.net/
         overrides:
@@ -238,7 +266,6 @@
       id: 32
       name: animePictures
       display-name: Anime Pictures
-      can-download-multiple-files: false
       single-site: true
     protocol: https_1
     login-url: https://anime-pictures.net/login?lang=en

@@ -1,15 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
-import '../../../../foundation/display.dart';
 import '../../../../foundation/permissions.dart';
 import '../../../../foundation/platform.dart';
-import '../../../../foundation/toast.dart';
 import '../../../boorus/engine/providers.dart';
 import '../../../bulk_downloads/providers.dart';
 import '../../../changelogs/routes.dart';
@@ -20,7 +17,6 @@ import '../../../configs/manage/providers.dart';
 import '../../../configs/manage/widgets.dart';
 import '../../../premiums/widgets.dart';
 import '../../../settings/providers.dart';
-import '../../../themes/theme/types.dart';
 import 'empty_booru_config_home_page.dart';
 
 class EntryPage extends ConsumerStatefulWidget {
@@ -43,7 +39,7 @@ class _EntryPageState extends ConsumerState<EntryPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (isAndroid() || isIOS()) {
+    if (ref.watch(appPlatformProvider).isMobile) {
       ref.listen(
         deviceStoragePermissionProvider,
         (previous, state) {
@@ -53,7 +49,7 @@ class _EntryPageState extends ConsumerState<EntryPage> {
           final isNotRead = !(value?.isNotificationRead ?? false);
 
           if (isPermenantlyDenied && isNotRead) {
-            showSimpleSnackBar(
+            Kurumi.showSimpleSnackBar(
               context: context,
               action: SnackBarAction(
                 label: context.t.settings.open_app_settings,
@@ -129,7 +125,7 @@ class _NotificationScope extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BulkDownloadNotificationScope(
+    return BulkDownloadErrorScope(
       child: LayoutPreviewNotificationScope(
         child: child,
       ),
@@ -196,13 +192,13 @@ class _Boorus extends ConsumerWidget {
           children: [
             Text(
               context.t.booru.invalid_selected_profile,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Kurumi.themeOf(context).textTheme.titleLarge,
             ),
             if (availableConfigs.isNotEmpty)
               Text(
                 context.t.booru.invalid_selected_profile_selection_request,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.hintColor,
+                style: Kurumi.themeOf(context).textTheme.titleMedium?.copyWith(
+                  color: Kurumi.themeOf(context).colorScheme.hintColor,
                 ),
               ),
             const SizedBox(height: 16),

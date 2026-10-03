@@ -1,14 +1,12 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:i18n/i18n.dart';
 import 'package:intl/intl.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 // Project imports:
-import '../../../../../../core/themes/theme/types.dart';
 import '../../../feedbacks/routes.dart';
 import '../../../user/types.dart';
 import '../widgets/user_details_section_card.dart';
@@ -99,7 +97,7 @@ class UserDetailsInfoView extends ConsumerWidget {
             child: Wrap(
               children: previousNames
                   .map(
-                    (e) => Chip(
+                    (e) => KurumiMaterialChip(
                       label: Text(e.replaceAll('_', ' ')),
                       visualDensity: VisualDensity.compact,
                     ),
@@ -240,7 +238,9 @@ class _StatsButton extends StatelessWidget {
         ),
         Text(
           title,
-          style: TextStyle(color: Theme.of(context).colorScheme.hintColor),
+          style: TextStyle(
+            color: Kurumi.themeOf(context).colorScheme.hintColor,
+          ),
         ),
       ],
     );

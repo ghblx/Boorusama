@@ -1,12 +1,10 @@
-// Flutter imports:
-import 'package:flutter/material.dart';
-
 // Package imports:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kurumi/kurumi.dart';
+import 'package:kurumi/material.dart';
 
 // Project imports:
 import '../../../../config_widgets/website_logo.dart';
-import '../../../../widgets/widgets.dart';
 import '../../../config/types.dart';
 import '../../../create/providers.dart';
 
@@ -57,7 +55,7 @@ class _ProfileIconUrlFieldState extends ConsumerState<ProfileIconUrlField> {
         children: [
           Text(
             'Profile Icon',
-            style: Theme.of(context).textTheme.titleMedium,
+            style: Kurumi.themeOf(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
           Row(
@@ -66,7 +64,7 @@ class _ProfileIconUrlFieldState extends ConsumerState<ProfileIconUrlField> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.outlineVariant,
+                    color: Kurumi.themeOf(context).colorScheme.outlineVariant,
                   ),
                 ),
                 child: ClipRRect(
@@ -87,13 +85,13 @@ class _ProfileIconUrlFieldState extends ConsumerState<ProfileIconUrlField> {
               Text(
                 hasCustomIcon ? 'Custom' : 'Default',
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: Kurumi.themeOf(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          BooruTextFormField(
+          KurumiTextFormField(
             controller: _controller,
             onChanged: (value) {
               final url = value.trim();
